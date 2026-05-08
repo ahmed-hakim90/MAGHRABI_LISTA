@@ -2,7 +2,12 @@
 
 import { initializeApp, getApps, type FirebaseApp } from "firebase/app";
 import { getAuth, type Auth } from "firebase/auth";
-import { getFirestore, type Firestore } from "firebase/firestore";
+import {
+  initializeFirestore,
+  persistentLocalCache,
+  persistentMultipleTabManager,
+  type Firestore,
+} from "firebase/firestore";
 import { getStorage, type FirebaseStorage } from "firebase/storage";
 import { assertFirebaseConfig, firebasePublicConfig } from "./config";
 
@@ -30,7 +35,13 @@ export function getClientAuth(): Auth {
 }
 
 export function getClientFirestore(): Firestore {
-  if (!db) db = getFirestore(getBrowserFirebaseApp());
+  if (!db) {
+    db = initializeFirestore(getBrowserFirebaseApp(), {
+      localCache: persistentLocalCache({
+        tabManager: persistentMultipleTabManager(),
+      }),
+    });
+  }
   return db;
 }
 

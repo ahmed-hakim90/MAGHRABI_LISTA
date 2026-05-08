@@ -1,12 +1,13 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import type { FileCard } from "@/lib/types/models";
+import { useEffect, useState } from "react";
+import type { FileCard, FileFolder } from "@/lib/types/models";
 import {
   createFileCard,
   updateFileCardMeta,
 } from "@/lib/services/fileCards";
+import { listAllFileFoldersAdmin } from "@/lib/services/fileFolders";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { UploadField } from "./UploadField";
 
@@ -24,16 +25,38 @@ export function FileForm({ mode, uid, initial }: Props) {
   const [tagsRaw, setTagsRaw] = useState((initial?.tags ?? []).join(", "));
   const [order, setOrder] = useState(String(initial?.order ?? 0));
   const [isActive, setIsActive] = useState(initial?.isActive ?? true);
+  const [folderId, setFolderId] = useState(initial?.folderId ?? "");
+  const [folders, setFolders] = useState<FileFolder[]>([]);
   const [pdf, setPdf] = useState<File | null>(null);
   const [thumb, setThumb] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
 
+  useEffect(() => {
+    void listAllFileFoldersAdmin().then(setFolders);
+  }, []);
+
   const tags = tagsRaw
     .split(",")
     .map((t) => t.trim())
     .filter(Boolean);
+
+  function resolveFolderFields(): {
+    folderId: string;
+    folderName: string;
+    folderIsActive: boolean;
+  } {
+    if (!folderId) {
+      return { folderId: "", folderName: "", folderIsActive: true };
+    }
+    const f = folders.find((x) => x.id === folderId);
+    return {
+      folderId,
+      folderName: f?.name ?? "",
+      folderIsActive: f?.isActive ?? true,
+    };
+  }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -41,6 +64,7 @@ export function FileForm({ mode, uid, initial }: Props) {
     setSaving(true);
     setUploadProgress(mode === "create" ? 0 : null);
     try {
+      const folderFields = resolveFolderFields();
       if (mode === "create") {
         if (!pdf || !thumb) {
           setError("PDF and thumbnail are required.");
@@ -56,6 +80,7 @@ export function FileForm({ mode, uid, initial }: Props) {
             tags,
             order: Number(order) || 0,
             isActive,
+            ...folderFields,
             pdfFile: pdf,
             thumbnailFile: thumb,
             uid,
@@ -75,6 +100,7 @@ export function FileForm({ mode, uid, initial }: Props) {
         tags,
         order: Number(order) || 0,
         isActive,
+        ...folderFields,
         uid,
       });
       router.push("/admin/files");
@@ -133,6 +159,22 @@ export function FileForm({ mode, uid, initial }: Props) {
           value={category}
           onChange={(e) => setCategory(e.target.value)}
         />
+      </label>
+      <label className="block">
+        <span className="text-sm font-medium text-[#2F3437]">Folder</span>
+        <select
+          className="mt-1 w-full rounded-xl border border-[#E5E2DA] bg-white px-3 py-2 text-[15px]"
+          value={folderId}
+          onChange={(e) => setFolderId(e.target.value)}
+        >
+          <option value="">— No folder —</option>
+          {folders.map((f) => (
+            <option key={f.id} value={f.id}>
+              {f.name}
+              {f.isActive ? "" : " (inactive)"}
+            </option>
+          ))}
+        </select>
       </label>
       <label className="block">
         <span className="text-sm font-medium text-[#2F3437]">

@@ -9,7 +9,7 @@ export function FileGrid({ cards }: Props) {
   if (cards.length === 0) {
     return (
       <p className="py-16 text-center text-[15px] text-[#6B6B6B]">
-        No files match your search.
+        لا توجد ملفات مطابقة لبحثك.
       </p>
     );
   }

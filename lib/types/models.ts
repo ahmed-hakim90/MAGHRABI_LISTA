@@ -14,6 +14,11 @@ export type FileCard = {
   fileSize: number;
   fileType: "pdf";
   storageFolder: string;
+  /** Empty string means the card has no folder. */
+  folderId: string;
+  folderName: string;
+  /** Denormalized so security rules can hide cards under inactive folders. */
+  folderIsActive: boolean;
   order: number;
   isActive: boolean;
   createdAt: Timestamp | null;
@@ -21,6 +26,18 @@ export type FileCard = {
   createdBy: string;
   updatedBy: string;
   version: number;
+};
+
+export type FileFolder = {
+  id: string;
+  name: string;
+  description: string;
+  order: number;
+  isActive: boolean;
+  createdAt: Timestamp | null;
+  updatedAt: Timestamp | null;
+  createdBy: string;
+  updatedBy: string;
 };
 
 export type SiteSettings = {

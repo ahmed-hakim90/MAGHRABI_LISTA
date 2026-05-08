@@ -34,3 +34,13 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+### Production 403 / blocked URL
+
+If the deployment shows **Ready** but the browser gets **403**, see **[docs/vercel-production-access.md](docs/vercel-production-access.md)** and run:
+
+```bash
+./scripts/vercel-check-deployment.sh "https://YOUR-PROJECT.vercel.app"
+# or:
+npm run vercel:check -- "https://YOUR-PROJECT.vercel.app"
+```

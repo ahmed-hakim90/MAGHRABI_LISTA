@@ -107,6 +107,7 @@ export function FileTable() {
           <tr className="border-b border-[#E5E2DA] text-[#6B6B6B]">
             <th className="p-3 font-medium">Thumb</th>
             <th className="p-3 font-medium">Title</th>
+            <th className="p-3 font-medium">Folder</th>
             <th className="p-3 font-medium">Category</th>
             <th className="p-3 font-medium">Active</th>
             <th className="p-3 font-medium">Updated</th>
@@ -131,6 +132,21 @@ export function FileTable() {
               </td>
               <td className="max-w-[200px] p-3 font-medium text-[#2F3437]">
                 {card.title}
+              </td>
+              <td className="p-3 text-[#6B6B6B]">
+                {card.folderName ? (
+                  <span
+                    className={`rounded-lg px-2 py-0.5 text-xs ${
+                      card.folderIsActive
+                        ? "bg-[#F7F6F3] text-[#2F3437]"
+                        : "bg-neutral-100 text-neutral-500 line-through"
+                    }`}
+                  >
+                    {card.folderName}
+                  </span>
+                ) : (
+                  <span className="text-xs text-[#6B6B6B]/70">—</span>
+                )}
               </td>
               <td className="p-3 text-[#6B6B6B]">{card.category}</td>
               <td className="p-3">

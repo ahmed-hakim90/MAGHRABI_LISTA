@@ -9,7 +9,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "sync-admin-claims": "node scripts/sync-admin-claims.mjs"
+    "sync-admin-claims": "node scripts/sync-admin-claims.mjs",
+    "vercel:check": "bash scripts/vercel-check-deployment.sh"
   },
   "dependencies": {
     "firebase": "^12.13.0",

@@ -11,6 +11,8 @@ dotenv.config({ path: path.join(root, ".env.local") });
 dotenv.config({ path: path.join(root, ".env") });
 
 const FB_VERSION = "12.13.0";
+/** Bump when SW caching logic changes so old caches are purged. */
+const SW_CACHE_VERSION = "v1";
 
 const config = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "",
@@ -76,9 +78,120 @@ async function main() {
     .toFile(path.join(appDir, "apple-icon.png"));
 
   const sw = `
-/* PWA: Chromium requires a fetch handler for installability */
+var SW_CACHE_VERSION = '${SW_CACHE_VERSION}';
+var CACHE_STATIC = 'maghrabi-static-' + SW_CACHE_VERSION;
+var CACHE_PAGES = 'maghrabi-pages-' + SW_CACHE_VERSION;
+
+function isDevHost() {
+  var h = self.location.hostname;
+  return h === 'localhost' || h === '127.0.0.1' || h === '[::1]';
+}
+
+function networkFirstCache(request, cacheName) {
+  return caches.open(cacheName).then(function (cache) {
+    return fetch(request)
+      .then(function (response) {
+        if (response && response.status === 200) {
+          try {
+            cache.put(request, response.clone());
+          } catch {}
+        }
+        return response;
+      })
+      .catch(function () {
+        return cache.match(request).then(function (hit) {
+          return hit || new Response('', { status: 504, statusText: 'Offline' });
+        });
+      });
+  });
+}
+
+function navigateWithOfflineFallback(request) {
+  return fetch(request)
+    .then(function (response) {
+      if (response && response.ok) {
+        caches.open(CACHE_PAGES).then(function (cache) {
+          try {
+            cache.put(request, response.clone());
+          } catch {}
+        });
+      }
+      return response;
+    })
+    .catch(function () {
+      return caches.match(request).then(function (hit) {
+        if (hit) return hit;
+        return caches.match(self.location.origin + '/');
+      }).then(function (hit) {
+        if (hit) return hit;
+        return new Response('Offline', { status: 503, statusText: 'Offline' });
+      });
+    });
+}
+
+self.addEventListener('message', function (event) {
+  var d = event.data;
+  if (d && d.type === 'SKIP_WAITING' && self.skipWaiting) {
+    self.skipWaiting();
+  }
+});
+
+self.addEventListener('activate', function (event) {
+  var keep = [CACHE_STATIC, CACHE_PAGES];
+  event.waitUntil(
+    caches.keys().then(function (keys) {
+      return Promise.all(
+        keys.map(function (key) {
+          if (key.indexOf('maghrabi-') === 0 && keep.indexOf(key) === -1) {
+            return caches.delete(key);
+          }
+        }),
+      );
+    }).then(function () {
+      return self.clients.claim();
+    }),
+  );
+});
+
 self.addEventListener('fetch', function (event) {
-  event.respondWith(fetch(event.request));
+  var req = event.request;
+  if (isDevHost()) {
+    event.respondWith(fetch(req));
+    return;
+  }
+  if (req.method !== 'GET') {
+    event.respondWith(fetch(req));
+    return;
+  }
+  var url;
+  try {
+    url = new URL(req.url);
+  } catch {
+    event.respondWith(fetch(req));
+    return;
+  }
+  if (url.origin !== self.location.origin) {
+    event.respondWith(fetch(req));
+    return;
+  }
+  var path = url.pathname;
+  if (
+    path.indexOf('/_next/static/') === 0 ||
+    path.indexOf('/icons/') === 0 ||
+    path === '/manifest.webmanifest'
+  ) {
+    event.respondWith(networkFirstCache(req, CACHE_STATIC));
+    return;
+  }
+  if (/^\\/file\\/[^/]+\\/pdf\\/?$/.test(path)) {
+    event.respondWith(networkFirstCache(req, CACHE_PAGES));
+    return;
+  }
+  if (req.mode === 'navigate') {
+    event.respondWith(navigateWithOfflineFallback(req));
+    return;
+  }
+  event.respondWith(fetch(req));
 });
 
 importScripts('https://www.gstatic.com/firebasejs/${FB_VERSION}/firebase-app-compat.js');

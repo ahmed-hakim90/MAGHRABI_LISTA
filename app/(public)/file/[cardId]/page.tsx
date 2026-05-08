@@ -6,6 +6,7 @@ import { use, useEffect, useState } from "react";
 import { PdfViewer } from "@/components/public/PdfViewer";
 import { getClientFirestore } from "@/lib/firebase/client";
 import type { FileCard } from "@/lib/types/models";
+import { STORAGE_FOLDER } from "@/lib/utils/storagePaths";
 
 function fromSnap(
   id: string,
@@ -24,7 +25,13 @@ function fromSnap(
     fileName: String(data.fileName ?? ""),
     fileSize: Number(data.fileSize ?? 0),
     fileType: "pdf",
-    storageFolder: String(data.storageFolder ?? ""),
+    storageFolder: String(data.storageFolder ?? STORAGE_FOLDER),
+    folderId: String(data.folderId ?? ""),
+    folderName: String(data.folderName ?? ""),
+    folderIsActive:
+      data.folderIsActive === undefined
+        ? true
+        : Boolean(data.folderIsActive),
     order: Number(data.order ?? 0),
     isActive: Boolean(data.isActive),
     createdAt: (data.createdAt as FileCard["createdAt"]) ?? null,
@@ -86,7 +93,7 @@ export default function FilePage({
     );
   }
 
-  if (err || !card || !card.isActive || !card.fileUrl) {
+  if (err || !card || !card.isActive || !card.folderIsActive || !card.fileUrl) {
     return (
       <div className="flex min-h-screen flex-col bg-[#F7F6F3]">
         <header className="flex items-center gap-3 border-b border-[#E5E2DA] bg-white px-3 py-3">
@@ -105,6 +112,8 @@ export default function FilePage({
     );
   }
 
+  const proxyUrl = `/file/${cardId}/pdf`;
+
   return (
     <div className="flex min-h-screen flex-col bg-[#F7F6F3]">
       <header className="flex shrink-0 items-center gap-3 border-b border-[#E5E2DA] bg-white px-3 py-3">
@@ -119,7 +128,7 @@ export default function FilePage({
           {card.title}
         </h1>
         <a
-          href={card.fileUrl}
+          href={proxyUrl}
           target="_blank"
           rel="noreferrer"
           className="shrink-0 rounded-xl border border-[#E5E2DA] px-3 py-1.5 text-xs font-medium text-[#2F3437] hover:bg-[#F7F6F3]"
@@ -127,7 +136,7 @@ export default function FilePage({
           Open
         </a>
       </header>
-      <PdfViewer fileUrl={card.fileUrl} title={card.title} />
+      <PdfViewer fileUrl={proxyUrl} title={card.title} />
     </div>
   );
 }

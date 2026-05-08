@@ -12,6 +12,16 @@ service cloud.firestore {
     }
 
     match /fileCards/{cardId} {
+      // Cards under a deactivated folder are hidden from the public.
+      // Cards without a folder default to folderIsActive == true.
+      allow read: if (
+        resource.data.isActive == true &&
+        resource.data.get('folderIsActive', true) == true
+      ) || isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /fileFolders/{folderId} {
       allow read: if resource.data.isActive == true || isAdmin();
       allow create, update, delete: if isAdmin();
     }

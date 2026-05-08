@@ -13,6 +13,7 @@ import {
   setDoc,
   updateDoc,
   where,
+  writeBatch,
 } from "firebase/firestore";
 import { deleteObject, getDownloadURL, ref } from "firebase/storage";
 import { getClientFirestore, getClientStorage } from "@/lib/firebase/client";
@@ -43,6 +44,12 @@ function fromDoc(
     fileSize: Number(data.fileSize ?? 0),
     fileType: "pdf",
     storageFolder: String(data.storageFolder ?? STORAGE_FOLDER),
+    folderId: String(data.folderId ?? ""),
+    folderName: String(data.folderName ?? ""),
+    folderIsActive:
+      data.folderIsActive === undefined
+        ? true
+        : Boolean(data.folderIsActive),
     order: Number(data.order ?? 0),
     isActive: Boolean(data.isActive),
     createdAt: (data.createdAt as FileCard["createdAt"]) ?? null,
@@ -58,11 +65,46 @@ export async function listActiveFileCards(): Promise<FileCard[]> {
   const q = query(
     collection(db, "fileCards"),
     where("isActive", "==", true),
+    where("folderIsActive", "==", true),
     orderBy("order", "asc"),
     orderBy("updatedAt", "desc"),
   );
   const snap = await getDocs(q);
   return snap.docs.map((d) => fromDoc(d.id, d.data() as Record<string, unknown>));
+}
+
+/**
+ * Set defaults for the folder denormalization fields on legacy cards so the
+ * public query (which filters on folderIsActive) still returns them.
+ * Idempotent: writes only the cards that are missing the fields.
+ */
+export async function backfillFileCardsFolderFields(
+  uid: string,
+): Promise<number> {
+  const db = getClientFirestore();
+  const snap = await getDocs(collection(db, "fileCards"));
+  const targets = snap.docs.filter((d) => {
+    const data = d.data() as Record<string, unknown>;
+    return (
+      data.folderIsActive === undefined ||
+      data.folderId === undefined ||
+      data.folderName === undefined
+    );
+  });
+  if (targets.length === 0) return 0;
+  const batch = writeBatch(db);
+  for (const d of targets) {
+    const data = d.data() as Record<string, unknown>;
+    batch.update(d.ref, {
+      folderId: data.folderId === undefined ? "" : data.folderId,
+      folderName: data.folderName === undefined ? "" : data.folderName,
+      folderIsActive:
+        data.folderIsActive === undefined ? true : data.folderIsActive,
+      updatedBy: uid,
+    });
+  }
+  await batch.commit();
+  return targets.length;
 }
 
 export async function listAllFileCardsAdmin(): Promise<FileCard[]> {
@@ -89,6 +131,9 @@ export async function createFileCard(
     tags: string[];
     order: number;
     isActive: boolean;
+    folderId: string;
+    folderName: string;
+    folderIsActive: boolean;
     pdfFile: File;
     thumbnailFile: File;
     uid: string;
@@ -130,6 +175,9 @@ export async function createFileCard(
       tags: input.tags,
       order: input.order,
       isActive: input.isActive,
+      folderId: input.folderId,
+      folderName: input.folderName,
+      folderIsActive: input.folderIsActive,
       fileType: "pdf",
       storageFolder: STORAGE_FOLDER,
       thumbnailUrl,
@@ -170,6 +218,9 @@ export async function updateFileCardMeta(
     tags: string[];
     order: number;
     isActive: boolean;
+    folderId: string;
+    folderName: string;
+    folderIsActive: boolean;
     uid: string;
   },
 ): Promise<void> {
@@ -181,6 +232,9 @@ export async function updateFileCardMeta(
     tags: input.tags,
     order: input.order,
     isActive: input.isActive,
+    folderId: input.folderId,
+    folderName: input.folderName,
+    folderIsActive: input.folderIsActive,
     updatedAt: serverTimestamp(),
     updatedBy: input.uid,
   });

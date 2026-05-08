@@ -1,0 +1,22 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn()
+        && firestore.exists(/databases/(default)/documents/adminUsers/$(request.auth.uid))
+        && firestore.get(/databases/(default)/documents/adminUsers/$(request.auth.uid)).data.isActive == true;
+    }
+
+    // Must match NEXT_PUBLIC_FIREBASE_STORAGE_FOLDER (e.g. magrabi-lista). Redeploy when the folder changes.
+    match /magrabi-lista/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+  }
+}

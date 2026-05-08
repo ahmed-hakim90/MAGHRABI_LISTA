@@ -1,0 +1,184 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import type { FileCard } from "@/lib/types/models";
+import {
+  createFileCard,
+  updateFileCardMeta,
+} from "@/lib/services/fileCards";
+import { UploadField } from "./UploadField";
+
+type Props = {
+  mode: "create" | "edit";
+  uid: string;
+  initial?: FileCard | null;
+};
+
+export function FileForm({ mode, uid, initial }: Props) {
+  const router = useRouter();
+  const [title, setTitle] = useState(initial?.title ?? "");
+  const [description, setDescription] = useState(initial?.description ?? "");
+  const [category, setCategory] = useState(initial?.category ?? "");
+  const [tagsRaw, setTagsRaw] = useState((initial?.tags ?? []).join(", "));
+  const [order, setOrder] = useState(String(initial?.order ?? 0));
+  const [isActive, setIsActive] = useState(initial?.isActive ?? true);
+  const [pdf, setPdf] = useState<File | null>(null);
+  const [thumb, setThumb] = useState<File | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  const tags = tagsRaw
+    .split(",")
+    .map((t) => t.trim())
+    .filter(Boolean);
+
+  async function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setSaving(true);
+    try {
+      if (mode === "create") {
+        if (!pdf || !thumb) {
+          setError("PDF and thumbnail are required.");
+          setSaving(false);
+          return;
+        }
+        await createFileCard({
+          title,
+          description,
+          category,
+          tags,
+          order: Number(order) || 0,
+          isActive,
+          pdfFile: pdf,
+          thumbnailFile: thumb,
+          uid,
+        });
+        router.push("/admin/files");
+        router.refresh();
+        return;
+      }
+      if (!initial) return;
+      await updateFileCardMeta(initial.id, {
+        title,
+        description,
+        category,
+        tags,
+        order: Number(order) || 0,
+        isActive,
+        uid,
+      });
+      router.push("/admin/files");
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Save failed");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <form
+      onSubmit={(e) => void onSubmit(e)}
+      className="mx-auto max-w-xl space-y-4 rounded-2xl border border-[#E5E2DA] bg-white p-6 shadow-sm"
+    >
+      <h1 className="text-lg font-semibold text-[#2F3437]">
+        {mode === "create" ? "New file" : "Edit file"}
+      </h1>
+      {error ? (
+        <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-800">
+          {error}
+        </p>
+      ) : null}
+      <label className="block">
+        <span className="text-sm font-medium text-[#2F3437]">Title</span>
+        <input
+          required
+          className="mt-1 w-full rounded-xl border border-[#E5E2DA] px-3 py-2 text-[15px]"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+        />
+      </label>
+      <label className="block">
+        <span className="text-sm font-medium text-[#2F3437]">Description</span>
+        <textarea
+          required
+          rows={3}
+          className="mt-1 w-full rounded-xl border border-[#E5E2DA] px-3 py-2 text-[15px]"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+        />
+      </label>
+      <label className="block">
+        <span className="text-sm font-medium text-[#2F3437]">Category</span>
+        <input
+          className="mt-1 w-full rounded-xl border border-[#E5E2DA] px-3 py-2 text-[15px]"
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+        />
+      </label>
+      <label className="block">
+        <span className="text-sm font-medium text-[#2F3437]">
+          Tags (comma-separated)
+        </span>
+        <input
+          className="mt-1 w-full rounded-xl border border-[#E5E2DA] px-3 py-2 text-[15px]"
+          value={tagsRaw}
+          onChange={(e) => setTagsRaw(e.target.value)}
+        />
+      </label>
+      <label className="block">
+        <span className="text-sm font-medium text-[#2F3437]">Order</span>
+        <input
+          type="number"
+          className="mt-1 w-full rounded-xl border border-[#E5E2DA] px-3 py-2 text-[15px]"
+          value={order}
+          onChange={(e) => setOrder(e.target.value)}
+        />
+      </label>
+      <label className="flex items-center gap-2">
+        <input
+          type="checkbox"
+          checked={isActive}
+          onChange={(e) => setIsActive(e.target.checked)}
+        />
+        <span className="text-sm text-[#2F3437]">Active (visible to public)</span>
+      </label>
+      {mode === "create" ? (
+        <>
+          <UploadField
+            label="PDF"
+            accept="application/pdf"
+            file={pdf}
+            onFile={setPdf}
+            required
+          />
+          <UploadField
+            label="Thumbnail"
+            accept="image/*"
+            file={thumb}
+            onFile={setThumb}
+            required
+          />
+        </>
+      ) : null}
+      <div className="flex gap-2 pt-2">
+        <button
+          type="submit"
+          disabled={saving}
+          className="rounded-xl bg-[#2F3437] px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-50"
+        >
+          {saving ? "Saving…" : "Save"}
+        </button>
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className="rounded-xl border border-[#E5E2DA] px-4 py-2 text-sm text-[#2F3437]"
+        >
+          Cancel
+        </button>
+      </div>
+    </form>
+  );
+}

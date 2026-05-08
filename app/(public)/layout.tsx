@@ -1,5 +1,6 @@
 import { NotificationPromptModal } from "@/components/public/NotificationPromptModal";
 import { PwaInstallModal } from "@/components/public/PwaInstallModal";
+import { WhatsAppFloatingButton } from "@/components/public/WhatsAppFloatingButton";
 
 export default function PublicGroupLayout({
   children,
@@ -10,6 +11,7 @@ export default function PublicGroupLayout({
     <>
       <NotificationPromptModal />
       <PwaInstallModal />
+      <WhatsAppFloatingButton />
       {children}
     </>
   );

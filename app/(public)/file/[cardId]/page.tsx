@@ -7,41 +7,6 @@ import { PdfViewer } from "@/components/public/PdfViewer";
 import { getClientFirestore } from "@/lib/firebase/client";
 import type { FileCard } from "@/lib/types/models";
 import { STORAGE_FOLDER } from "@/lib/utils/storagePaths";
-import { isLikelyIOS } from "@/hooks/usePwaInstall";
-
-function IosNativePdfShell({
-  title,
-  proxyUrl,
-  goBack,
-}: {
-  title: string;
-  proxyUrl: string;
-  goBack: () => void;
-}) {
-  useEffect(() => {
-    window.location.replace(proxyUrl);
-  }, [proxyUrl]);
-
-  return (
-    <div className="flex h-dvh max-h-dvh flex-col overflow-hidden bg-[#F7F6F3]">
-      <header className="flex shrink-0 items-center gap-3 border-b border-[#E5E2DA] bg-white px-3 py-3">
-        <button
-          type="button"
-          onClick={goBack}
-          className="rounded-xl px-3 py-1.5 text-sm font-medium text-[#2F3437] transition hover:bg-[#F7F6F3]"
-        >
-          ← Back
-        </button>
-        <h1 className="min-w-0 flex-1 truncate text-sm font-semibold text-[#2F3437] sm:text-base">
-          {title}
-        </h1>
-      </header>
-      <div className="flex flex-1 items-center justify-center px-6 text-center text-sm text-[#6B6B6B]">
-        جاري فتح المستند في العارض…
-      </div>
-    </div>
-  );
-}
 
 function fromSnap(
   id: string,
@@ -148,24 +113,15 @@ export default function FilePage({
   }
 
   const proxyUrl = `/file/${cardId}/pdf`;
-
-  if (isLikelyIOS()) {
-    return (
-      <IosNativePdfShell
-        title={card.title}
-        proxyUrl={proxyUrl}
-        goBack={goBack}
-      />
-    );
-  }
+  const downloadUrl = `${proxyUrl}?download`;
 
   return (
     <div className="flex h-dvh max-h-dvh flex-col overflow-hidden overscroll-none bg-[#F7F6F3]">
-      <header className="flex shrink-0 items-center gap-3 border-b border-[#E5E2DA] bg-white px-3 py-3">
+      <header className="flex shrink-0 items-center gap-2 border-b border-[#E5E2DA] bg-white px-2 py-3 sm:gap-3 sm:px-3">
         <button
           type="button"
           onClick={goBack}
-          className="rounded-xl px-3 py-1.5 text-sm font-medium text-[#2F3437] transition hover:bg-[#F7F6F3]"
+          className="shrink-0 rounded-xl px-2 py-1.5 text-sm font-medium text-[#2F3437] transition hover:bg-[#F7F6F3] sm:px-3"
         >
           ← Back
         </button>
@@ -173,10 +129,17 @@ export default function FilePage({
           {card.title}
         </h1>
         <a
+          href={downloadUrl}
+          download
+          className="shrink-0 rounded-xl border border-[#E5E2DA] px-2 py-1.5 text-xs font-medium text-[#2F3437] hover:bg-[#F7F6F3] sm:px-3"
+        >
+          تحميل
+        </a>
+        <a
           href={proxyUrl}
           target="_blank"
           rel="noreferrer"
-          className="shrink-0 rounded-xl border border-[#E5E2DA] px-3 py-1.5 text-xs font-medium text-[#2F3437] hover:bg-[#F7F6F3]"
+          className="shrink-0 rounded-xl border border-[#E5E2DA] px-2 py-1.5 text-xs font-medium text-[#2F3437] hover:bg-[#F7F6F3] sm:px-3"
         >
           Open
         </a>

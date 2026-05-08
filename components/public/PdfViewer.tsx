@@ -1,45 +1,17 @@
 "use client";
 
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useEffect, useState } from "react";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { fetchBlobWithProgress } from "@/lib/utils/fetchBlobWithProgress";
 
 type Props = { fileUrl: string; title: string };
 
-function subscribeCoarsePointer(cb: () => void) {
-  if (typeof window === "undefined") return () => {};
-  const mq = window.matchMedia("(pointer: coarse)");
-  mq.addEventListener("change", cb);
-  return () => mq.removeEventListener("change", cb);
-}
-
-function getCoarsePointerSnapshot(): boolean {
-  if (typeof window === "undefined") return false;
-  return (
-    window.matchMedia("(pointer: coarse)").matches ||
-    "ontouchstart" in window
-  );
-}
-
-function getCoarsePointerServerSnapshot(): boolean {
-  return false;
-}
-
-/** Hash params: mobile built-in viewers often ignore or mishandle some fragments. */
-function pdfFrameSrc(src: string, coarseTouch: boolean): string {
-  if (coarseTouch) {
-    return `${src}#toolbar=1&navpanes=1`;
-  }
+/** Same-origin blob URLs make Chrome (incl. mobile) use the full built-in PDF UI with toolbar. */
+function pdfFrameSrc(src: string): string {
   return `${src}#toolbar=1&navpanes=0`;
 }
 
 export function PdfViewer({ fileUrl, title }: Props) {
-  const coarseTouch = useSyncExternalStore(
-    subscribeCoarsePointer,
-    getCoarsePointerSnapshot,
-    getCoarsePointerServerSnapshot,
-  );
-
   const [displaySrc, setDisplaySrc] = useState<string | null>(null);
   /** 0–1 while downloading; `null` = size unknown (indeterminate) */
   const [progress, setProgress] = useState<number | null>(0);
@@ -51,18 +23,6 @@ export function PdfViewer({ fileUrl, title }: Props) {
     setDisplaySrc(null);
     setFrameReady(false);
     setProgress(0);
-
-    if (coarseTouch) {
-      queueMicrotask(() => {
-        if (!cancelled) {
-          setDisplaySrc(fileUrl);
-          setProgress(1);
-        }
-      });
-      return () => {
-        cancelled = true;
-      };
-    }
 
     (async () => {
       try {
@@ -84,7 +44,7 @@ export function PdfViewer({ fileUrl, title }: Props) {
       cancelled = true;
       if (blobUrl) URL.revokeObjectURL(blobUrl);
     };
-  }, [fileUrl, coarseTouch]);
+  }, [fileUrl]);
 
   const bar = (
     <div className="w-full max-w-md">
@@ -107,7 +67,7 @@ export function PdfViewer({ fileUrl, title }: Props) {
           ) : null}
           <iframe
             title={title}
-            src={pdfFrameSrc(displaySrc, coarseTouch)}
+            src={pdfFrameSrc(displaySrc)}
             onLoad={() => setFrameReady(true)}
             className="min-h-0 w-full flex-1 border-0"
           />

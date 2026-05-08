@@ -85,21 +85,30 @@ export async function POST(request: Request) {
       ? {
           type: "file_card",
           cardId: targetCardId,
-          url: `/file/${targetCardId}`,
+          url: `/file/${targetCardId}/pdf`,
         }
       : {
           type: "announcement",
           url: "/",
         };
 
+  const origin = new URL(request.url).origin;
+  const path =
+    targetCardId != null ? `/file/${targetCardId}/pdf` : "/";
+  const webPushLink = `${origin}${path}`;
+
   const tokensSnap = await db
     .collection("fcmTokens")
     .where("isActive", "==", true)
     .get();
 
-  const tokens = tokensSnap.docs
-    .map((d) => String(d.data().token ?? ""))
-    .filter(Boolean);
+  const tokens = [
+    ...new Set(
+      tokensSnap.docs
+        .map((d) => String(d.data().token ?? ""))
+        .filter(Boolean),
+    ),
+  ];
 
   try {
     if (tokens.length === 0) {
@@ -118,6 +127,11 @@ export async function POST(request: Request) {
         tokens: chunk,
         notification: { title, body: text },
         data,
+        webpush: {
+          fcmOptions: {
+            link: webPushLink,
+          },
+        },
       });
       sent += res.successCount;
     }

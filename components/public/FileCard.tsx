@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import type { FileCard as FileCardType } from "@/lib/types/models";
 import { formatDisplayDate } from "@/lib/utils/dates";
 import type { CatalogViewMode } from "./CatalogViewToggle";
@@ -12,8 +11,10 @@ export function FileCard({ card, variant = "grid" }: Props) {
   const isList = variant === "list";
 
   return (
-    <Link
-      href={`/file/${card.id}`}
+    <a
+      href={`/file/${card.id}/pdf`}
+      target="_blank"
+      rel="noopener noreferrer"
       className={`group flex touch-manipulation overflow-hidden border border-border bg-card shadow-sm transition duration-200 hover:border-foreground/15 hover:shadow-md active:scale-[0.99] ${
         isList
           ? "min-h-[5.5rem] flex-row items-stretch rounded-xl sm:rounded-2xl"
@@ -85,6 +86,6 @@ export function FileCard({ card, variant = "grid" }: Props) {
           Updated {formatDisplayDate(card.updatedAt)}
         </p>
       </div>
-    </Link>
+    </a>
   );
 }

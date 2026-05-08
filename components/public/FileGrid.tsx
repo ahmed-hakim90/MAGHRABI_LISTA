@@ -24,7 +24,7 @@ export function FileGrid({ cards, view = "grid" }: Props) {
     );
   }
   return (
-    <div className="mx-auto grid max-w-6xl grid-cols-2 gap-2.5 px-safe pb-safe-fab sm:grid-cols-3 sm:gap-4 sm:px-4">
+    <div className="mx-auto grid max-w-6xl grid-cols-3 gap-2.5 px-safe pb-safe-fab sm:gap-4 sm:px-4">
       {cards.map((card) => (
         <FileCard key={card.id} card={card} variant="grid" />
       ))}

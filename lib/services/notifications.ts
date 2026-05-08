@@ -1,7 +1,10 @@
 "use client";
 
 import { collection, getDocs, orderBy, query } from "firebase/firestore";
-import { getClientFirestore } from "@/lib/firebase/client";
+import {
+  getClientFirestore,
+  syncAuthTokenForFirestore,
+} from "@/lib/firebase/client";
 import type { NotificationDoc } from "@/lib/types/models";
 
 function fromDoc(
@@ -25,6 +28,7 @@ function fromDoc(
 export async function listNotifications(): Promise<
   (NotificationDoc & { id: string })[]
 > {
+  await syncAuthTokenForFirestore();
   const db = getClientFirestore();
   const q = query(
     collection(db, "notifications"),

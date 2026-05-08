@@ -14,7 +14,10 @@ import {
   where,
   writeBatch,
 } from "firebase/firestore";
-import { getClientFirestore } from "@/lib/firebase/client";
+import {
+  getClientFirestore,
+  syncAuthTokenForFirestore,
+} from "@/lib/firebase/client";
 import type { FileFolder } from "@/lib/types/models";
 
 function fromDoc(id: string, data: Record<string, unknown>): FileFolder {
@@ -43,6 +46,7 @@ export async function listActiveFileFolders(): Promise<FileFolder[]> {
 }
 
 export async function listAllFileFoldersAdmin(): Promise<FileFolder[]> {
+  await syncAuthTokenForFirestore();
   const db = getClientFirestore();
   const q = query(collection(db, "fileFolders"), orderBy("order", "asc"));
   const snap = await getDocs(q);

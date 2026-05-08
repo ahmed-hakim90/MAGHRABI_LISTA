@@ -36,7 +36,11 @@ export function useAdminAuth(): AdminAuthState & {
       ok = false;
     }
     if (!ok) {
-      await signOutAdmin();
+      try {
+        await signOutAdmin();
+      } catch {
+        /* ignore sign-out errors */
+      }
       setUser(null);
       setIsAdmin(false);
     } else {
@@ -49,7 +53,11 @@ export function useAdminAuth(): AdminAuthState & {
     const auth = getClientAuth();
     const unsub = onAuthStateChanged(auth, (u) => {
       setLoading(true);
-      void checkUser(u);
+      void checkUser(u).catch(() => {
+        setUser(null);
+        setIsAdmin(false);
+        setLoading(false);
+      });
     });
     return () => unsub();
   }, [checkUser]);
@@ -61,7 +69,11 @@ export function useAdminAuth(): AdminAuthState & {
     refresh: () => {
       const u = getClientAuth().currentUser;
       setLoading(true);
-      void checkUser(u);
+      void checkUser(u).catch(() => {
+        setUser(null);
+        setIsAdmin(false);
+        setLoading(false);
+      });
     },
     signOut: signOutAdmin,
   };

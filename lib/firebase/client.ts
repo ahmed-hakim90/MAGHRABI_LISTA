@@ -3,7 +3,9 @@
 import { initializeApp, getApps, type FirebaseApp } from "firebase/app";
 import { getAuth, type Auth } from "firebase/auth";
 import {
+  getFirestore,
   initializeFirestore,
+  memoryLocalCache,
   persistentLocalCache,
   persistentMultipleTabManager,
   type Firestore,
@@ -34,13 +36,32 @@ export function getClientAuth(): Auth {
   return auth;
 }
 
+/**
+ * Wait for Auth and ensure an ID token is available so Firestore requests use
+ * current credentials (reduces permission-denied races after navigation / Fast Refresh).
+ */
+export async function syncAuthTokenForFirestore(): Promise<void> {
+  const a = getClientAuth();
+  await a.authStateReady();
+  const u = a.currentUser;
+  if (u) await u.getIdToken();
+}
+
 export function getClientFirestore(): Firestore {
   if (!db) {
-    db = initializeFirestore(getBrowserFirebaseApp(), {
-      localCache: persistentLocalCache({
-        tabManager: persistentMultipleTabManager(),
-      }),
-    });
+    const firebaseApp = getBrowserFirebaseApp();
+    const localCache =
+      process.env.NODE_ENV === "development"
+        ? memoryLocalCache()
+        : persistentLocalCache({
+            tabManager: persistentMultipleTabManager(),
+          });
+    try {
+      db = initializeFirestore(firebaseApp, { localCache });
+    } catch {
+      // Fast Refresh remounts this module while Firestore is already started on the app.
+      db = getFirestore(firebaseApp);
+    }
   }
   return db;
 }

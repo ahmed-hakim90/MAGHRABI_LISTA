@@ -16,7 +16,11 @@ import {
   writeBatch,
 } from "firebase/firestore";
 import { deleteObject, getDownloadURL, ref } from "firebase/storage";
-import { getClientFirestore, getClientStorage } from "@/lib/firebase/client";
+import {
+  getClientFirestore,
+  getClientStorage,
+  syncAuthTokenForFirestore,
+} from "@/lib/firebase/client";
 import { runResumableUpload } from "@/lib/firebase/storageUpload";
 import type { FileCard } from "@/lib/types/models";
 import {
@@ -115,6 +119,7 @@ export async function backfillFileCardsFolderFields(
 }
 
 export async function listAllFileCardsAdmin(): Promise<FileCard[]> {
+  await syncAuthTokenForFirestore();
   const db = getClientFirestore();
   const q = query(collection(db, "fileCards"), orderBy("order", "asc"));
   const snap = await getDocs(q);

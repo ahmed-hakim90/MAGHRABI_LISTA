@@ -25,6 +25,27 @@ export function isLikelyIOS(): boolean {
   );
 }
 
+/** iOS WebViews / in-app browsers often block Add-to-Home-Screen; Safari works. */
+function isLikelyIOSInAppBrowser(): boolean {
+  if (!isLikelyIOS()) return false;
+  const ua = navigator.userAgent || "";
+  return /FBAN|FBAV|Instagram|Line\/|LinkedInApp|Twitter|Snapchat|GSA\/|GoogleApp|TikTok/i.test(
+    ua,
+  );
+}
+
+function tryOpenCurrentUrlInNewWindow(): boolean {
+  const url = window.location.href;
+  const w = window.open(url, "_blank", "noopener,noreferrer");
+  if (!w) return false;
+  try {
+    w.opener = null;
+  } catch {
+    /* ignore */
+  }
+  return true;
+}
+
 export function usePwaInstall() {
   const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(
     null,
@@ -63,14 +84,26 @@ export function usePwaInstall() {
         setDeferred(null);
         return;
       }
-      if (isLikelyIOS() && navigator.share) {
+      if (isLikelyIOS()) {
+        if (isLikelyIOSInAppBrowser() && tryOpenCurrentUrlInNewWindow()) {
+          return;
+        }
+        if (navigator.share) {
+          try {
+            await navigator.share({
+              title: document.title,
+              text: "اختر «إضافة إلى الشاشة الرئيسية» من القائمة لتثبيت المكتبة كأيقونة.",
+              url: window.location.href,
+            });
+          } catch {
+            /* cancelled */
+          }
+          return;
+        }
         try {
-          await navigator.share({
-            title: document.title,
-            url: window.location.href,
-          });
+          await navigator.clipboard.writeText(window.location.href);
         } catch {
-          /* cancelled */
+          /* ignore */
         }
         return;
       }

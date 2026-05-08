@@ -1,9 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState } from "react";
-import { openPwaInstallModal } from "@/components/public/PwaInstallModal";
-import { isStandaloneDisplay } from "@/hooks/usePwaInstall";
+import { usePwaInstall } from "@/hooks/usePwaInstall";
 import { DEFAULT_SITE_HOME_TITLE } from "@/lib/constants/siteDefaults";
 
 type Props = {
@@ -22,11 +20,7 @@ export function LogoHeader({
   homeSubtitle,
   primaryColor = "#2F3437",
 }: Props) {
-  const [showInstallEntry, setShowInstallEntry] = useState(false);
-
-  useEffect(() => {
-    setShowInstallEntry(!isStandaloneDisplay());
-  }, []);
+  const { hideAsInstalled, busy, runInstall } = usePwaInstall();
 
   return (
     <header className="flex flex-col items-center gap-1.5 px-4 pt-4 pb-1 text-center sm:gap-2.5 sm:pt-7 sm:pb-3">
@@ -56,13 +50,14 @@ export function LogoHeader({
         >
           {homeTitle.trim() || DEFAULT_SITE_HOME_TITLE}
         </h1>
-        {showInstallEntry ? (
+        {!hideAsInstalled ? (
           <button
             type="button"
-            onClick={() => openPwaInstallModal()}
-            className="shrink-0 rounded-lg border border-[#E5E2DA] bg-white p-1.5 text-[#2F3437] shadow-sm transition hover:bg-[#F7F6F3]"
-            aria-label="تثبيت التطبيق"
-            title="تثبيت التطبيق"
+            disabled={busy}
+            onClick={() => void runInstall()}
+            className="shrink-0 rounded-lg border border-[#E5E2DA] bg-white p-1.5 text-[#2F3437] shadow-sm transition hover:bg-[#F7F6F3] disabled:cursor-wait disabled:opacity-60"
+            aria-label="تحميل أو تثبيت التطبيق"
+            title="تحميل أو تثبيت التطبيق"
           >
             <svg
               width="18"

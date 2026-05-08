@@ -33,7 +33,7 @@ function parseServiceAccount(): {
   return { projectId, clientEmail, privateKey };
 }
 
-export function getAdminApp(): App {
+function getAdminApp(): App {
   if (getApps().length) return getApps()[0]!;
   const { projectId, clientEmail, privateKey } = parseServiceAccount();
   return initializeApp({

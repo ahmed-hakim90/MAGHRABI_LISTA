@@ -8,15 +8,52 @@
   --notion-muted: #6b6b6b;
   /* Same as home page — splash matches app shell, not black. */
   --splash-bg: var(--notion-bg);
+  /* Floating action (e.g. WhatsApp) + gap above home indicator */
+  --safe-fab-space: calc(3.5rem + 1.25rem);
 }
 
 @theme inline {
   --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --color-surface: var(--notion-bg);
+  --color-card: var(--notion-card);
+  --color-foreground: var(--notion-text);
+  --color-border: var(--notion-border);
+  --color-muted: var(--notion-muted);
+}
+
+/* Safe-area helpers: combine notch / home indicator with layout padding */
+@utility pt-safe {
+  padding-top: calc(env(safe-area-inset-top, 0px) + 1rem);
+}
+
+@utility pb-safe {
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 1rem);
+}
+
+@utility px-safe {
+  padding-left: calc(env(safe-area-inset-left, 0px) + 1rem);
+  padding-right: calc(env(safe-area-inset-right, 0px) + 1rem);
+}
+
+@utility pb-safe-fab {
+  padding-bottom: calc(
+    env(safe-area-inset-bottom, 0px) + var(--safe-fab-space)
+  );
+}
+
+@utility min-h-touch {
+  min-height: 2.75rem;
+}
+
+@utility min-w-touch {
+  min-width: 2.75rem;
 }
 
 html {
+  color-scheme: light;
   /* Avoid horizontal jump when scrollbars appear after the splash overlay. */
   scrollbar-gutter: stable;
+  -webkit-tap-highlight-color: rgba(47, 52, 55, 0.08);
 }
 
 body {

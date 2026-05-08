@@ -23,9 +23,9 @@ export function LogoHeader({
   const { hideAsInstalled, busy, runInstall } = usePwaInstall();
 
   return (
-    <header className="flex flex-col items-center gap-1.5 px-4 pt-4 pb-1 text-center sm:gap-2.5 sm:pt-7 sm:pb-3">
+    <header className="flex flex-col items-center gap-1.5 px-safe pt-safe pb-1 text-center sm:gap-2.5 sm:px-4 sm:pt-7 sm:pb-3">
       {logoUrl ? (
-        <div className="relative h-14 w-14 overflow-hidden rounded-full border border-[#E5E2DA] bg-white shadow-sm sm:h-16 sm:w-16">
+        <div className="relative h-14 w-14 overflow-hidden rounded-full border border-border bg-card shadow-sm sm:h-16 sm:w-16">
           <Image
             src={logoUrl}
             alt={appName}
@@ -37,7 +37,7 @@ export function LogoHeader({
         </div>
       ) : (
         <div
-          className="flex h-14 w-14 items-center justify-center rounded-full border border-[#E5E2DA] bg-white text-xl shadow-sm sm:h-16 sm:w-16 sm:text-2xl"
+          className="flex h-14 w-14 items-center justify-center rounded-full border border-border bg-card text-xl shadow-sm sm:h-16 sm:w-16 sm:text-2xl"
           aria-hidden
         >
           📚
@@ -45,7 +45,7 @@ export function LogoHeader({
       )}
       <div className="flex flex-wrap items-center justify-center gap-1.5">
         <h1
-          className="text-xl font-semibold tracking-tight sm:text-3xl"
+          className="text-xl font-semibold tracking-tight sm:text-3xl text-pretty"
           style={{ color: primaryColor }}
         >
           {homeTitle.trim() || DEFAULT_SITE_HOME_TITLE}
@@ -55,13 +55,13 @@ export function LogoHeader({
             type="button"
             disabled={busy}
             onClick={() => void runInstall()}
-            className="shrink-0 rounded-lg border border-[#E5E2DA] bg-white p-1.5 text-[#2F3437] shadow-sm transition hover:bg-[#F7F6F3] disabled:cursor-wait disabled:opacity-60"
+            className="inline-flex min-h-touch min-w-touch shrink-0 items-center justify-center rounded-xl border border-border bg-card p-2 text-foreground shadow-sm transition active:scale-[0.98] hover:bg-surface disabled:cursor-wait disabled:opacity-60"
             aria-label="تحميل أو تثبيت التطبيق"
             title="تحميل أو تثبيت التطبيق"
           >
             <svg
-              width="18"
-              height="18"
+              width="20"
+              height="20"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"

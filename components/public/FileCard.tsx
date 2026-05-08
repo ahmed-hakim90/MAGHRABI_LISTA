@@ -14,17 +14,17 @@ export function FileCard({ card, variant = "grid" }: Props) {
   return (
     <Link
       href={`/file/${card.id}`}
-      className={`group flex overflow-hidden border border-[#E5E2DA] bg-white shadow-sm transition duration-200 hover:border-[#2F3437]/15 hover:shadow-md ${
+      className={`group flex touch-manipulation overflow-hidden border border-border bg-card shadow-sm transition duration-200 hover:border-foreground/15 hover:shadow-md active:scale-[0.99] ${
         isList
           ? "min-h-[5.5rem] flex-row items-stretch rounded-xl sm:rounded-2xl"
-          : "flex-col rounded-lg sm:rounded-2xl"
+          : "flex-col rounded-xl sm:rounded-2xl"
       }`}
     >
       <div
         className={
           isList
-            ? "relative aspect-square w-24 shrink-0 bg-[#F7F6F3] sm:w-28"
-            : "relative aspect-square w-full bg-[#F7F6F3] sm:aspect-[4/3]"
+            ? "relative aspect-square w-24 shrink-0 bg-surface sm:w-28"
+            : "relative aspect-square w-full bg-surface sm:aspect-[4/3]"
         }
       >
         {card.thumbnailUrl ? (
@@ -42,7 +42,7 @@ export function FileCard({ card, variant = "grid" }: Props) {
           />
         ) : (
           <div
-            className={`flex h-full items-center justify-center text-[#6B6B6B]/40 ${
+            className={`flex h-full items-center justify-center text-muted/40 ${
               isList ? "text-xl sm:text-2xl" : "text-lg sm:text-4xl"
             }`}
           >

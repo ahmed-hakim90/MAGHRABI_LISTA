@@ -43,7 +43,7 @@ export default function HomePage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#F7F6F3]">
+    <div className="flex min-h-dvh flex-col bg-surface touch-manipulation">
       <LoadingOverlay open={loading} />
       <LogoHeader
         appName={s.appName}
@@ -60,7 +60,7 @@ export default function HomePage() {
           onCatalogViewChange={setCatalogView}
         />
       </div>
-      <div className="mt-4 min-h-[min(60vh,560px)] sm:mt-6">
+      <div className="mt-4 min-h-[min(60vh,560px)] pb-safe-fab sm:mt-6">
         {loading ? (
           <div className="min-h-[200px]" aria-hidden />
         ) : error ? (

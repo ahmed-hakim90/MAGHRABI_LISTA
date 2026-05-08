@@ -9,14 +9,14 @@ type Props = { cards: FileCardType[]; view?: CatalogViewMode };
 export function FileGrid({ cards, view = "grid" }: Props) {
   if (cards.length === 0) {
     return (
-      <p className="py-16 text-center text-[15px] text-[#6B6B6B]">
+      <p className="py-16 text-center text-base text-muted">
         لا توجد ملفات مطابقة لبحثك.
       </p>
     );
   }
   if (view === "list") {
     return (
-      <div className="mx-auto flex max-w-3xl flex-col gap-2 px-3 pb-16 sm:gap-3 sm:px-4">
+      <div className="mx-auto flex max-w-3xl flex-col gap-2.5 px-safe pb-safe-fab sm:gap-3 sm:px-4">
         {cards.map((card) => (
           <FileCard key={card.id} card={card} variant="list" />
         ))}
@@ -24,7 +24,7 @@ export function FileGrid({ cards, view = "grid" }: Props) {
     );
   }
   return (
-    <div className="mx-auto grid max-w-6xl grid-cols-3 gap-1.5 px-2 pb-16 sm:gap-4 sm:px-4 lg:grid-cols-3">
+    <div className="mx-auto grid max-w-6xl grid-cols-2 gap-2.5 px-safe pb-safe-fab sm:grid-cols-3 sm:gap-4 sm:px-4">
       {cards.map((card) => (
         <FileCard key={card.id} card={card} variant="grid" />
       ))}

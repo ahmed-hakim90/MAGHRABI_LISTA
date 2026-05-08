@@ -9,7 +9,7 @@ export const PUBLIC_WHATSAPP_WA_ME_NUMBER = "201100606547";
  */
 export const PUBLIC_WHATSAPP_ORDER_PREFILL = `السلام عليكم ورحمة الله وبركاته،
 
-أتواصل معكم بعد زيارة موقع «${DEFAULT_SITE_APP_NAME}» عبر الإنترنت، وأرغب في تقديم طلب شراء (أوردر) جديد.
+أتواصل معكم بعد زيارة موقع «${DEFAULT_SITE_APP_NAME}س وأرغب في تقديم طلب شراء جديد.
 
 أرجو توجيهي للخطوات المناسبة أو تأكيد استلام الطلب.
 

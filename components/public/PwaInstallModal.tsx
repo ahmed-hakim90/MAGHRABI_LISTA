@@ -12,12 +12,7 @@ const DISMISSED_KEY = "maghrabi_lista_pwa_install_dismissed";
 const IOS_SESSION_KEY = "maghrabi_lista_pwa_ios_prompt_shown_session";
 const IOS_DELAY_MS = 10_000;
 
-export const PWA_INSTALL_OPEN_EVENT = "maghrabi-lista-open-pwa-install";
-
-export function openPwaInstallModal() {
-  if (typeof window === "undefined") return;
-  window.dispatchEvent(new Event(PWA_INSTALL_OPEN_EVENT));
-}
+const PWA_INSTALL_OPEN_EVENT = "maghrabi-lista-open-pwa-install";
 
 function isEligiblePath(pathname: string | null): boolean {
   if (!pathname) return false;

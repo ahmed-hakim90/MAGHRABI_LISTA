@@ -77,7 +77,7 @@ async function main() {
     let user;
     try {
       user = await auth.getUser(uid);
-    } catch (e) {
+    } catch {
       missing += 1;
       console.warn(
         `[sync-admin-claims] adminUsers/${uid} has no matching Auth user. Skipped.`,

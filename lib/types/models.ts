@@ -50,21 +50,6 @@ export type SiteSettings = {
   updatedAt: Timestamp | null;
 };
 
-export type AdminUser = {
-  email: string;
-  role: "admin" | "super_admin";
-  isActive: boolean;
-  createdAt: Timestamp | null;
-};
-
-export type FcmTokenDoc = {
-  token: string;
-  userAgent: string;
-  createdAt: Timestamp | null;
-  updatedAt: Timestamp | null;
-  isActive: boolean;
-};
-
 export type NotificationDoc = {
   title: string;
   body: string;

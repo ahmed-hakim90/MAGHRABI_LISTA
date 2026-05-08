@@ -3,42 +3,44 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
-import { signInAdmin } from "@/lib/firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
-import { getClientFirestore } from "@/lib/firebase/client";
 
-function AdminLoginForm() {
+function JoinAdminForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const justRegistered = searchParams.get("registered") === "1";
+  const token = searchParams.get("token")?.trim() ?? "";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
+  if (!token) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-[#F7F6F3] px-4 text-center">
+        <p className="text-sm text-[#6B6B6B]">Page not found.</p>
+      </div>
+    );
+  }
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setBusy(true);
     try {
-      const user = await signInAdmin(email, password);
-      const db = getClientFirestore();
-      const snap = await getDoc(doc(db, "adminUsers", user.uid));
-      const ok =
-        snap.exists() &&
-        (snap.data() as { isActive?: boolean }).isActive === true;
-      if (!ok) {
-        setError("You are not authorized as an active admin.");
-        const { signOutAdmin } = await import("@/lib/firebase/auth");
-        await signOutAdmin();
-        setBusy(false);
+      const res = await fetch("/api/admin/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ setupToken: token, email, password }),
+      });
+      const data = (await res.json()) as { error?: string };
+      if (!res.ok) {
+        setError(data.error ?? "Something went wrong.");
         return;
       }
-      router.replace("/admin");
+      router.replace("/admin/login?registered=1");
       router.refresh();
     } catch {
-      setError("Invalid email or password.");
+      setError("Network error.");
     } finally {
       setBusy(false);
     }
@@ -50,16 +52,12 @@ function AdminLoginForm() {
         onSubmit={(e) => void onSubmit(e)}
         className="w-full max-w-sm space-y-4 rounded-2xl border border-[#E5E2DA] bg-white p-6 shadow-sm"
       >
-        <h1 className="text-lg font-semibold text-[#2F3437]">Admin sign in</h1>
-        {justRegistered ? (
-          <p className="rounded-xl bg-emerald-50 px-3 py-2 text-sm text-emerald-900">
-            Account created. Sign in with your new credentials.
-          </p>
-        ) : null}
+        <h1 className="text-lg font-semibold text-[#2F3437]">Admin registration</h1>
+        <p className="text-xs text-[#6B6B6B]">
+          This page is only reachable with the private setup link. Do not share it.
+        </p>
         {error ? (
-          <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-800">
-            {error}
-          </p>
+          <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-800">{error}</p>
         ) : null}
         <label className="block">
           <span className="text-sm text-[#2F3437]">Email</span>
@@ -77,7 +75,8 @@ function AdminLoginForm() {
           <input
             type="password"
             required
-            autoComplete="current-password"
+            autoComplete="new-password"
+            minLength={8}
             className="mt-1 w-full rounded-xl border border-[#E5E2DA] px-3 py-2"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -88,9 +87,12 @@ function AdminLoginForm() {
           disabled={busy}
           className="w-full rounded-xl bg-[#2F3437] py-2 text-sm font-medium text-white disabled:opacity-50"
         >
-          {busy ? "Signing in…" : "Sign in"}
+          {busy ? "Creating account…" : "Create admin account"}
         </button>
-        <Link href="/" className="block text-center text-xs text-[#6B6B6B] hover:underline">
+        <Link
+          href="/"
+          className="block text-center text-xs text-[#6B6B6B] hover:underline"
+        >
           ← Public library
         </Link>
       </form>
@@ -98,7 +100,7 @@ function AdminLoginForm() {
   );
 }
 
-export default function AdminLoginPage() {
+export default function AdminJoinPage() {
   return (
     <Suspense
       fallback={
@@ -107,7 +109,7 @@ export default function AdminLoginPage() {
         </div>
       }
     >
-      <AdminLoginForm />
+      <JoinAdminForm />
     </Suspense>
   );
 }

@@ -11,6 +11,7 @@ import {
   replaceFileCardThumbnail,
   setFileCardActive,
 } from "@/lib/services/fileCards";
+import { ProgressBar } from "@/components/ui/ProgressBar";
 import { formatDisplayDate } from "@/lib/utils/dates";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 
@@ -18,6 +19,10 @@ export function FileTable() {
   const { user } = useAdminAuth();
   const [rows, setRows] = useState<FileCard[]>([]);
   const [loading, setLoading] = useState(true);
+  const [uploadJob, setUploadJob] = useState<{
+    label: string;
+    progress: number;
+  } | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -42,14 +47,34 @@ export function FileTable() {
 
   async function onReplacePdf(card: FileCard, file: File | null) {
     if (!file || !user) return;
-    await replaceFileCardPdf(card.id, file, user.uid);
-    await load();
+    setUploadJob({ label: "جاري رفع PDF…", progress: 0 });
+    try {
+      await replaceFileCardPdf(card.id, file, user.uid, {
+        onProgress: (p) =>
+          setUploadJob((j) => (j ? { ...j, progress: p } : null)),
+      });
+      await load();
+    } catch {
+      /* surface via browser or future toast */
+    } finally {
+      setUploadJob(null);
+    }
   }
 
   async function onReplaceThumb(card: FileCard, file: File | null) {
     if (!file || !user) return;
-    await replaceFileCardThumbnail(card.id, file, user.uid);
-    await load();
+    setUploadJob({ label: "جاري رفع الصورة المصغّرة…", progress: 0 });
+    try {
+      await replaceFileCardThumbnail(card.id, file, user.uid, {
+        onProgress: (p) =>
+          setUploadJob((j) => (j ? { ...j, progress: p } : null)),
+      });
+      await load();
+    } catch {
+      /* surface via browser or future toast */
+    } finally {
+      setUploadJob(null);
+    }
   }
 
   async function onToggle(card: FileCard) {
@@ -70,8 +95,14 @@ export function FileTable() {
   }
 
   return (
-    <div className="overflow-x-auto rounded-2xl border border-[#E5E2DA] bg-white shadow-sm">
-      <table className="w-full min-w-[720px] text-left text-sm">
+    <div className="space-y-3">
+      {uploadJob ? (
+        <div className="rounded-2xl border border-[#E5E2DA] bg-white p-4 shadow-sm">
+          <ProgressBar label={uploadJob.label} value={uploadJob.progress} />
+        </div>
+      ) : null}
+      <div className="overflow-x-auto rounded-2xl border border-[#E5E2DA] bg-white shadow-sm">
+        <table className="w-full min-w-[720px] text-left text-sm">
         <thead>
           <tr className="border-b border-[#E5E2DA] text-[#6B6B6B]">
             <th className="p-3 font-medium">Thumb</th>
@@ -165,10 +196,11 @@ export function FileTable() {
             </tr>
           ))}
         </tbody>
-      </table>
-      {rows.length === 0 ? (
-        <p className="p-6 text-center text-[#6B6B6B]">No files yet.</p>
-      ) : null}
+        </table>
+        {rows.length === 0 ? (
+          <p className="p-6 text-center text-[#6B6B6B]">No files yet.</p>
+        ) : null}
+      </div>
     </div>
   );
 }

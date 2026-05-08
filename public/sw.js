@@ -1,3 +1,8 @@
+/* PWA: Chromium requires a fetch handler for installability */
+self.addEventListener('fetch', function (event) {
+  event.respondWith(fetch(event.request));
+});
+
 importScripts('https://www.gstatic.com/firebasejs/12.13.0/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/12.13.0/firebase-messaging-compat.js');
 

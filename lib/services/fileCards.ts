@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  addDoc,
   collection,
   deleteDoc,
   doc,
@@ -11,16 +10,13 @@ import {
   orderBy,
   query,
   serverTimestamp,
+  setDoc,
   updateDoc,
   where,
 } from "firebase/firestore";
-import {
-  deleteObject,
-  getDownloadURL,
-  ref,
-  uploadBytes,
-} from "firebase/storage";
+import { deleteObject, getDownloadURL, ref } from "firebase/storage";
 import { getClientFirestore, getClientStorage } from "@/lib/firebase/client";
+import { runResumableUpload } from "@/lib/firebase/storageUpload";
 import type { FileCard } from "@/lib/types/models";
 import {
   getPdfPath,
@@ -83,62 +79,86 @@ export async function getFileCard(id: string): Promise<FileCard | null> {
   return fromDoc(d.id, d.data() as Record<string, unknown>);
 }
 
-export async function createFileCard(input: {
-  title: string;
-  description: string;
-  category: string;
-  tags: string[];
-  order: number;
-  isActive: boolean;
-  pdfFile: File;
-  thumbnailFile: File;
-  uid: string;
-}): Promise<string> {
+export type UploadProgressHandler = (ratio01: number) => void;
+
+export async function createFileCard(
+  input: {
+    title: string;
+    description: string;
+    category: string;
+    tags: string[];
+    order: number;
+    isActive: boolean;
+    pdfFile: File;
+    thumbnailFile: File;
+    uid: string;
+  },
+  opts?: { onProgress?: UploadProgressHandler },
+): Promise<string> {
+  const on = opts?.onProgress;
+  const report = (offset: number, weight: number, local: number) => {
+    on?.(offset + local * weight);
+  };
   const db = getClientFirestore();
   const st = getClientStorage();
-  const base = {
-    title: input.title.trim(),
-    description: input.description.trim(),
-    category: input.category.trim(),
-    tags: input.tags,
-    order: input.order,
-    isActive: input.isActive,
-    fileType: "pdf",
-    storageFolder: STORAGE_FOLDER,
-    thumbnailUrl: "",
-    thumbnailPath: "",
-    fileUrl: "",
-    filePath: "",
-    fileName: input.pdfFile.name,
-    fileSize: input.pdfFile.size,
-    version: 1,
-    createdBy: input.uid,
-    updatedBy: input.uid,
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
-  };
-  const refDoc = await addDoc(collection(db, "fileCards"), base);
-  const cardId = refDoc.id;
+  const cardId = doc(collection(db, "fileCards")).id;
   const pdfPath = getPdfPath(cardId);
   const thumbPath = getThumbnailPath(cardId);
   const pdfRef = ref(st, pdfPath);
   const thumbRef = ref(st, thumbPath);
   const thumbBlob = await fileToWebpBlob(input.thumbnailFile);
-  await uploadBytes(pdfRef, input.pdfFile, { contentType: "application/pdf" });
-  await uploadBytes(thumbRef, thumbBlob, {
-    contentType: thumbBlob.type || "image/webp",
-  });
-  const fileUrl = await getDownloadURL(pdfRef);
-  const thumbnailUrl = await getDownloadURL(thumbRef);
-  await updateDoc(doc(db, "fileCards", cardId), {
-    filePath: pdfPath,
-    fileUrl,
-    thumbnailPath: thumbPath,
-    thumbnailUrl,
-    updatedAt: serverTimestamp(),
-    updatedBy: input.uid,
-  });
-  return cardId;
+  try {
+    await runResumableUpload(
+      pdfRef,
+      input.pdfFile,
+      { contentType: "application/pdf" },
+      (r) => report(0, 0.72, r),
+    );
+    await runResumableUpload(
+      thumbRef,
+      thumbBlob,
+      { contentType: thumbBlob.type || "image/webp" },
+      (r) => report(0.72, 0.24, r),
+    );
+    on?.(0.96);
+    const fileUrl = await getDownloadURL(pdfRef);
+    const thumbnailUrl = await getDownloadURL(thumbRef);
+    await setDoc(doc(db, "fileCards", cardId), {
+      title: input.title.trim(),
+      description: input.description.trim(),
+      category: input.category.trim(),
+      tags: input.tags,
+      order: input.order,
+      isActive: input.isActive,
+      fileType: "pdf",
+      storageFolder: STORAGE_FOLDER,
+      thumbnailUrl,
+      thumbnailPath: thumbPath,
+      fileUrl,
+      filePath: pdfPath,
+      fileName: input.pdfFile.name,
+      fileSize: input.pdfFile.size,
+      version: 1,
+      createdBy: input.uid,
+      updatedBy: input.uid,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
+    on?.(1);
+    return cardId;
+  } catch (e) {
+    try {
+      await deleteObject(pdfRef);
+    } catch {
+      /* ignore */
+    }
+    try {
+      await deleteObject(thumbRef);
+    } catch {
+      /* ignore */
+    }
+    throw e;
+  }
 }
 
 export async function updateFileCardMeta(
@@ -170,12 +190,20 @@ export async function replaceFileCardPdf(
   cardId: string,
   pdfFile: File,
   uid: string,
+  opts?: { onProgress?: UploadProgressHandler },
 ): Promise<void> {
+  const on = opts?.onProgress;
   const db = getClientFirestore();
   const st = getClientStorage();
   const pdfPath = getPdfPath(cardId);
   const pdfRef = ref(st, pdfPath);
-  await uploadBytes(pdfRef, pdfFile, { contentType: "application/pdf" });
+  await runResumableUpload(
+    pdfRef,
+    pdfFile,
+    { contentType: "application/pdf" },
+    (r) => on?.(r * 0.92),
+  );
+  on?.(0.94);
   const fileUrl = await getDownloadURL(pdfRef);
   await updateDoc(doc(db, "fileCards", cardId), {
     fileUrl,
@@ -186,21 +214,28 @@ export async function replaceFileCardPdf(
     updatedBy: uid,
     version: increment(1),
   });
+  on?.(1);
 }
 
 export async function replaceFileCardThumbnail(
   cardId: string,
   thumbnailFile: File,
   uid: string,
+  opts?: { onProgress?: UploadProgressHandler },
 ): Promise<void> {
+  const on = opts?.onProgress;
   const db = getClientFirestore();
   const st = getClientStorage();
   const thumbPath = getThumbnailPath(cardId);
   const thumbRef = ref(st, thumbPath);
   const thumbBlob = await fileToWebpBlob(thumbnailFile);
-  await uploadBytes(thumbRef, thumbBlob, {
-    contentType: thumbBlob.type || "image/webp",
-  });
+  await runResumableUpload(
+    thumbRef,
+    thumbBlob,
+    { contentType: thumbBlob.type || "image/webp" },
+    (r) => on?.(r * 0.92),
+  );
+  on?.(0.94);
   const thumbnailUrl = await getDownloadURL(thumbRef);
   await updateDoc(doc(db, "fileCards", cardId), {
     thumbnailUrl,
@@ -208,6 +243,7 @@ export async function replaceFileCardThumbnail(
     updatedAt: serverTimestamp(),
     updatedBy: uid,
   });
+  on?.(1);
 }
 
 export async function setFileCardActive(

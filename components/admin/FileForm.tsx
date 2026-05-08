@@ -7,6 +7,7 @@ import {
   createFileCard,
   updateFileCardMeta,
 } from "@/lib/services/fileCards";
+import { ProgressBar } from "@/components/ui/ProgressBar";
 import { UploadField } from "./UploadField";
 
 type Props = {
@@ -27,6 +28,7 @@ export function FileForm({ mode, uid, initial }: Props) {
   const [thumb, setThumb] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
 
   const tags = tagsRaw
     .split(",")
@@ -37,24 +39,30 @@ export function FileForm({ mode, uid, initial }: Props) {
     e.preventDefault();
     setError(null);
     setSaving(true);
+    setUploadProgress(mode === "create" ? 0 : null);
     try {
       if (mode === "create") {
         if (!pdf || !thumb) {
           setError("PDF and thumbnail are required.");
           setSaving(false);
+          setUploadProgress(null);
           return;
         }
-        await createFileCard({
-          title,
-          description,
-          category,
-          tags,
-          order: Number(order) || 0,
-          isActive,
-          pdfFile: pdf,
-          thumbnailFile: thumb,
-          uid,
-        });
+        await createFileCard(
+          {
+            title,
+            description,
+            category,
+            tags,
+            order: Number(order) || 0,
+            isActive,
+            pdfFile: pdf,
+            thumbnailFile: thumb,
+            uid,
+          },
+          { onProgress: (p) => setUploadProgress(p) },
+        );
+        setUploadProgress(null);
         router.push("/admin/files");
         router.refresh();
         return;
@@ -74,6 +82,7 @@ export function FileForm({ mode, uid, initial }: Props) {
     } catch (err) {
       setError(err instanceof Error ? err.message : "Save failed");
     } finally {
+      setUploadProgress(null);
       setSaving(false);
     }
   }
@@ -90,6 +99,13 @@ export function FileForm({ mode, uid, initial }: Props) {
         <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-800">
           {error}
         </p>
+      ) : null}
+      {uploadProgress !== null ? (
+        <ProgressBar
+          label="جاري رفع الملفات…"
+          value={uploadProgress}
+          className="pt-1"
+        />
       ) : null}
       <label className="block">
         <span className="text-sm font-medium text-[#2F3437]">Title</span>

@@ -8,6 +8,10 @@ import { SearchBox } from "@/components/public/SearchBox";
 import { useFileCards } from "@/hooks/useFileCards";
 import type { FileCard } from "@/lib/types/models";
 import type { SiteSettings } from "@/lib/types/models";
+import {
+  DEFAULT_SITE_APP_NAME,
+  DEFAULT_SITE_HOME_TITLE,
+} from "@/lib/constants/siteDefaults";
 import { getSiteSettings } from "@/lib/services/settings";
 
 function matchesSearch(card: FileCard, q: string): boolean {
@@ -34,10 +38,10 @@ export default function HomePage() {
   );
 
   const s = settings ?? {
-    appName: "Library",
+    appName: DEFAULT_SITE_APP_NAME,
     logoUrl: "",
     logoPath: "",
-    homeTitle: "",
+    homeTitle: DEFAULT_SITE_HOME_TITLE,
     homeSubtitle: "",
     primaryColor: "#2F3437",
     updatedAt: null,
@@ -50,6 +54,7 @@ export default function HomePage() {
         logoUrl={s.logoUrl}
         homeTitle={s.homeTitle}
         homeSubtitle={s.homeSubtitle}
+        primaryColor={s.primaryColor}
       />
       <SearchBox value={q} onChange={setQ} />
       <div className="mt-8">

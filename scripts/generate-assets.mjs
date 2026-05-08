@@ -21,26 +21,66 @@ const config = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "",
 };
 
+const SOURCE_ICON = path.join(root, "assets", "app-icon-source.png");
+const ICON_BG = "#000000";
+
+/** PWA maskable safe zone ≈ 80% — keep logo inside ~82% so squircle masks do not clip. */
+async function writeMaskablePng(sourcePath, outPath, canvasSize) {
+  const inner = Math.floor(canvasSize * 0.82);
+  const innerBuf = await sharp(sourcePath)
+    .resize(inner, inner, { fit: "inside" })
+    .png()
+    .toBuffer();
+  await sharp({
+    create: {
+      width: canvasSize,
+      height: canvasSize,
+      channels: 3,
+      background: ICON_BG,
+    },
+  })
+    .composite([{ input: innerBuf, gravity: "center" }])
+    .png()
+    .toFile(outPath);
+}
+
 async function main() {
   const publicDir = path.join(root, "public");
   const iconsDir = path.join(publicDir, "icons");
+  const appDir = path.join(root, "app");
   await fs.mkdir(iconsDir, { recursive: true });
 
-  for (const size of [192, 512]) {
-    const out = path.join(iconsDir, `icon-${size}.png`);
-    await sharp({
-      create: {
-        width: size,
-        height: size,
-        channels: 3,
-        background: "#2F3437",
-      },
-    })
-      .png()
-      .toFile(out);
+  try {
+    await fs.access(SOURCE_ICON);
+  } catch {
+    throw new Error(
+      `[generate-assets] Missing ${path.relative(root, SOURCE_ICON)} — add the EL MAGHRABY logo PNG there.`,
+    );
   }
 
+  await sharp(SOURCE_ICON)
+    .resize(192, 192, { fit: "cover", position: "center" })
+    .png()
+    .toFile(path.join(iconsDir, "icon-192.png"));
+
+  await writeMaskablePng(SOURCE_ICON, path.join(iconsDir, "icon-512.png"), 512);
+
+  await sharp(SOURCE_ICON)
+    .resize(32, 32, { fit: "cover", position: "center" })
+    .png()
+    .toFile(path.join(appDir, "icon.png"));
+
+  await sharp(SOURCE_ICON)
+    .resize(180, 180, { fit: "cover", position: "center" })
+    .png()
+    .toFile(path.join(appDir, "apple-icon.png"));
+
   const sw = `
+/* PWA: Chromium requires a fetch handler for installability */
+self.addEventListener('fetch', function (event) {
+  event.respondWith(fetch(event.request));
+});
+
 importScripts('https://www.gstatic.com/firebasejs/${FB_VERSION}/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/${FB_VERSION}/firebase-messaging-compat.js');
 
@@ -104,12 +144,10 @@ self.addEventListener('notificationclick', function (event) {
 });
 `.trim();
 
-  await fs.writeFile(
-    path.join(publicDir, "firebase-messaging-sw.js"),
-    sw,
-    "utf8",
+  await fs.writeFile(path.join(publicDir, "sw.js"), sw, "utf8");
+  console.log(
+    "[generate-assets] PWA icons, app/icon.png, apple-icon.png, sw.js",
   );
-  console.log("[generate-assets] icons + firebase-messaging-sw.js written");
 }
 
 main().catch((e) => {

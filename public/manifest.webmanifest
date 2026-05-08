@@ -1,7 +1,7 @@
 {
-  "name": "Public File Library",
-  "short_name": "Library",
-  "description": "Notion-style public document library",
+  "name": "المغربي - Maghrabi",
+  "short_name": "Maghrabi",
+  "description": "Browse public PDF documents",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#F7F6F3",

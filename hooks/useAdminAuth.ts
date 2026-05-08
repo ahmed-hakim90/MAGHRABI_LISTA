@@ -1,9 +1,8 @@
 "use client";
 
 import { onAuthStateChanged, type User } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
 import { useCallback, useEffect, useState } from "react";
-import { getClientAuth, getClientFirestore } from "@/lib/firebase/client";
+import { getClientAuth } from "@/lib/firebase/client";
 import { signOutAdmin } from "@/lib/firebase/auth";
 
 export type AdminAuthState = {
@@ -28,11 +27,14 @@ export function useAdminAuth(): AdminAuthState & {
       return;
     }
     setUser(u);
-    const db = getClientFirestore();
-    const snap = await getDoc(doc(db, "adminUsers", u.uid));
-    const ok =
-      snap.exists() &&
-      (snap.data() as { isActive?: boolean }).isActive === true;
+    let ok = false;
+    try {
+      // Force-refresh once so a freshly-set custom claim is picked up without re-login.
+      const tokenResult = await u.getIdTokenResult(true);
+      ok = tokenResult.claims.admin === true;
+    } catch {
+      ok = false;
+    }
     if (!ok) {
       await signOutAdmin();
       setUser(null);

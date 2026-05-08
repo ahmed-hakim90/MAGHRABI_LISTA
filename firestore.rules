@@ -8,9 +8,7 @@ service cloud.firestore {
     }
 
     function isAdmin() {
-      return isSignedIn()
-        && exists(/databases/$(database)/documents/adminUsers/$(request.auth.uid))
-        && get(/databases/$(database)/documents/adminUsers/$(request.auth.uid)).data.isActive == true;
+      return isSignedIn() && request.auth.token.admin == true;
     }
 
     match /fileCards/{cardId} {

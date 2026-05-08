@@ -6,6 +6,7 @@ import {
   getSiteSettings,
   updateSiteSettings,
 } from "@/lib/services/settings";
+import { ProgressBar } from "@/components/ui/ProgressBar";
 import type { SiteSettings } from "@/lib/types/models";
 
 export default function AdminSettingsPage() {
@@ -17,6 +18,7 @@ export default function AdminSettingsPage() {
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
 
   useEffect(() => {
     void getSiteSettings().then((s) => {
@@ -33,6 +35,7 @@ export default function AdminSettingsPage() {
     if (!initial) return;
     setBusy(true);
     setMsg(null);
+    setUploadProgress(logoFile ? 0 : null);
     try {
       await updateSiteSettings(
         {
@@ -43,6 +46,9 @@ export default function AdminSettingsPage() {
           logoFile,
         },
         initial,
+        logoFile
+          ? { onUploadProgress: (p) => setUploadProgress(p) }
+          : undefined,
       );
       const next = await getSiteSettings();
       setInitial(next);
@@ -51,6 +57,7 @@ export default function AdminSettingsPage() {
     } catch (err) {
       setMsg(err instanceof Error ? err.message : "Save failed");
     } finally {
+      setUploadProgress(null);
       setBusy(false);
     }
   }
@@ -70,6 +77,13 @@ export default function AdminSettingsPage() {
           <p className="text-sm text-[#6B6B6B]" role="status">
             {msg}
           </p>
+        ) : null}
+        {uploadProgress !== null ? (
+          <ProgressBar
+            label="جاري رفع الشعار…"
+            value={uploadProgress}
+            className="pt-1"
+          />
         ) : null}
         <label className="block">
           <span className="text-sm font-medium text-[#2F3437]">App name</span>

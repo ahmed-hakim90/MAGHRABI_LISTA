@@ -1,6 +1,6 @@
 "use client";
 
-import { doc, getDoc, serverTimestamp, setDoc } from "firebase/firestore";
+import { doc, serverTimestamp, setDoc } from "firebase/firestore";
 import { getToken } from "firebase/messaging";
 import { useCallback, useState } from "react";
 import { firebaseVapidKey } from "@/lib/firebase/config";
@@ -38,9 +38,7 @@ export function useFcmToken() {
     }
     setStatus("requesting");
     try {
-      const reg = await navigator.serviceWorker.register(
-        "/firebase-messaging-sw.js",
-      );
+      const reg = await navigator.serviceWorker.register("/sw.js");
       await navigator.serviceWorker.ready;
       const messaging = await getClientMessaging();
       if (!messaging) {
@@ -66,18 +64,16 @@ export function useFcmToken() {
       const db = getClientFirestore();
       const id = await tokenDocId(token);
       const ref = doc(db, "fcmTokens", id);
-      const existing = await getDoc(ref);
-      const base = {
-        token,
-        userAgent: navigator.userAgent,
-        isActive: true,
-        updatedAt: serverTimestamp(),
-      };
+      // Single merge write: avoids updateDoc on missing docs (fragile error codes) and matches
+      // firestore.rules allow create, update on fcmTokens for anonymous clients.
       await setDoc(
         ref,
-        existing.exists()
-          ? base
-          : { ...base, createdAt: serverTimestamp() },
+        {
+          token,
+          userAgent: navigator.userAgent,
+          isActive: true,
+          updatedAt: serverTimestamp(),
+        },
         { merge: true },
       );
       setStatus("granted");

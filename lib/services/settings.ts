@@ -1,8 +1,13 @@
 "use client";
 
 import { doc, getDoc, serverTimestamp, setDoc } from "firebase/firestore";
-import { deleteObject, getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import { deleteObject, getDownloadURL, ref } from "firebase/storage";
 import { getClientFirestore, getClientStorage } from "@/lib/firebase/client";
+import { runResumableUpload } from "@/lib/firebase/storageUpload";
+import {
+  DEFAULT_SITE_APP_NAME,
+  DEFAULT_SITE_HOME_TITLE,
+} from "@/lib/constants/siteDefaults";
 import type { SiteSettings } from "@/lib/types/models";
 import { STORAGE_FOLDER } from "@/lib/utils/storagePaths";
 import { fileToWebpBlob } from "@/lib/utils/imageWebp";
@@ -10,11 +15,14 @@ import { fileToWebpBlob } from "@/lib/utils/imageWebp";
 const SITE_DOC = "site";
 
 function fromData(data: Record<string, unknown>): SiteSettings {
+  const appName = String(data.appName ?? "").trim() || DEFAULT_SITE_APP_NAME;
+  const homeTitle =
+    String(data.homeTitle ?? "").trim() || DEFAULT_SITE_HOME_TITLE;
   return {
-    appName: String(data.appName ?? "Library"),
+    appName,
     logoUrl: String(data.logoUrl ?? ""),
     logoPath: String(data.logoPath ?? ""),
-    homeTitle: String(data.homeTitle ?? ""),
+    homeTitle,
     homeSubtitle: String(data.homeSubtitle ?? ""),
     primaryColor: String(data.primaryColor ?? "#2F3437"),
     updatedAt: (data.updatedAt as SiteSettings["updatedAt"]) ?? null,
@@ -39,19 +47,38 @@ export async function updateSiteSettings(
     logoFile?: File | null;
   },
   previous: SiteSettings,
+  opts?: { onUploadProgress?: (ratio01: number) => void },
 ): Promise<SiteSettings> {
   const db = getClientFirestore();
   const st = getClientStorage();
   let logoUrl = previous.logoUrl;
   let logoPath = previous.logoPath;
 
+  // Persist text fields first so a logo Storage failure does not block saving copy/colors.
+  await setDoc(
+    doc(db, "settings", SITE_DOC),
+    {
+      appName: input.appName.trim(),
+      homeTitle: input.homeTitle.trim(),
+      homeSubtitle: input.homeSubtitle.trim(),
+      primaryColor: input.primaryColor.trim(),
+      logoUrl,
+      logoPath,
+      updatedAt: serverTimestamp(),
+    },
+    { merge: true },
+  );
+
   if (input.logoFile) {
     const path = `${STORAGE_FOLDER}/site/logo.webp`;
     const logoRef = ref(st, path);
     const blob = await fileToWebpBlob(input.logoFile);
-    await uploadBytes(logoRef, blob, {
-      contentType: blob.type || "image/webp",
-    });
+    await runResumableUpload(
+      logoRef,
+      blob,
+      { contentType: blob.type || "image/webp" },
+      opts?.onUploadProgress,
+    );
     logoUrl = await getDownloadURL(logoRef);
     logoPath = path;
     if (previous.logoPath && previous.logoPath !== path) {
@@ -61,19 +88,17 @@ export async function updateSiteSettings(
         /* ignore */
       }
     }
+    await setDoc(
+      doc(db, "settings", SITE_DOC),
+      {
+        logoUrl,
+        logoPath,
+        updatedAt: serverTimestamp(),
+      },
+      { merge: true },
+    );
   }
 
-  const next: Record<string, unknown> = {
-    appName: input.appName.trim(),
-    homeTitle: input.homeTitle.trim(),
-    homeSubtitle: input.homeSubtitle.trim(),
-    primaryColor: input.primaryColor.trim(),
-    logoUrl,
-    logoPath,
-    updatedAt: serverTimestamp(),
-  };
-
-  await setDoc(doc(db, "settings", SITE_DOC), next, { merge: true });
   const merged = await getDoc(doc(db, "settings", SITE_DOC));
   return fromData((merged.data() ?? {}) as Record<string, unknown>);
 }

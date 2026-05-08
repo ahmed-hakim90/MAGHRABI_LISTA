@@ -115,7 +115,7 @@ export default function FilePage({
   const proxyUrl = `/file/${cardId}/pdf`;
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#F7F6F3]">
+    <div className="flex h-dvh max-h-dvh flex-col overflow-hidden overscroll-none bg-[#F7F6F3]">
       <header className="flex shrink-0 items-center gap-3 border-b border-[#E5E2DA] bg-white px-3 py-3">
         <button
           type="button"

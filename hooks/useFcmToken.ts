@@ -2,7 +2,7 @@
 
 import { doc, serverTimestamp, setDoc } from "firebase/firestore";
 import { getToken } from "firebase/messaging";
-import { useCallback, useState } from "react";
+import { useCallback, useLayoutEffect, useState } from "react";
 import { firebaseVapidKey } from "@/lib/firebase/config";
 import { getClientFirestore } from "@/lib/firebase/client";
 import { getClientMessaging } from "@/lib/firebase/messaging";
@@ -24,16 +24,29 @@ export function useFcmToken() {
   >("idle");
   const [message, setMessage] = useState<string | null>(null);
 
+  useLayoutEffect(() => {
+    if (typeof window === "undefined") return;
+    queueMicrotask(() => {
+      if (!("Notification" in window)) {
+        setStatus("unsupported");
+        return;
+      }
+      if (Notification.permission === "granted") setStatus("granted");
+      else if (Notification.permission === "denied") setStatus("denied");
+      else setStatus("idle");
+    });
+  }, []);
+
   const registerAndSaveToken = useCallback(async () => {
     setMessage(null);
     if (typeof window === "undefined" || !("serviceWorker" in navigator)) {
       setStatus("unsupported");
-      setMessage("Service workers not supported");
+      setMessage("المتصفح لا يدعم التحديثات في الخلفية.");
       return;
     }
     if (!firebaseVapidKey) {
       setStatus("error");
-      setMessage("Missing NEXT_PUBLIC_FIREBASE_VAPID_KEY");
+      setMessage("إعدادات الإشعارات غير مكتملة على الخادم.");
       return;
     }
     setStatus("requesting");
@@ -43,13 +56,13 @@ export function useFcmToken() {
       const messaging = await getClientMessaging();
       if (!messaging) {
         setStatus("unsupported");
-        setMessage("Firebase Messaging not supported in this browser");
+        setMessage("هذا المتصفح لا يدعم إشعارات Firebase.");
         return;
       }
       const permission = await Notification.requestPermission();
       if (permission !== "granted") {
         setStatus("denied");
-        setMessage("Notification permission denied");
+        setMessage("لم يتم السماح بالإشعارات.");
         return;
       }
       const token = await getToken(messaging, {
@@ -58,7 +71,7 @@ export function useFcmToken() {
       });
       if (!token) {
         setStatus("error");
-        setMessage("No FCM token returned");
+        setMessage("تعذر الحصول على رمز الجهاز.");
         return;
       }
       const db = getClientFirestore();
@@ -77,10 +90,12 @@ export function useFcmToken() {
         { merge: true },
       );
       setStatus("granted");
-      setMessage("You will receive updates for new files.");
+      setMessage("تم التفعيل. سنرسل لك تنبيهات عند إضافة ملفات جديدة.");
     } catch (e) {
       setStatus("error");
-      setMessage(e instanceof Error ? e.message : "Failed to enable notifications");
+      setMessage(
+        e instanceof Error ? e.message : "تعذر تفعيل الإشعارات.",
+      );
     }
   }, []);
 

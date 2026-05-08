@@ -1,10 +1,10 @@
 "use client";
 
 import Image from "next/image";
-import {
-  DEFAULT_SITE_APP_NAME,
-  DEFAULT_SITE_HOME_TITLE,
-} from "@/lib/constants/siteDefaults";
+import { useEffect, useState } from "react";
+import { openPwaInstallModal } from "@/components/public/PwaInstallModal";
+import { isStandaloneDisplay } from "@/hooks/usePwaInstall";
+import { DEFAULT_SITE_HOME_TITLE } from "@/lib/constants/siteDefaults";
 
 type Props = {
   appName: string;
@@ -22,38 +22,65 @@ export function LogoHeader({
   homeSubtitle,
   primaryColor = "#2F3437",
 }: Props) {
+  const [showInstallEntry, setShowInstallEntry] = useState(false);
+
+  useEffect(() => {
+    setShowInstallEntry(!isStandaloneDisplay());
+  }, []);
+
   return (
-    <header className="flex flex-col items-center gap-3 px-4 pt-10 pb-6 text-center">
+    <header className="flex flex-col items-center gap-1.5 px-4 pt-4 pb-1 text-center sm:gap-2.5 sm:pt-7 sm:pb-3">
       {logoUrl ? (
-        <div className="relative h-16 w-16 overflow-hidden rounded-full border border-[#E5E2DA] bg-white shadow-sm">
+        <div className="relative h-14 w-14 overflow-hidden rounded-full border border-[#E5E2DA] bg-white shadow-sm sm:h-16 sm:w-16">
           <Image
             src={logoUrl}
             alt={appName}
             fill
             className="object-cover object-center scale-[1.28]"
-            sizes="64px"
+            sizes="(max-width:640px) 56px, 64px"
             unoptimized
           />
         </div>
       ) : (
         <div
-          className="flex h-16 w-16 items-center justify-center rounded-full border border-[#E5E2DA] bg-white text-2xl shadow-sm"
+          className="flex h-14 w-14 items-center justify-center rounded-full border border-[#E5E2DA] bg-white text-xl shadow-sm sm:h-16 sm:w-16 sm:text-2xl"
           aria-hidden
         >
           📚
         </div>
       )}
-      <div>
-        {/* <p className="text-sm font-medium text-[#6B6B6B]">
-          {appName.trim() || DEFAULT_SITE_APP_NAME}
-        </p> */}
+      <div className="flex flex-wrap items-center justify-center gap-1.5">
         <h1
-          className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl"
+          className="text-xl font-semibold tracking-tight sm:text-3xl"
           style={{ color: primaryColor }}
         >
           {homeTitle.trim() || DEFAULT_SITE_HOME_TITLE}
         </h1>
-       
+        {showInstallEntry ? (
+          <button
+            type="button"
+            onClick={() => openPwaInstallModal()}
+            className="shrink-0 rounded-lg border border-[#E5E2DA] bg-white p-1.5 text-[#2F3437] shadow-sm transition hover:bg-[#F7F6F3]"
+            aria-label="تثبيت التطبيق"
+            title="تثبيت التطبيق"
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden
+            >
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+          </button>
+        ) : null}
       </div>
     </header>
   );

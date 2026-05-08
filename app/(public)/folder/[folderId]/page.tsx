@@ -2,11 +2,11 @@
 
 import Link from "next/link";
 import { use, useEffect, useMemo, useState } from "react";
+import { useCatalogView } from "@/components/public/CatalogViewToggle";
+import { CatalogSearchBar } from "@/components/public/CatalogSearchBar";
 import { FileGrid } from "@/components/public/FileGrid";
 import { LoadingOverlay } from "@/components/public/LoadingOverlay";
 import { LogoHeader } from "@/components/public/LogoHeader";
-import { PublicFooter } from "@/components/public/PublicFooter";
-import { SearchBox } from "@/components/public/SearchBox";
 import { useFileCards } from "@/hooks/useFileCards";
 import {
   DEFAULT_SITE_APP_NAME,
@@ -25,6 +25,7 @@ export default function FolderPage({
   const { cards, folders, loading, error } = useFileCards();
   const [q, setQ] = useState("");
   const [settings, setSettings] = useState<SiteSettings | null>(null);
+  const [catalogView, setCatalogView] = useCatalogView();
 
   useEffect(() => {
     void getSiteSettings().then(setSettings);
@@ -89,13 +90,19 @@ export default function FolderPage({
               <p className="mt-1 text-sm text-[#6B6B6B]">{folder.description}</p>
             ) : null}
           </div>
-          <SearchBox value={q} onChange={setQ} />
-          <div className="mt-8 min-h-[min(60vh,560px)]">
-            <FileGrid cards={folderCards} />
+          <div className="mx-auto w-full max-w-6xl px-4 pt-1 sm:pt-2">
+            <CatalogSearchBar
+              searchValue={q}
+              onSearchChange={setQ}
+              catalogView={catalogView}
+              onCatalogViewChange={setCatalogView}
+            />
+          </div>
+          <div className="mt-4 min-h-[min(60vh,560px)] sm:mt-6">
+            <FileGrid cards={folderCards} view={catalogView} />
           </div>
         </>
       )}
-      <PublicFooter />
     </div>
   );
 }

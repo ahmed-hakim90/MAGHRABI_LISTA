@@ -7,6 +7,10 @@ Admin-only **403** responses exist only on:
 - `POST /api/admin/register` — invalid `ADMIN_SETUP_TOKEN`
 - `POST /api/notifications/send` — missing/invalid Bearer token or non-admin user
 
+### Dashboard deployment preview shows 403 but “Visit” / the live URL works
+
+The small preview iframe on the deployment page can return **403 Forbidden** while opening the same deployment in a new tab returns **200**. That usually means **Deployment Protection** (e.g. **Vercel Authentication**) is on: your browser session can access the site, but Vercel’s preview fetch does not carry the same auth. It is **not** a Next.js bug in this repo. To show a thumbnail in the dashboard, use **Standard Protection** (*preview deployments only*) or turn protection off for **Production** if the site must be fully public; otherwise ignore the preview and verify with **Visit**.
+
 ## 1. Confirm the cause (replace with your real URL)
 
 From the repo root:
@@ -34,7 +38,26 @@ curl -sI "https://YOUR-PRODUCTION.vercel.app/sw.js"
 | 404 | `DEPLOYMENT_NOT_FOUND` | That `*.vercel.app` URL does not match a live deployment |
 | 200 | (no `x-vercel-error` for app HTML) | App is reachable; if the library is empty, check **Firebase env vars** and Firestore rules |
 
-**Note:** Probing `https://maghrabi.vercel.app` without linking that domain to this project often returns `NOT_FOUND` — that is an alias/config issue, not this app’s middleware.
+**Note:** Probing `https://maghrabi.vercel.app` without linking that domain to this project often returns `NOT_FOUND` or `DEPLOYMENT_NOT_FOUND` — that is an alias/config issue, not this app’s middleware.
+
+### When every path returns `DEPLOYMENT_NOT_FOUND`
+
+If `curl -sI https://YOUR-URL/` **and** `/manifest.webmanifest`, `/sw.js`, and `/icons/icon-192.png` all return **404** with `x-vercel-error: DEPLOYMENT_NOT_FOUND`, Vercel is not serving **any** deployment for that hostname. Typical causes:
+
+1. **No project / no successful Production deploy** for that Git repo (import the repo or fix a failing Production build).
+2. **Wrong `*.vercel.app` URL** — the default is `https://<vercel-project-name>.vercel.app`. If the project is named `maghrabi-lista`, the default URL is `maghrabi-lista.vercel.app`, not `maghrabi.vercel.app`.
+3. **Hostname belongs to another team or was removed** — the slug may be unassigned until you create or link a project again.
+
+**Fix (dashboard):**
+
+1. Open [Vercel](https://vercel.com) → **Add New…** → **Project** → import **this** repository (or open the project already connected to it).
+2. Under **Deployments**, confirm **Production** shows a **Ready** deployment. If builds fail, open **Build Logs** and fix the reported error (then redeploy).
+3. Under **Settings** → **Git**, set **Production Branch** to the branch you ship (e.g. `main`).
+4. Under **Settings** → **Domains**, use the **assigned** `*.vercel.app` domain shown for the project, or add **`maghrabi.vercel.app`** only if your team controls that name (rename the project to `maghrabi` to get that default slug when creating the project, or add it as a domain on Production).
+
+**Local sanity check (optional):** `npm run build` must succeed; a green local build rules out “missing `/` route” in this app — the remaining issue is always Vercel project/domain linkage.
+
+**CLI (optional):** After `npm i -g vercel` and `vercel login`, from the repo root run `vercel link` then `vercel deploy --prod` to attach a Production deployment to the linked project.
 
 ## 2. Fix Deployment Protection (Vercel dashboard)
 

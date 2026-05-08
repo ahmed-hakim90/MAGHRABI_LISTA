@@ -11,6 +11,7 @@ import { useFileCards } from "@/hooks/useFileCards";
 import {
   DEFAULT_SITE_APP_NAME,
   DEFAULT_SITE_HOME_TITLE,
+  DEFAULT_SITE_PRIMARY_COLOR,
 } from "@/lib/constants/siteDefaults";
 import { getSiteSettings } from "@/lib/services/settings";
 import type { SiteSettings } from "@/lib/types/models";
@@ -50,12 +51,12 @@ export default function FolderPage({
     logoPath: "",
     homeTitle: DEFAULT_SITE_HOME_TITLE,
     homeSubtitle: "",
-    primaryColor: "#2F3437",
+    primaryColor: DEFAULT_SITE_PRIMARY_COLOR,
     updatedAt: null,
   };
 
   return (
-    <div className="flex min-h-dvh flex-col bg-[#F7F6F3]">
+    <div className="flex min-h-dvh flex-col bg-surface">
       <LoadingOverlay open={loading} />
       <LogoHeader
         appName={s.appName}
@@ -67,7 +68,7 @@ export default function FolderPage({
       <div className="mx-auto w-full max-w-6xl px-4 pb-2">
         <Link
           href="/"
-          className="inline-flex text-sm font-medium text-[#2F3437] underline-offset-4 hover:underline"
+          className="inline-flex text-sm font-semibold text-primary underline-offset-4 hover:underline"
         >
           ← العودة للرئيسية
         </Link>
@@ -80,18 +81,18 @@ export default function FolderPage({
         </main>
       ) : !folder ? (
         <main className="flex flex-1 flex-col">
-          <p className="flex-1 py-16 text-center text-[#6B6B6B]">
+          <p className="flex-1 py-16 text-center text-muted">
             هذا المجلد غير متوفر.
           </p>
         </main>
       ) : (
         <main className="flex min-h-0 flex-1 flex-col">
           <div className="mx-auto max-w-6xl px-4 pb-4">
-            <h2 className="text-xl font-semibold text-[#2F3437] sm:text-2xl">
+            <h2 className="text-xl font-bold text-foreground sm:text-2xl">
               {folder.name}
             </h2>
             {folder.description ? (
-              <p className="mt-1 text-sm text-[#6B6B6B]">{folder.description}</p>
+              <p className="mt-1 text-sm text-muted">{folder.description}</p>
             ) : null}
           </div>
           <div className="mx-auto w-full max-w-6xl px-4 pt-1 sm:pt-2">

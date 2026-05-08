@@ -26,7 +26,12 @@ export type FileCard = {
   createdBy: string;
   updatedBy: string;
   version: number;
+  /** Optional display count (e.g. SKU lines); null/omit if unknown */
+  productCount: number | null;
+  /** Server-incremented via POST /api/catalog/view */
+  viewCount: number;
 };
+
 
 export type FileFolder = {
   id: string;

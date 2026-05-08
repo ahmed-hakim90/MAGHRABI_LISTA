@@ -8,13 +8,14 @@ import {
 } from "@/lib/services/settings";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import type { SiteSettings } from "@/lib/types/models";
+import { DEFAULT_SITE_PRIMARY_COLOR } from "@/lib/constants/siteDefaults";
 
 export default function AdminSettingsPage() {
   const [initial, setInitial] = useState<SiteSettings | null>(null);
   const [appName, setAppName] = useState("");
   const [homeTitle, setHomeTitle] = useState("");
   const [homeSubtitle, setHomeSubtitle] = useState("");
-  const [primaryColor, setPrimaryColor] = useState("#2F3437");
+  const [primaryColor, setPrimaryColor] = useState(DEFAULT_SITE_PRIMARY_COLOR);
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -26,7 +27,7 @@ export default function AdminSettingsPage() {
       setAppName(s.appName);
       setHomeTitle(s.homeTitle);
       setHomeSubtitle(s.homeSubtitle);
-      setPrimaryColor(s.primaryColor || "#2F3437");
+      setPrimaryColor(s.primaryColor || DEFAULT_SITE_PRIMARY_COLOR);
     });
   }, []);
 
@@ -63,18 +64,18 @@ export default function AdminSettingsPage() {
   }
 
   if (!initial) {
-    return <p className="text-[#6B6B6B]">Loading…</p>;
+    return <p className="text-muted">Loading…</p>;
   }
 
   return (
     <div className="mx-auto max-w-lg space-y-4">
-      <h1 className="text-xl font-semibold text-[#2F3437]">Site settings</h1>
+      <h1 className="text-xl font-semibold text-foreground">Site settings</h1>
       <form
         onSubmit={(e) => void onSubmit(e)}
-        className="space-y-4 rounded-2xl border border-[#E5E2DA] bg-white p-6 shadow-sm"
+        className="space-y-4 rounded-2xl border border-border bg-card p-6 shadow-sm"
       >
         {msg ? (
-          <p className="text-sm text-[#6B6B6B]" role="status">
+          <p className="text-sm text-muted" role="status">
             {msg}
           </p>
         ) : null}
@@ -86,46 +87,46 @@ export default function AdminSettingsPage() {
           />
         ) : null}
         <label className="block">
-          <span className="text-sm font-medium text-[#2F3437]">App name</span>
+          <span className="text-sm font-medium text-foreground">App name</span>
           <input
-            className="mt-1 w-full rounded-xl border border-[#E5E2DA] px-3 py-2"
+            className="mt-1 w-full rounded-xl border border-border px-3 py-2"
             value={appName}
             onChange={(e) => setAppName(e.target.value)}
           />
         </label>
         <label className="block">
-          <span className="text-sm font-medium text-[#2F3437]">Home title</span>
+          <span className="text-sm font-medium text-foreground">Home title</span>
           <input
-            className="mt-1 w-full rounded-xl border border-[#E5E2DA] px-3 py-2"
+            className="mt-1 w-full rounded-xl border border-border px-3 py-2"
             value={homeTitle}
             onChange={(e) => setHomeTitle(e.target.value)}
           />
         </label>
         <label className="block">
-          <span className="text-sm font-medium text-[#2F3437]">
+          <span className="text-sm font-medium text-foreground">
             Home subtitle
           </span>
           <textarea
             rows={2}
-            className="mt-1 w-full rounded-xl border border-[#E5E2DA] px-3 py-2"
+            className="mt-1 w-full rounded-xl border border-border px-3 py-2"
             value={homeSubtitle}
             onChange={(e) => setHomeSubtitle(e.target.value)}
           />
         </label>
         <label className="block">
-          <span className="text-sm font-medium text-[#2F3437]">
+          <span className="text-sm font-medium text-foreground">
             Primary color (hex)
           </span>
           <input
-            className="mt-1 w-full rounded-xl border border-[#E5E2DA] px-3 py-2"
+            className="mt-1 w-full rounded-xl border border-border px-3 py-2"
             value={primaryColor}
             onChange={(e) => setPrimaryColor(e.target.value)}
           />
         </label>
         <div>
-          <span className="text-sm font-medium text-[#2F3437]">Logo</span>
+          <span className="text-sm font-medium text-foreground">Logo</span>
           {initial.logoUrl ? (
-            <div className="relative mt-2 h-16 w-16 overflow-hidden rounded-xl border border-[#E5E2DA]">
+            <div className="relative mt-2 h-16 w-16 overflow-hidden rounded-xl border border-border">
               <Image
                 src={initial.logoUrl}
                 alt=""
@@ -138,14 +139,14 @@ export default function AdminSettingsPage() {
           <input
             type="file"
             accept="image/*"
-            className="mt-2 block w-full text-sm text-[#6B6B6B]"
+            className="mt-2 block w-full text-sm text-muted"
             onChange={(e) => setLogoFile(e.target.files?.[0] ?? null)}
           />
         </div>
         <button
           type="submit"
           disabled={busy}
-          className="rounded-xl bg-[#2F3437] px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+          className="rounded-xl bg-primary px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
         >
           {busy ? "Saving…" : "Save"}
         </button>

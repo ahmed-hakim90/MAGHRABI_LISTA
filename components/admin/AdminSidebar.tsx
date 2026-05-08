@@ -15,8 +15,8 @@ export function AdminSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="flex w-full flex-col border-b border-[#E5E2DA] bg-white px-4 py-4 lg:w-56 lg:border-b-0 lg:border-r">
-      <p className="mb-4 text-xs font-semibold uppercase tracking-wide text-[#6B6B6B]">
+    <aside className="flex w-full flex-col border-b border-border bg-card px-4 py-4 lg:w-56 lg:border-b-0 lg:border-r">
+      <p className="mb-4 text-xs font-semibold uppercase tracking-wide text-muted">
         Admin
       </p>
       <nav className="flex flex-wrap gap-2 lg:flex-col lg:gap-1">
@@ -31,8 +31,8 @@ export function AdminSidebar() {
               href={l.href}
               className={`rounded-xl px-3 py-2 text-sm font-medium transition ${
                 active
-                  ? "bg-[#F7F6F3] text-[#2F3437]"
-                  : "text-[#6B6B6B] hover:bg-[#F7F6F3]/80 hover:text-[#2F3437]"
+                  ? "bg-primary/10 text-primary"
+                  : "text-muted hover:bg-surface hover:text-foreground"
               }`}
             >
               {l.label}

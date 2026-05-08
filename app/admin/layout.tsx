@@ -9,5 +9,9 @@ export default function AdminRootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <>{children}</>;
+  return (
+    <div dir="ltr" lang="en" className="min-h-dvh">
+      {children}
+    </div>
+  );
 }

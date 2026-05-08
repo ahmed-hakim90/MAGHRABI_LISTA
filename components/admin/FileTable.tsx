@@ -91,20 +91,20 @@ export function FileTable() {
   }
 
   if (loading) {
-    return <p className="text-[#6B6B6B]">Loading files…</p>;
+    return <p className="text-muted">Loading files…</p>;
   }
 
   return (
     <div className="space-y-3">
       {uploadJob ? (
-        <div className="rounded-2xl border border-[#E5E2DA] bg-white p-4 shadow-sm">
+        <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
           <ProgressBar label={uploadJob.label} value={uploadJob.progress} />
         </div>
       ) : null}
-      <div className="overflow-x-auto rounded-2xl border border-[#E5E2DA] bg-white shadow-sm">
+      <div className="overflow-x-auto rounded-2xl border border-border bg-card shadow-sm">
         <table className="w-full min-w-[720px] text-left text-sm">
         <thead>
-          <tr className="border-b border-[#E5E2DA] text-[#6B6B6B]">
+          <tr className="border-b border-border text-muted">
             <th className="p-3 font-medium">Thumb</th>
             <th className="p-3 font-medium">Title</th>
             <th className="p-3 font-medium">Folder</th>
@@ -116,9 +116,9 @@ export function FileTable() {
         </thead>
         <tbody>
           {rows.map((card) => (
-            <tr key={card.id} className="border-b border-[#E5E2DA]/80">
+            <tr key={card.id} className="border-b border-border/80">
               <td className="p-3">
-                <div className="relative h-12 w-16 overflow-hidden rounded-lg bg-[#F7F6F3]">
+                <div className="relative h-12 w-16 overflow-hidden rounded-lg bg-surface">
                   {card.thumbnailUrl ? (
                     <Image
                       src={card.thumbnailUrl}
@@ -130,25 +130,25 @@ export function FileTable() {
                   ) : null}
                 </div>
               </td>
-              <td className="max-w-[200px] p-3 font-medium text-[#2F3437]">
+              <td className="max-w-[200px] p-3 font-medium text-foreground">
                 {card.title}
               </td>
-              <td className="p-3 text-[#6B6B6B]">
+              <td className="p-3 text-muted">
                 {card.folderName ? (
                   <span
                     className={`rounded-lg px-2 py-0.5 text-xs ${
                       card.folderIsActive
-                        ? "bg-[#F7F6F3] text-[#2F3437]"
+                        ? "bg-surface text-foreground"
                         : "bg-neutral-100 text-neutral-500 line-through"
                     }`}
                   >
                     {card.folderName}
                   </span>
                 ) : (
-                  <span className="text-xs text-[#6B6B6B]/70">—</span>
+                  <span className="text-xs text-muted/70">—</span>
                 )}
               </td>
-              <td className="p-3 text-[#6B6B6B]">{card.category}</td>
+              <td className="p-3 text-muted">{card.category}</td>
               <td className="p-3">
                 <span
                   className={`rounded-lg px-2 py-0.5 text-xs font-medium ${
@@ -160,18 +160,18 @@ export function FileTable() {
                   {card.isActive ? "Yes" : "No"}
                 </span>
               </td>
-              <td className="p-3 text-[#6B6B6B]">
+              <td className="p-3 text-muted">
                 {formatDisplayDate(card.updatedAt)}
               </td>
               <td className="p-3">
                 <div className="flex flex-col gap-1">
                   <Link
                     href={`/admin/files/${card.id}/edit`}
-                    className="text-[#2F3437] underline"
+                    className="text-foreground underline"
                   >
                     Edit
                   </Link>
-                  <label className="cursor-pointer text-xs text-[#6B6B6B] hover:text-[#2F3437]">
+                  <label className="cursor-pointer text-xs text-muted hover:text-foreground">
                     Replace PDF
                     <input
                       type="file"
@@ -182,7 +182,7 @@ export function FileTable() {
                       }
                     />
                   </label>
-                  <label className="cursor-pointer text-xs text-[#6B6B6B] hover:text-[#2F3437]">
+                  <label className="cursor-pointer text-xs text-muted hover:text-foreground">
                     Replace thumbnail
                     <input
                       type="file"
@@ -195,7 +195,7 @@ export function FileTable() {
                   </label>
                   <button
                     type="button"
-                    className="text-left text-xs text-[#6B6B6B] hover:text-[#2F3437]"
+                    className="text-left text-xs text-muted hover:text-foreground"
                     onClick={() => void onToggle(card)}
                   >
                     {card.isActive ? "Deactivate" : "Activate"}
@@ -214,7 +214,7 @@ export function FileTable() {
         </tbody>
         </table>
         {rows.length === 0 ? (
-          <p className="p-6 text-center text-[#6B6B6B]">No files yet.</p>
+          <p className="p-6 text-center text-muted">No files yet.</p>
         ) : null}
       </div>
     </div>

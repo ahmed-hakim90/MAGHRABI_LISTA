@@ -2,7 +2,10 @@
 
 import Image from "next/image";
 import { usePwaInstall } from "@/hooks/usePwaInstall";
-import { DEFAULT_SITE_HOME_TITLE } from "@/lib/constants/siteDefaults";
+import {
+  DEFAULT_SITE_HOME_TITLE,
+  DEFAULT_SITE_PRIMARY_COLOR,
+} from "@/lib/constants/siteDefaults";
 
 type Props = {
   appName: string;
@@ -18,7 +21,7 @@ export function LogoHeader({
   logoUrl,
   homeTitle,
   homeSubtitle,
-  primaryColor = "#2F3437",
+  primaryColor = DEFAULT_SITE_PRIMARY_COLOR,
 }: Props) {
   const { hideAsInstalled, busy, runInstall } = usePwaInstall();
 
@@ -45,7 +48,7 @@ export function LogoHeader({
       )}
       <div className="flex flex-wrap items-center justify-center gap-1.5">
         <h1
-          className="text-xl font-semibold tracking-tight sm:text-3xl text-pretty"
+          className="text-pretty text-xl font-bold tracking-tight sm:text-3xl"
           style={{ color: primaryColor }}
         >
           {homeTitle.trim() || DEFAULT_SITE_HOME_TITLE}
@@ -77,6 +80,11 @@ export function LogoHeader({
           </button>
         ) : null}
       </div>
+      {homeSubtitle.trim() ? (
+        <p className="max-w-md text-pretty text-sm leading-relaxed text-muted sm:text-[15px]">
+          {homeSubtitle.trim()}
+        </p>
+      ) : null}
     </header>
   );
 }

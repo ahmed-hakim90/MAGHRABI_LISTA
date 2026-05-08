@@ -1,3 +1,6 @@
 /** Defaults when Firestore has no `settings/site` doc or empty trimmed strings. */
 export const DEFAULT_SITE_APP_NAME = "المغربي";
-export const DEFAULT_SITE_HOME_TITLE = "المغربي - Maghrabi";
+export const DEFAULT_SITE_HOME_TITLE = "بوابة أسعار التجار";
+export const DEFAULT_SITE_HOME_SUBTITLE =
+  "تصفح أحدث قوائم الأسعار والكتالوجات المحدّثة لعملائنا التجاريين.";
+export const DEFAULT_SITE_PRIMARY_COLOR = "#1D4ED8";

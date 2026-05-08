@@ -1,6 +1,7 @@
 "use client";
 
 import type { FileCard as FileCardType, FileFolder } from "@/lib/types/models";
+import { CATALOG_GRID_CLASS } from "./catalogLayout";
 import type { CatalogViewMode } from "./CatalogViewToggle";
 import { FileCard } from "./FileCard";
 import { FileGrid } from "./FileGrid";
@@ -21,7 +22,7 @@ function CardGrid({
 }) {
   if (view === "list") {
     return (
-      <div className="flex flex-col gap-2 sm:gap-3">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-2 sm:gap-3">
         {cards.map((c) => (
           <FileCard key={c.id} card={c} variant="list" />
         ))}
@@ -29,7 +30,7 @@ function CardGrid({
     );
   }
   return (
-    <div className="grid grid-cols-3 gap-1.5 sm:gap-4 lg:grid-cols-3">
+    <div className={CATALOG_GRID_CLASS}>
       {cards.map((c) => (
         <FileCard key={c.id} card={c} variant="grid" />
       ))}
@@ -40,7 +41,7 @@ function CardGrid({
 export function FolderedFileGrid({ cards, folders, view = "grid" }: Props) {
   if (cards.length === 0) {
     return (
-      <p className="py-16 text-center text-[15px] text-[#6B6B6B]">
+      <p className="py-16 text-center text-[15px] text-muted">
         لا توجد ملفات مطابقة لبحثك.
       </p>
     );
@@ -63,7 +64,7 @@ export function FolderedFileGrid({ cards, folders, view = "grid" }: Props) {
 
   const folderLayout =
     view === "list" ? (
-      <div className="flex max-w-3xl flex-col gap-2 sm:gap-3">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-2 sm:gap-3">
         {orderedFolders.map((f) => (
           <FolderCard
             key={f.id}
@@ -74,7 +75,7 @@ export function FolderedFileGrid({ cards, folders, view = "grid" }: Props) {
         ))}
       </div>
     ) : (
-      <div className="grid grid-cols-3 gap-1.5 sm:gap-4 lg:grid-cols-3">
+      <div className={CATALOG_GRID_CLASS}>
         {orderedFolders.map((f) => (
           <FolderCard
             key={f.id}
@@ -87,19 +88,23 @@ export function FolderedFileGrid({ cards, folders, view = "grid" }: Props) {
     );
 
   return (
-    <div className="mx-auto max-w-6xl space-y-10 px-3 pb-16 sm:px-4">
-      <section className="space-y-3">
-        <header className="border-b border-[#E5E2DA] pb-2">
-          <h2 className="text-lg font-semibold text-[#2F3437]">المجلدات</h2>
+    <div className="w-full space-y-12 px-safe pb-safe-fab sm:px-4">
+      <section className="space-y-4">
+        <header className="flex flex-col gap-1 border-b border-primary/15 pb-3">
+          <h2 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
+            المجلدات
+          </h2>
+          <p className="text-sm text-muted">ملفات منظّمة حسب التصنيف</p>
         </header>
         {folderLayout}
       </section>
       {ungrouped.length > 0 ? (
-        <section className="space-y-3">
-          <header className="border-b border-[#E5E2DA] pb-2">
-            <h2 className="text-lg font-semibold text-[#2F3437]">
-              ملفات بدون مجلد
+        <section className="space-y-4">
+          <header className="flex flex-col gap-1 border-b border-primary/15 pb-3">
+            <h2 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
+              القوائم والكتالوجات
             </h2>
+            <p className="text-sm text-muted">عرض مباشر لقوائم الأسعار</p>
           </header>
           <CardGrid cards={ungrouped} view={view} />
         </section>

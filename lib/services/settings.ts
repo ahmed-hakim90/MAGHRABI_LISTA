@@ -7,6 +7,7 @@ import { runResumableUpload } from "@/lib/firebase/storageUpload";
 import {
   DEFAULT_SITE_APP_NAME,
   DEFAULT_SITE_HOME_TITLE,
+  DEFAULT_SITE_PRIMARY_COLOR,
 } from "@/lib/constants/siteDefaults";
 import type { SiteSettings } from "@/lib/types/models";
 import { STORAGE_FOLDER } from "@/lib/utils/storagePaths";
@@ -24,7 +25,7 @@ function fromData(data: Record<string, unknown>): SiteSettings {
     logoPath: String(data.logoPath ?? ""),
     homeTitle,
     homeSubtitle: String(data.homeSubtitle ?? ""),
-    primaryColor: String(data.primaryColor ?? "#2F3437"),
+    primaryColor: String(data.primaryColor ?? DEFAULT_SITE_PRIMARY_COLOR),
     updatedAt: (data.updatedAt as SiteSettings["updatedAt"]) ?? null,
   };
 }

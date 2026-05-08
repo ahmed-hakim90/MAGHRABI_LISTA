@@ -1,24 +1,43 @@
 @import "tailwindcss";
 
+/* B2B portal palette — legacy --notion-* aliases keep existing utilities working */
 :root {
-  --notion-bg: #f7f6f3;
-  --notion-card: #ffffff;
-  --notion-text: #2f3437;
-  --notion-border: #e5e2da;
-  --notion-muted: #6b6b6b;
-  /* Same as home page — splash matches app shell, not black. */
+  --bg-app: #f5f7fa;
+  --text-primary: #0f172a;
+  --brand-primary: #1d4ed8;
+  --brand-accent: #f59e0b;
+  --card-white: #ffffff;
+  --border-subtle: #e2e8f0;
+  --text-muted: #64748b;
+
+  --notion-bg: var(--bg-app);
+  --notion-card: var(--card-white);
+  --notion-text: var(--text-primary);
+  --notion-border: var(--border-subtle);
+  --notion-muted: var(--text-muted);
+
+  --shadow-card: 0 4px 6px -1px rgb(15 23 42 / 0.06),
+    0 12px 24px -4px rgb(15 23 42 / 0.08);
+  --shadow-card-hover: 0 8px 16px -4px rgb(15 23 42 / 0.08),
+    0 20px 40px -8px rgb(29 78 216 / 0.12);
+
   --splash-bg: var(--notion-bg);
-  /* Floating action (e.g. WhatsApp) + gap above home indicator */
   --safe-fab-space: calc(3.5rem + 1.25rem);
 }
 
 @theme inline {
-  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  /* --font-arabic is injected on <html> by next/font (IBM Plex Sans Arabic) */
+  --font-sans: var(--font-arabic), ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, sans-serif;
   --color-surface: var(--notion-bg);
   --color-card: var(--notion-card);
   --color-foreground: var(--notion-text);
   --color-border: var(--notion-border);
   --color-muted: var(--notion-muted);
+  --color-primary: var(--brand-primary);
+  --color-accent: var(--brand-accent);
+  --shadow-premium: var(--shadow-card);
+  --shadow-premium-hover: var(--shadow-card-hover);
 }
 
 /* Safe-area helpers: combine notch / home indicator with layout padding */
@@ -51,16 +70,14 @@
 
 html {
   color-scheme: light;
-  /* Avoid horizontal jump when scrollbars appear after the splash overlay. */
   scrollbar-gutter: stable;
-  -webkit-tap-highlight-color: rgba(47, 52, 55, 0.08);
+  -webkit-tap-highlight-color: rgb(29 78 216 / 0.12);
 }
 
 body {
   background: var(--notion-bg);
   color: var(--notion-text);
   font-family: var(--font-sans);
-  /* Less rubber-band when there’s little to scroll — helps fixed FAB feel stable on iOS. */
   overscroll-behavior-y: contain;
 }
 
@@ -95,8 +112,6 @@ html.splash-launch body {
   opacity: 1;
   transition: opacity 380ms cubic-bezier(0.4, 0, 0.2, 1);
   will-change: opacity;
-  /* Touch-blocking so accidental taps during the brief overlay don't
-     interact with the app behind it. Removed instantly on dismiss. */
   pointer-events: auto;
 }
 
@@ -105,16 +120,15 @@ html.splash-launch body {
   pointer-events: none;
 }
 
-/* Soft radial gloss behind the mark — extremely low opacity, gentle pulse. */
 .splash-glow {
   position: absolute;
   inset: 0;
   pointer-events: none;
   background: radial-gradient(
     circle at 50% 50%,
-    rgba(47, 52, 55, 0.06) 0%,
-    rgba(47, 52, 55, 0.02) 32%,
-    rgba(47, 52, 55, 0) 62%
+    rgb(29 78 216 / 0.08) 0%,
+    rgb(29 78 216 / 0.03) 32%,
+    rgb(29 78 216 / 0) 62%
   );
   opacity: 0;
   transition: opacity 600ms cubic-bezier(0.22, 1, 0.36, 1);
@@ -151,14 +165,12 @@ html.splash-launch body {
   opacity: 1;
 }
 
-/* Exit: no extra scale — scaling up during fade reads as a “shake” / pulse. */
 .splash-overlay[data-phase="out"] .splash-stack {
   transform: scale(1);
   opacity: 1;
   transition: none;
 }
 
-/* Small circular mark above the progress bar — not full-screen. */
 .splash-mark {
   position: relative;
   display: flex;
@@ -169,7 +181,7 @@ html.splash-launch body {
   flex-shrink: 0;
   border-radius: 50%;
   overflow: hidden;
-  box-shadow: 0 0 0 1px rgba(47, 52, 55, 0.1);
+  box-shadow: 0 0 0 1px rgb(29 78 216 / 0.12);
 }
 
 .splash-mark img {
@@ -190,7 +202,7 @@ html.splash-launch body {
   width: min(140px, 42vw);
   height: 3px;
   border-radius: 9999px;
-  background: rgba(47, 52, 55, 0.1);
+  background: rgb(29 78 216 / 0.12);
   overflow: hidden;
 }
 
@@ -200,7 +212,7 @@ html.splash-launch body {
   transform-origin: left center;
   transform: scaleX(0);
   border-radius: inherit;
-  background: rgba(47, 52, 55, 0.42);
+  background: rgb(29 78 216 / 0.45);
   will-change: transform;
 }
 

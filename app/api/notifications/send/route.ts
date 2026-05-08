@@ -85,7 +85,7 @@ export async function POST(request: Request) {
       ? {
           type: "file_card",
           cardId: targetCardId,
-          url: `/file/${targetCardId}/pdf`,
+          url: `/file/${targetCardId}/view`,
         }
       : {
           type: "announcement",
@@ -94,7 +94,7 @@ export async function POST(request: Request) {
 
   const origin = new URL(request.url).origin;
   const path =
-    targetCardId != null ? `/file/${targetCardId}/pdf` : "/";
+    targetCardId != null ? `/file/${targetCardId}/view` : "/";
   const webPushLink = `${origin}${path}`;
 
   const tokensSnap = await db

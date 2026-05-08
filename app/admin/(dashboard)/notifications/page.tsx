@@ -73,46 +73,46 @@ export default function AdminNotificationsPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-xl font-semibold text-[#2F3437]">Notifications</h1>
-        <p className="mt-1 text-sm text-[#6B6B6B]">
+        <h1 className="text-xl font-semibold text-foreground">Notifications</h1>
+        <p className="mt-1 text-sm text-muted">
           Push to subscribed PWA visitors (FCM).
         </p>
       </div>
 
       <form
         onSubmit={(e) => void onSend(e)}
-        className="max-w-lg space-y-4 rounded-2xl border border-[#E5E2DA] bg-white p-6 shadow-sm"
+        className="max-w-lg space-y-4 rounded-2xl border border-border bg-card p-6 shadow-sm"
       >
         {msg ? (
-          <p className="text-sm text-[#6B6B6B]" role="status">
+          <p className="text-sm text-muted" role="status">
             {msg}
           </p>
         ) : null}
         <label className="block">
-          <span className="text-sm font-medium text-[#2F3437]">Title</span>
+          <span className="text-sm font-medium text-foreground">Title</span>
           <input
             required
-            className="mt-1 w-full rounded-xl border border-[#E5E2DA] px-3 py-2"
+            className="mt-1 w-full rounded-xl border border-border px-3 py-2"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
           />
         </label>
         <label className="block">
-          <span className="text-sm font-medium text-[#2F3437]">Body</span>
+          <span className="text-sm font-medium text-foreground">Body</span>
           <textarea
             required
             rows={3}
-            className="mt-1 w-full rounded-xl border border-[#E5E2DA] px-3 py-2"
+            className="mt-1 w-full rounded-xl border border-border px-3 py-2"
             value={body}
             onChange={(e) => setBody(e.target.value)}
           />
         </label>
         <label className="block">
-          <span className="text-sm font-medium text-[#2F3437]">
+          <span className="text-sm font-medium text-foreground">
             Related file (optional)
           </span>
           <select
-            className="mt-1 w-full rounded-xl border border-[#E5E2DA] px-3 py-2"
+            className="mt-1 w-full rounded-xl border border-border px-3 py-2"
             value={targetCardId}
             onChange={(e) => setTargetCardId(e.target.value)}
           >
@@ -127,22 +127,22 @@ export default function AdminNotificationsPage() {
         <button
           type="submit"
           disabled={busy}
-          className="rounded-xl bg-[#2F3437] px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+          className="rounded-xl bg-primary px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
         >
           {busy ? "Sending…" : "Send notification"}
         </button>
       </form>
 
       <div>
-        <h2 className="mb-3 text-sm font-semibold text-[#2F3437]">History</h2>
+        <h2 className="mb-3 text-sm font-semibold text-foreground">History</h2>
         <ul className="space-y-2">
           {rows.map((r) => (
             <li
               key={r.id}
-              className="rounded-xl border border-[#E5E2DA] bg-white px-4 py-3 text-sm"
+              className="rounded-xl border border-border bg-card px-4 py-3 text-sm"
             >
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="font-medium text-[#2F3437]">{r.title}</span>
+                <span className="font-medium text-foreground">{r.title}</span>
                 <span
                   className={`rounded-lg px-2 py-0.5 text-xs ${
                     r.status === "sent"
@@ -155,8 +155,8 @@ export default function AdminNotificationsPage() {
                   {r.status}
                 </span>
               </div>
-              <p className="mt-1 text-[#6B6B6B]">{r.body}</p>
-              <p className="mt-2 text-xs text-[#6B6B6B]">
+              <p className="mt-1 text-muted">{r.body}</p>
+              <p className="mt-2 text-xs text-muted">
                 {formatDisplayDate(r.createdAt)}
                 {r.targetCardId ? ` · Card ${r.targetCardId}` : ""}
               </p>
@@ -164,7 +164,7 @@ export default function AdminNotificationsPage() {
           ))}
         </ul>
         {rows.length === 0 ? (
-          <p className="text-sm text-[#6B6B6B]">No notifications yet.</p>
+          <p className="text-sm text-muted">No notifications yet.</p>
         ) : null}
       </div>
     </div>

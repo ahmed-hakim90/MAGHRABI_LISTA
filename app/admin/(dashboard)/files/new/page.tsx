@@ -8,7 +8,7 @@ export default function NewFilePage() {
   if (!user) return null;
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-semibold text-[#2F3437]">New file</h1>
+      <h1 className="text-xl font-semibold text-foreground">New file</h1>
       <FileForm mode="create" uid={user.uid} />
     </div>
   );

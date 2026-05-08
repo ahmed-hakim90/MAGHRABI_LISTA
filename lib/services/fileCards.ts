@@ -57,6 +57,13 @@ function fromDoc(
     createdBy: String(data.createdBy ?? ""),
     updatedBy: String(data.updatedBy ?? ""),
     version: Number(data.version ?? 1),
+    productCount: (() => {
+      const v = data.productCount;
+      if (v == null || v === "") return null;
+      const n = Number(v);
+      return Number.isFinite(n) && n >= 0 ? Math.floor(n) : null;
+    })(),
+    viewCount: Number(data.viewCount ?? 0),
   };
 }
 
@@ -134,6 +141,7 @@ export async function createFileCard(
     folderId: string;
     folderName: string;
     folderIsActive: boolean;
+    productCount: number | null;
     pdfFile: File;
     thumbnailFile: File;
     uid: string;
@@ -187,6 +195,8 @@ export async function createFileCard(
       fileName: input.pdfFile.name,
       fileSize: input.pdfFile.size,
       version: 1,
+      productCount: input.productCount,
+      viewCount: 0,
       createdBy: input.uid,
       updatedBy: input.uid,
       createdAt: serverTimestamp(),
@@ -221,6 +231,7 @@ export async function updateFileCardMeta(
     folderId: string;
     folderName: string;
     folderIsActive: boolean;
+    productCount: number | null;
     uid: string;
   },
 ): Promise<void> {
@@ -235,6 +246,7 @@ export async function updateFileCardMeta(
     folderId: input.folderId,
     folderName: input.folderName,
     folderIsActive: input.folderIsActive,
+    productCount: input.productCount,
     updatedAt: serverTimestamp(),
     updatedBy: input.uid,
   });

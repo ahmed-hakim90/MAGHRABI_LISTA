@@ -45,12 +45,12 @@ function AdminLoginForm() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-[#F7F6F3] px-4">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-surface px-4">
       <form
         onSubmit={(e) => void onSubmit(e)}
-        className="w-full max-w-sm space-y-4 rounded-2xl border border-[#E5E2DA] bg-white p-6 shadow-sm"
+        className="w-full max-w-sm space-y-4 rounded-2xl border border-border bg-card p-6 shadow-sm"
       >
-        <h1 className="text-lg font-semibold text-[#2F3437]">Admin sign in</h1>
+        <h1 className="text-lg font-semibold text-foreground">Admin sign in</h1>
         {justRegistered ? (
           <p className="rounded-xl bg-emerald-50 px-3 py-2 text-sm text-emerald-900">
             Account created. Sign in with your new credentials.
@@ -62,23 +62,23 @@ function AdminLoginForm() {
           </p>
         ) : null}
         <label className="block">
-          <span className="text-sm text-[#2F3437]">Email</span>
+          <span className="text-sm text-foreground">Email</span>
           <input
             type="email"
             required
             autoComplete="email"
-            className="mt-1 w-full rounded-xl border border-[#E5E2DA] px-3 py-2"
+            className="mt-1 w-full rounded-xl border border-border px-3 py-2"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
         </label>
         <label className="block">
-          <span className="text-sm text-[#2F3437]">Password</span>
+          <span className="text-sm text-foreground">Password</span>
           <input
             type="password"
             required
             autoComplete="current-password"
-            className="mt-1 w-full rounded-xl border border-[#E5E2DA] px-3 py-2"
+            className="mt-1 w-full rounded-xl border border-border px-3 py-2"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
@@ -86,11 +86,11 @@ function AdminLoginForm() {
         <button
           type="submit"
           disabled={busy}
-          className="w-full rounded-xl bg-[#2F3437] py-2 text-sm font-medium text-white disabled:opacity-50"
+          className="w-full rounded-xl bg-primary py-2 text-sm font-medium text-white disabled:opacity-50"
         >
           {busy ? "Signing in…" : "Sign in"}
         </button>
-        <Link href="/" className="block text-center text-xs text-[#6B6B6B] hover:underline">
+        <Link href="/" className="block text-center text-xs text-muted hover:underline">
           ← Public library
         </Link>
       </form>
@@ -102,7 +102,7 @@ export default function AdminLoginPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen items-center justify-center bg-[#F7F6F3] text-[#6B6B6B]">
+        <div className="flex min-h-screen items-center justify-center bg-surface text-muted">
           Loading…
         </div>
       }

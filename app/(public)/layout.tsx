@@ -8,11 +8,11 @@ export default function PublicGroupLayout({
   children: React.ReactNode;
 }) {
   return (
-    <>
+    <div dir="rtl">
       <NotificationPromptModal />
       <PwaInstallModal />
       <WhatsAppFloatingButton />
       {children}
-    </>
+    </div>
   );
 }

@@ -21,15 +21,15 @@ export default function EditFolderPage({
 
   if (!user) return null;
   if (folder === undefined) {
-    return <p className="text-[#6B6B6B]">Loading…</p>;
+    return <p className="text-muted">Loading…</p>;
   }
   if (!folder) {
-    return <p className="text-[#6B6B6B]">Folder not found.</p>;
+    return <p className="text-muted">Folder not found.</p>;
   }
 
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-semibold text-[#2F3437]">Edit folder</h1>
+      <h1 className="text-xl font-semibold text-foreground">Edit folder</h1>
       <FolderForm mode="edit" uid={user.uid} initial={folder} />
     </div>
   );

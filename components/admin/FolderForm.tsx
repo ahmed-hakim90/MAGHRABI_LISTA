@@ -61,9 +61,9 @@ export function FolderForm({ mode, uid, initial }: Props) {
   return (
     <form
       onSubmit={(e) => void onSubmit(e)}
-      className="mx-auto max-w-xl space-y-4 rounded-2xl border border-[#E5E2DA] bg-white p-6 shadow-sm"
+      className="mx-auto max-w-xl space-y-4 rounded-2xl border border-border bg-card p-6 shadow-sm"
     >
-      <h1 className="text-lg font-semibold text-[#2F3437]">
+      <h1 className="text-lg font-semibold text-foreground">
         {mode === "create" ? "New folder" : "Edit folder"}
       </h1>
       {error ? (
@@ -72,28 +72,28 @@ export function FolderForm({ mode, uid, initial }: Props) {
         </p>
       ) : null}
       <label className="block">
-        <span className="text-sm font-medium text-[#2F3437]">Name</span>
+        <span className="text-sm font-medium text-foreground">Name</span>
         <input
           required
-          className="mt-1 w-full rounded-xl border border-[#E5E2DA] px-3 py-2 text-[15px]"
+          className="mt-1 w-full rounded-xl border border-border px-3 py-2 text-[15px]"
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
       </label>
       <label className="block">
-        <span className="text-sm font-medium text-[#2F3437]">Description</span>
+        <span className="text-sm font-medium text-foreground">Description</span>
         <textarea
           rows={2}
-          className="mt-1 w-full rounded-xl border border-[#E5E2DA] px-3 py-2 text-[15px]"
+          className="mt-1 w-full rounded-xl border border-border px-3 py-2 text-[15px]"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
         />
       </label>
       <label className="block">
-        <span className="text-sm font-medium text-[#2F3437]">Order</span>
+        <span className="text-sm font-medium text-foreground">Order</span>
         <input
           type="number"
-          className="mt-1 w-full rounded-xl border border-[#E5E2DA] px-3 py-2 text-[15px]"
+          className="mt-1 w-full rounded-xl border border-border px-3 py-2 text-[15px]"
           value={order}
           onChange={(e) => setOrder(e.target.value)}
         />
@@ -104,7 +104,7 @@ export function FolderForm({ mode, uid, initial }: Props) {
           checked={isActive}
           onChange={(e) => setIsActive(e.target.checked)}
         />
-        <span className="text-sm text-[#2F3437]">
+        <span className="text-sm text-foreground">
           Active (visible to public)
         </span>
       </label>
@@ -112,14 +112,14 @@ export function FolderForm({ mode, uid, initial }: Props) {
         <button
           type="submit"
           disabled={saving}
-          className="rounded-xl bg-[#2F3437] px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-50"
+          className="rounded-xl bg-primary px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-50"
         >
           {saving ? "Saving…" : "Save"}
         </button>
         <button
           type="button"
           onClick={() => router.back()}
-          className="rounded-xl border border-[#E5E2DA] px-4 py-2 text-sm text-[#2F3437]"
+          className="rounded-xl border border-border px-4 py-2 text-sm text-foreground"
         >
           Cancel
         </button>

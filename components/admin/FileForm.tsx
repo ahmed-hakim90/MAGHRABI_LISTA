@@ -24,6 +24,9 @@ export function FileForm({ mode, uid, initial }: Props) {
   const [category, setCategory] = useState(initial?.category ?? "");
   const [tagsRaw, setTagsRaw] = useState((initial?.tags ?? []).join(", "));
   const [order, setOrder] = useState(String(initial?.order ?? 0));
+  const [productCountStr, setProductCountStr] = useState(
+    initial?.productCount != null ? String(initial.productCount) : "",
+  );
   const [isActive, setIsActive] = useState(initial?.isActive ?? true);
   const [folderId, setFolderId] = useState(initial?.folderId ?? "");
   const [folders, setFolders] = useState<FileFolder[]>([]);
@@ -61,6 +64,17 @@ export function FileForm({ mode, uid, initial }: Props) {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    const productCount = (() => {
+      const t = productCountStr.trim();
+      if (!t) return null;
+      const n = Number(t);
+      if (!Number.isFinite(n) || n < 0) return undefined;
+      return Math.floor(n);
+    })();
+    if (productCount === undefined) {
+      setError("Product count must be a non-negative number or empty.");
+      return;
+    }
     setSaving(true);
     setUploadProgress(mode === "create" ? 0 : null);
     try {
@@ -80,6 +94,7 @@ export function FileForm({ mode, uid, initial }: Props) {
             tags,
             order: Number(order) || 0,
             isActive,
+            productCount,
             ...folderFields,
             pdfFile: pdf,
             thumbnailFile: thumb,
@@ -100,6 +115,7 @@ export function FileForm({ mode, uid, initial }: Props) {
         tags,
         order: Number(order) || 0,
         isActive,
+        productCount,
         ...folderFields,
         uid,
       });
@@ -116,9 +132,9 @@ export function FileForm({ mode, uid, initial }: Props) {
   return (
     <form
       onSubmit={(e) => void onSubmit(e)}
-      className="mx-auto max-w-xl space-y-4 rounded-2xl border border-[#E5E2DA] bg-white p-6 shadow-sm"
+      className="mx-auto max-w-xl space-y-4 rounded-2xl border border-border bg-card p-6 shadow-sm"
     >
-      <h1 className="text-lg font-semibold text-[#2F3437]">
+      <h1 className="text-lg font-semibold text-foreground">
         {mode === "create" ? "New file" : "Edit file"}
       </h1>
       {error ? (
@@ -134,36 +150,50 @@ export function FileForm({ mode, uid, initial }: Props) {
         />
       ) : null}
       <label className="block">
-        <span className="text-sm font-medium text-[#2F3437]">Title</span>
+        <span className="text-sm font-medium text-foreground">Title</span>
         <input
           required
-          className="mt-1 w-full rounded-xl border border-[#E5E2DA] px-3 py-2 text-[15px]"
+          className="mt-1 w-full rounded-xl border border-border px-3 py-2 text-[15px]"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
         />
       </label>
       <label className="block">
-        <span className="text-sm font-medium text-[#2F3437]">Description</span>
+        <span className="text-sm font-medium text-foreground">Description</span>
         <textarea
           required
           rows={3}
-          className="mt-1 w-full rounded-xl border border-[#E5E2DA] px-3 py-2 text-[15px]"
+          className="mt-1 w-full rounded-xl border border-border px-3 py-2 text-[15px]"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
         />
       </label>
       <label className="block">
-        <span className="text-sm font-medium text-[#2F3437]">Category</span>
+        <span className="text-sm font-medium text-foreground">Category</span>
         <input
-          className="mt-1 w-full rounded-xl border border-[#E5E2DA] px-3 py-2 text-[15px]"
+          className="mt-1 w-full rounded-xl border border-border px-3 py-2 text-[15px]"
           value={category}
           onChange={(e) => setCategory(e.target.value)}
         />
       </label>
       <label className="block">
-        <span className="text-sm font-medium text-[#2F3437]">Folder</span>
+        <span className="text-sm font-medium text-foreground">
+          Product count (optional)
+        </span>
+        <input
+          type="number"
+          min={0}
+          step={1}
+          className="mt-1 w-full rounded-xl border border-border px-3 py-2 text-[15px]"
+          value={productCountStr}
+          onChange={(e) => setProductCountStr(e.target.value)}
+          placeholder="e.g. number of SKUs"
+        />
+      </label>
+      <label className="block">
+        <span className="text-sm font-medium text-foreground">Folder</span>
         <select
-          className="mt-1 w-full rounded-xl border border-[#E5E2DA] bg-white px-3 py-2 text-[15px]"
+          className="mt-1 w-full rounded-xl border border-border bg-card px-3 py-2 text-[15px]"
           value={folderId}
           onChange={(e) => setFolderId(e.target.value)}
         >
@@ -177,20 +207,20 @@ export function FileForm({ mode, uid, initial }: Props) {
         </select>
       </label>
       <label className="block">
-        <span className="text-sm font-medium text-[#2F3437]">
+        <span className="text-sm font-medium text-foreground">
           Tags (comma-separated)
         </span>
         <input
-          className="mt-1 w-full rounded-xl border border-[#E5E2DA] px-3 py-2 text-[15px]"
+          className="mt-1 w-full rounded-xl border border-border px-3 py-2 text-[15px]"
           value={tagsRaw}
           onChange={(e) => setTagsRaw(e.target.value)}
         />
       </label>
       <label className="block">
-        <span className="text-sm font-medium text-[#2F3437]">Order</span>
+        <span className="text-sm font-medium text-foreground">Order</span>
         <input
           type="number"
-          className="mt-1 w-full rounded-xl border border-[#E5E2DA] px-3 py-2 text-[15px]"
+          className="mt-1 w-full rounded-xl border border-border px-3 py-2 text-[15px]"
           value={order}
           onChange={(e) => setOrder(e.target.value)}
         />
@@ -201,7 +231,7 @@ export function FileForm({ mode, uid, initial }: Props) {
           checked={isActive}
           onChange={(e) => setIsActive(e.target.checked)}
         />
-        <span className="text-sm text-[#2F3437]">Active (visible to public)</span>
+        <span className="text-sm text-foreground">Active (visible to public)</span>
       </label>
       {mode === "create" ? (
         <>
@@ -225,14 +255,14 @@ export function FileForm({ mode, uid, initial }: Props) {
         <button
           type="submit"
           disabled={saving}
-          className="rounded-xl bg-[#2F3437] px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-50"
+          className="rounded-xl bg-primary px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-50"
         >
           {saving ? "Saving…" : "Save"}
         </button>
         <button
           type="button"
           onClick={() => router.back()}
-          className="rounded-xl border border-[#E5E2DA] px-4 py-2 text-sm text-[#2F3437]"
+          className="rounded-xl border border-border px-4 py-2 text-sm text-foreground"
         >
           Cancel
         </button>

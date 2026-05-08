@@ -118,7 +118,7 @@ function ListIcon({ className }: { className?: string }) {
 export function CatalogViewToggle({ value, onChange }: Props) {
   return (
     <div
-      className="inline-flex rounded-lg border border-[#E5E2DA] bg-white p-0.5 shadow-sm sm:rounded-xl"
+      className="inline-flex rounded-xl border border-border bg-card p-0.5 shadow-[var(--shadow-card)] sm:rounded-2xl"
       dir="rtl"
       role="group"
       aria-label="طريقة العرض"
@@ -126,10 +126,10 @@ export function CatalogViewToggle({ value, onChange }: Props) {
       <button
         type="button"
         onClick={() => onChange("grid")}
-        className={`flex items-center gap-1 rounded-md px-2 py-1.5 text-xs font-medium transition sm:gap-1.5 sm:rounded-lg sm:px-2.5 sm:py-2 sm:text-sm ${
+        className={`flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs font-semibold transition sm:gap-1.5 sm:px-2.5 sm:py-2 sm:text-sm ${
           value === "grid"
-            ? "bg-[#2F3437] text-white shadow-sm"
-            : "text-[#6B6B6B] hover:bg-[#F7F6F3] hover:text-[#2F3437]"
+            ? "bg-primary text-white shadow-sm"
+            : "text-muted hover:bg-surface hover:text-foreground"
         }`}
         aria-pressed={value === "grid"}
         aria-label="عرض شبكة"
@@ -141,10 +141,10 @@ export function CatalogViewToggle({ value, onChange }: Props) {
       <button
         type="button"
         onClick={() => onChange("list")}
-        className={`flex items-center gap-1 rounded-md px-2 py-1.5 text-xs font-medium transition sm:gap-1.5 sm:rounded-lg sm:px-2.5 sm:py-2 sm:text-sm ${
+        className={`flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs font-semibold transition sm:gap-1.5 sm:px-2.5 sm:py-2 sm:text-sm ${
           value === "list"
-            ? "bg-[#2F3437] text-white shadow-sm"
-            : "text-[#6B6B6B] hover:bg-[#F7F6F3] hover:text-[#2F3437]"
+            ? "bg-primary text-white shadow-sm"
+            : "text-muted hover:bg-surface hover:text-foreground"
         }`}
         aria-pressed={value === "list"}
         aria-label="عرض قائمة"

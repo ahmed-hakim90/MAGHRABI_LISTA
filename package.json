@@ -13,9 +13,12 @@
     "vercel:check": "bash scripts/vercel-check-deployment.sh"
   },
   "dependencies": {
+    "@ai-sdk/openai": "^3.0.63",
+    "ai": "^6.0.176",
     "firebase": "^12.13.0",
     "firebase-admin": "^13.9.0",
     "next": "16.2.6",
+    "pdf-parse": "^2.4.5",
     "react": "19.2.4",
     "react-dom": "19.2.4"
   },

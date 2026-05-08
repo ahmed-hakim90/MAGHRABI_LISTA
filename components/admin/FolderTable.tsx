@@ -63,14 +63,14 @@ export function FolderTable() {
   }
 
   if (loading) {
-    return <p className="text-[#6B6B6B]">Loading folders…</p>;
+    return <p className="text-muted">Loading folders…</p>;
   }
 
   return (
-    <div className="overflow-x-auto rounded-2xl border border-[#E5E2DA] bg-white shadow-sm">
+    <div className="overflow-x-auto rounded-2xl border border-border bg-card shadow-sm">
       <table className="w-full min-w-[640px] text-left text-sm">
         <thead>
-          <tr className="border-b border-[#E5E2DA] text-[#6B6B6B]">
+          <tr className="border-b border-border text-muted">
             <th className="p-3 font-medium">Name</th>
             <th className="p-3 font-medium">Order</th>
             <th className="p-3 font-medium">Active</th>
@@ -80,16 +80,16 @@ export function FolderTable() {
         </thead>
         <tbody>
           {rows.map((folder) => (
-            <tr key={folder.id} className="border-b border-[#E5E2DA]/80">
+            <tr key={folder.id} className="border-b border-border/80">
               <td className="max-w-[260px] p-3">
-                <p className="font-medium text-[#2F3437]">{folder.name}</p>
+                <p className="font-medium text-foreground">{folder.name}</p>
                 {folder.description ? (
-                  <p className="line-clamp-2 text-xs text-[#6B6B6B]">
+                  <p className="line-clamp-2 text-xs text-muted">
                     {folder.description}
                   </p>
                 ) : null}
               </td>
-              <td className="p-3 text-[#6B6B6B]">{folder.order}</td>
+              <td className="p-3 text-muted">{folder.order}</td>
               <td className="p-3">
                 <span
                   className={`rounded-lg px-2 py-0.5 text-xs font-medium ${
@@ -101,20 +101,20 @@ export function FolderTable() {
                   {folder.isActive ? "Yes" : "No"}
                 </span>
               </td>
-              <td className="p-3 text-[#6B6B6B]">
+              <td className="p-3 text-muted">
                 {formatDisplayDate(folder.updatedAt)}
               </td>
               <td className="p-3">
                 <div className="flex flex-col gap-1">
                   <Link
                     href={`/admin/folders/${folder.id}/edit`}
-                    className="text-[#2F3437] underline"
+                    className="text-foreground underline"
                   >
                     Edit
                   </Link>
                   <button
                     type="button"
-                    className="text-left text-xs text-[#6B6B6B] hover:text-[#2F3437]"
+                    className="text-left text-xs text-muted hover:text-foreground"
                     onClick={() => void onToggle(folder)}
                   >
                     {folder.isActive ? "Deactivate" : "Activate"}
@@ -133,7 +133,7 @@ export function FolderTable() {
         </tbody>
       </table>
       {rows.length === 0 ? (
-        <p className="p-6 text-center text-[#6B6B6B]">No folders yet.</p>
+        <p className="p-6 text-center text-muted">No folders yet.</p>
       ) : null}
     </div>
   );

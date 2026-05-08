@@ -87,11 +87,28 @@ export function CatalogPdfViewer({ cardId, title }: Props) {
           </svg>
         </a>
       </header>
-      <iframe
-        title={title}
-        src={pdfSrc}
-        className="min-h-0 w-full flex-1 border-0 bg-white"
-      />
+      <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-6 px-6 pb-safe pt-8 text-center">
+        <div className="max-w-sm space-y-2 text-white/90">
+          <p className="text-base font-semibold leading-snug">
+            عرض الملف في تبويب جديد
+          </p>
+          <p className="text-sm leading-relaxed text-white/65">
+            على التليفون والـ PWA، فتح الـ PDF في تبويب منفصل يعرض كل الصفحات
+            ويتيح التمرير والتكبير بشكل أوضح.
+          </p>
+        </div>
+        <a
+          href={pdfSrc}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex min-h-touch w-full max-w-xs items-center justify-center rounded-2xl bg-white px-6 py-3.5 text-sm font-bold text-[#0f172a] shadow-lg transition hover:bg-white/95 active:scale-[0.99]"
+        >
+          فتح PDF
+        </a>
+        <p className="max-w-xs text-xs text-white/45">
+          إذا لم يظهر التبويب، تحقق من حظر النوافذ المنبثقة للموقع.
+        </p>
+      </div>
     </div>
   );
 }

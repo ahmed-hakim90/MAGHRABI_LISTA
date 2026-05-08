@@ -60,6 +60,8 @@ body {
   background: var(--notion-bg);
   color: var(--notion-text);
   font-family: var(--font-sans);
+  /* Less rubber-band when there’s little to scroll — helps fixed FAB feel stable on iOS. */
+  overscroll-behavior-y: contain;
 }
 
 /* While the splash is mounted, match the home page background so the first

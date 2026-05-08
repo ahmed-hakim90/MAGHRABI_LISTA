@@ -60,11 +60,11 @@ export default function HomePage() {
           onCatalogViewChange={setCatalogView}
         />
       </div>
-      <div className="mt-4 min-h-[min(60vh,560px)] pb-safe-fab sm:mt-6">
+      <main className="mt-4 flex min-h-0 flex-1 flex-col sm:mt-6">
         {loading ? (
-          <div className="min-h-[200px]" aria-hidden />
+          <div className="min-h-[min(12rem,40dvh)] flex-1" aria-hidden />
         ) : error ? (
-          <p className="py-20 text-center text-red-800">{error}</p>
+          <p className="flex-1 py-16 text-center text-red-800">{error}</p>
         ) : (
           <FolderedFileGrid
             cards={filtered}
@@ -72,7 +72,7 @@ export default function HomePage() {
             view={catalogView}
           />
         )}
-      </div>
+      </main>
     </div>
   );
 }

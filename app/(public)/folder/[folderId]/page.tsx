@@ -55,7 +55,7 @@ export default function FolderPage({
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#F7F6F3]">
+    <div className="flex min-h-dvh flex-col bg-[#F7F6F3]">
       <LoadingOverlay open={loading} />
       <LogoHeader
         appName={s.appName}
@@ -73,15 +73,19 @@ export default function FolderPage({
         </Link>
       </div>
       {loading ? (
-        <div className="min-h-[200px]" aria-hidden />
+        <main className="min-h-[min(12rem,40dvh)] flex-1" aria-hidden />
       ) : error ? (
-        <p className="py-20 text-center text-red-800">{error}</p>
+        <main className="flex flex-1 flex-col">
+          <p className="flex-1 py-16 text-center text-red-800">{error}</p>
+        </main>
       ) : !folder ? (
-        <p className="py-20 text-center text-[#6B6B6B]">
-          هذا المجلد غير متوفر.
-        </p>
+        <main className="flex flex-1 flex-col">
+          <p className="flex-1 py-16 text-center text-[#6B6B6B]">
+            هذا المجلد غير متوفر.
+          </p>
+        </main>
       ) : (
-        <>
+        <main className="flex min-h-0 flex-1 flex-col">
           <div className="mx-auto max-w-6xl px-4 pb-4">
             <h2 className="text-xl font-semibold text-[#2F3437] sm:text-2xl">
               {folder.name}
@@ -98,10 +102,10 @@ export default function FolderPage({
               onCatalogViewChange={setCatalogView}
             />
           </div>
-          <div className="mt-4 min-h-[min(60vh,560px)] sm:mt-6">
+          <div className="mt-4 flex min-h-0 flex-1 flex-col sm:mt-6">
             <FileGrid cards={folderCards} view={catalogView} />
           </div>
-        </>
+        </main>
       )}
     </div>
   );

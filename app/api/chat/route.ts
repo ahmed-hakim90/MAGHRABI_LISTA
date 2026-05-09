@@ -196,6 +196,8 @@ function openRouterCompatConfig():
   return { apiKey, baseUrl, model };
 }
 
+type ChatLlmConfig = NonNullable<ReturnType<typeof openRouterCompatConfig>>;
+
 export async function POST(request: Request) {
   const cfg = openRouterCompatConfig();
   if (!cfg) {
@@ -225,6 +227,35 @@ export async function POST(request: Request) {
       { status: 503 },
     );
   }
+
+  try {
+    return await handleChatPost(request, cfg);
+  } catch (e) {
+    const err = e instanceof Error ? e : new Error(String(e));
+    console.error("[api/chat] unhandled exception:", err.message, err.stack);
+    const firebaseHint = /FIREBASE|firebase|private_key|service_account/i.test(
+      err.message,
+    );
+    return NextResponse.json(
+      {
+        error: "internal_error",
+        code: "internal_error",
+        message: firebaseHint
+          ? "إعداد Firebase Admin على Vercel غير صالح أو ناقص. راجع FIREBASE_SERVICE_ACCOUNT_JSON (JSON صحيح في سطر واحد) أو FIREBASE_ADMIN_*، ثم أعد النشر."
+          : "خطأ داخلية في الخادم. من Vercel → Logs ابحث عن [api/chat] unhandled. تأكد أن OPENROUTER_API_KEY و OPENROUTER_MODEL و Firebase Admin مضبوطين لبيئة Production (ليس Preview فقط) ثم Redeploy.",
+        ...(process.env.NODE_ENV === "development"
+          ? { debug: { detail: err.message } }
+          : {}),
+      },
+      { status: 500 },
+    );
+  }
+}
+
+async function handleChatPost(
+  request: Request,
+  cfg: ChatLlmConfig,
+): Promise<NextResponse> {
   const { apiKey, baseUrl, model } = cfg;
 
   let body: Body;

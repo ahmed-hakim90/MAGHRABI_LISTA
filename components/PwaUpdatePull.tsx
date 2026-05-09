@@ -53,26 +53,34 @@ export function PwaUpdatePull() {
     };
     navigator.serviceWorker.addEventListener("controllerchange", onControllerChange);
 
-    void navigator.serviceWorker.register(SW_PATH).then((reg) => {
-      if (cancelled) return;
-      regRef.current = reg;
-      syncWaitingBanner(reg, setShowUpdateBanner);
+    void navigator.serviceWorker
+      .register(SW_PATH)
+      .then((reg) => {
+        if (cancelled) return;
+        regRef.current = reg;
+        syncWaitingBanner(reg, setShowUpdateBanner);
 
-      reg.addEventListener("updatefound", () => {
-        const nw = reg.installing;
-        if (!nw) return;
-        nw.addEventListener("statechange", () => {
-          if (nw.state === "installed") {
-            syncWaitingBanner(reg, setShowUpdateBanner);
-          }
+        reg.addEventListener("updatefound", () => {
+          const nw = reg.installing;
+          if (!nw) return;
+          nw.addEventListener("statechange", () => {
+            if (nw.state === "installed") {
+              syncWaitingBanner(reg, setShowUpdateBanner);
+            }
+          });
         });
+      })
+      .catch(() => {
+        /* avoid uncaught (e.g. update fetch failed, importScripts blocked) */
       });
-    });
 
     const checkForUpdate = () => {
-      void navigator.serviceWorker.getRegistration().then((reg) => {
-        if (reg) void reg.update();
-      });
+      void navigator.serviceWorker
+        .getRegistration()
+        .then((reg) => {
+          if (reg) void reg.update().catch(() => {});
+        })
+        .catch(() => {});
     };
 
     const onVisibleOrFocus = () => {

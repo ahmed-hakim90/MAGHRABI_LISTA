@@ -1,6 +1,5 @@
 import "server-only";
 
-import { PDFParse } from "pdf-parse";
 import {
   type CatalogAudience,
   normalizeAudienceFromDoc,
@@ -106,6 +105,7 @@ export async function getPdfTextExcerptForUrl(fileUrl: string): Promise<string |
       return null;
     }
 
+    const { PDFParse } = await import("pdf-parse");
     const parser = new PDFParse({ data: buf });
     try {
       const result = await parser.getText({ first: PDF_FIRST_PAGES });

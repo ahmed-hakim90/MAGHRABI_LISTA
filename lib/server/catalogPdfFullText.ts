@@ -1,7 +1,5 @@
 import "server-only";
 
-import { PDFParse } from "pdf-parse";
-
 /** Same cap as excerpt fetch — avoid huge memory on corrupt PDFs. */
 export const PDF_INDEX_MAX_BYTES = 15 * 1024 * 1024;
 /** Firestore-friendly upper bound; full catalogs rarely need more for keyword RAG. */
@@ -14,6 +12,7 @@ export async function extractFullPdfTextFromBuffer(
   buf: Buffer,
 ): Promise<string | null> {
   if (buf.length === 0 || buf.length > PDF_INDEX_MAX_BYTES) return null;
+  const { PDFParse } = await import("pdf-parse");
   const parser = new PDFParse({ data: buf });
   try {
     const result = await parser.getText();

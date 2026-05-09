@@ -21,6 +21,10 @@ const FAB_GREETING_AR =
 
 const GREETING_SHOW_DELAY_MS = 550;
 
+function greetingDismissedStorageKey(audience: FloatingAiChatAudience): string {
+  return `elmaghraby-fab-greeting-dismissed-${audience}`;
+}
+
 function parseStored(raw: string | null): ChatMessage[] {
   if (!raw) return [];
   try {
@@ -62,21 +66,37 @@ export function FloatingAiChat({ audience }: { audience: FloatingAiChatAudience 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [greetingVisible, setGreetingVisible] = useState(false);
+  const [greetingDismissed, setGreetingDismissed] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (open) {
-      setGreetingVisible(false);
+    if (open || greetingDismissed) {
+      if (open) setGreetingVisible(false);
       return;
     }
     const t = window.setTimeout(() => setGreetingVisible(true), GREETING_SHOW_DELAY_MS);
     return () => window.clearTimeout(t);
-  }, [open]);
+  }, [open, greetingDismissed]);
 
   useEffect(() => {
+    if (typeof window !== "undefined") {
+      setGreetingDismissed(
+        localStorage.getItem(greetingDismissedStorageKey(audience)) === "1",
+      );
+    }
     setMessages(parseStored(typeof window !== "undefined" ? localStorage.getItem(storageKey) : null));
     setHydrated(true);
-  }, [storageKey]);
+  }, [audience, storageKey]);
+
+  const dismissFabGreeting = useCallback(() => {
+    setGreetingDismissed(true);
+    setGreetingVisible(false);
+    try {
+      localStorage.setItem(greetingDismissedStorageKey(audience), "1");
+    } catch {
+      /* ignore */
+    }
+  }, [audience]);
 
   useEffect(() => {
     if (!hydrated) return;
@@ -213,16 +233,29 @@ export function FloatingAiChat({ audience }: { audience: FloatingAiChatAudience 
         dir="ltr"
         className={`fixed ${fabCornerClass} z-[100] flex flex-col items-end gap-2`}
       >
-        {!open ? (
+        {!open && !greetingDismissed ? (
           <div
             dir="rtl"
-            className={`max-w-[min(14rem,calc(100vw-5rem))] rounded-xl border border-border bg-card px-2.5 py-1.5 text-sm leading-snug text-foreground shadow-md ring-1 ring-border/80 transition-all duration-300 ease-out ${
+            className={`max-w-[min(14rem,calc(100vw-5rem))] rounded-xl border border-border bg-card py-1.5 ps-2.5 pe-1 text-sm leading-snug text-foreground shadow-md ring-1 ring-border/80 transition-all duration-300 ease-out ${
               greetingVisible
                 ? "translate-y-0 scale-100 opacity-100"
                 : "pointer-events-none translate-y-1 scale-[0.98] opacity-0"
             }`}
           >
-            {FAB_GREETING_AR}
+            <div className="flex items-start gap-1">
+              <p className="min-w-0 flex-1 pt-0.5">{FAB_GREETING_AR}</p>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  dismissFabGreeting();
+                }}
+                className="min-h-touch min-w-touch shrink-0 rounded-lg text-lg leading-none text-muted hover:bg-surface"
+                aria-label="إغلاق رسالة المساعدة"
+              >
+                ×
+              </button>
+            </div>
           </div>
         ) : null}
         <button

@@ -3,6 +3,7 @@ import "server-only";
 import {
   type CatalogAudience,
   normalizeAudienceFromDoc,
+  publicCatalogFileViewPath,
 } from "@/lib/constants/catalogChannels";
 import { getAdminFirestore } from "@/lib/firebase/admin";
 
@@ -25,24 +26,31 @@ export async function buildFolderFilesContextForChat(
       .limit(80)
       .get();
 
-    const titles: string[] = [];
+    type Row = { title: string; path: string };
+    const rows: Row[] = [];
     for (const doc of snap.docs) {
       const data = doc.data() as Record<string, unknown>;
       if (data.isActive === false || data.folderIsActive === false) continue;
       const aud = normalizeAudienceFromDoc(data.audience);
       if (aud !== routeAudience) continue;
       const title = String(data.title ?? "").replace(/[\r\n]+/g, " ").trim();
-      if (title) titles.push(title);
+      if (!title) continue;
+      rows.push({
+        title,
+        path: publicCatalogFileViewPath(routeAudience, doc.id),
+      });
     }
 
-    if (titles.length === 0) return "";
+    if (rows.length === 0) return "";
 
     const lines = [
-      "## Current folder — price list files (titles only, from site)",
-      "The user is browsing this folder in the catalog (grid/list of files). There is no PDF text in this request unless a separate file block is attached.",
-      "If they ask which catalog / which file / what is available, answer using these titles in short Egyptian Arabic; suggest opening the relevant file for prices.",
+      "## Current folder — price list files (titles + open paths on this site)",
+      "The user is browsing this folder in the catalog. There may be no PDF text unless a file block is attached.",
+      "When suggesting a catalog, give **title + path** from the list below (copy the path exactly). Do not say only «open the catalog» without a path.",
       "",
-      ...titles.slice(0, 45).map((t) => `- ${t}`),
+      ...rows
+        .slice(0, 45)
+        .map((r) => `- **${r.title}** → \`${r.path}\``),
     ];
     return lines.join("\n");
   } catch {

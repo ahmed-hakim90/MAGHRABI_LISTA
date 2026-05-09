@@ -20,9 +20,10 @@ export type CatalogCardChatBundle = {
 };
 
 /** Tunable: more pages / chars → better product coverage, higher latency & model cost. */
-const PDF_EXCERPT_MAX_CHARS = 20_000;
+const PDF_EXCERPT_MAX_CHARS = 38_000;
 const PDF_MAX_BYTES = 15 * 1024 * 1024;
-const PDF_FIRST_PAGES = 32;
+/** When `catalogTextPath` is missing, parse this many PDF pages from URL (legacy path). */
+const PDF_FIRST_PAGES = 56;
 const EXCERPT_CACHE_MS = 15 * 60 * 1000;
 
 const excerptCache = new Map<string, { expires: number; excerpt: string | null }>();
@@ -84,7 +85,7 @@ export async function getActiveCardChatBundle(
 
 /** Tokens for scoring user questions against PDF / card text (Arabic-friendly). */
 export function searchTokensFromUserMessage(query: string): string[] {
-  return augmentArabicSearchTokens(tokenizeForSearch(query));
+  return catalogSearchTokensForQuery(query);
 }
 
 export async function getPdfTextExcerptForUrl(fileUrl: string): Promise<string | null> {
@@ -152,6 +153,155 @@ function augmentArabicSearchTokens(tokens: string[]): string[] {
   return [...new Set(merged)].slice(0, 36);
 }
 
+/**
+ * Extra Latin / Arabic tokens when users type product names in Arabic letters
+ * (e.g. «هاند بليندر») but the PDF lists English titles — improves excerpt windows + auto-pick.
+ */
+const AR_WORD_LATIN_SYNONYMS: Record<string, string[]> = {
+  هاند: ["hand"],
+  بليندر: ["blender"],
+  بلندر: ["blender"],
+  بليند: ["blender"],
+  ميكروويف: ["microwave"],
+  مايكروويف: ["microwave"],
+  ميكرويف: ["microwave"],
+  غساله: ["washer", "washing"],
+  غسالة: ["washer", "washing"],
+  ثلاجه: ["fridge", "refrigerator"],
+  ثلاجة: ["fridge", "refrigerator"],
+  تلفزيون: ["tv", "television"],
+  مكنسه: ["vacuum"],
+  مكنسة: ["vacuum"],
+  مكواه: ["iron"],
+  مكواة: ["iron"],
+  سخان: ["heater", "boiler"],
+  مروحه: ["fan"],
+  مروحة: ["fan"],
+  ديب: ["deep"],
+  فريزر: ["freezer"],
+  كيتشن: ["kitchen"],
+  ميكسر: ["mixer"],
+  ميكسير: ["mixer"],
+  خلاط: ["blender", "mixer"],
+  توستر: ["toaster"],
+  قلايه: ["fryer", "air fryer"],
+  قلاية: ["fryer", "air fryer"],
+  كبه: ["food processor", "processor"],
+  كبة: ["food processor", "processor"],
+  عصاره: ["juicer"],
+  عصارة: ["juicer"],
+  دش: ["shower"],
+};
+
+function expandLoanwordLatinTokens(query: string): string[] {
+  const out = new Set<string>();
+  const q = query.replace(/\s+/g, " ").trim();
+  if (!q) return [];
+
+  const add = (xs: string[]) => {
+    for (const x of xs) {
+      const t = x.trim().toLowerCase();
+      if (t.length >= 2) out.add(t);
+    }
+  };
+
+  // Phrase-level (Arabic spelling of English product names)
+  if (/هاند/u.test(q) && /بل(ي|ا)?ن?د|بليند|بلندر/u.test(q)) {
+    add(["hand", "blender", "hand blender", "hand-blender"]);
+  }
+  if (/ديب/u.test(q) && /فريز/u.test(q)) {
+    add(["deep freezer", "freezer"]);
+  }
+  if (/اير/u.test(q) && /فري/i.test(q)) {
+    add(["air fryer", "fryer"]);
+  }
+
+  for (const raw of tokenizeForSearch(q)) {
+    const key = raw.toLowerCase();
+    const syn = AR_WORD_LATIN_SYNONYMS[key];
+    if (syn) add(syn);
+  }
+
+  return [...out].slice(0, 24);
+}
+
+/**
+ * Rough Arabic-script → Latin letters (one letter each) so queries like «هاند» still
+ * hit English «hand» in OCR text — works for any word, not only a fixed synonym list.
+ */
+const PHONETIC_AR_TO_LATIN: Record<string, string> = {
+  ا: "a",
+  أ: "a",
+  إ: "i",
+  آ: "a",
+  ب: "b",
+  ت: "t",
+  ث: "th",
+  ج: "j",
+  ح: "h",
+  خ: "kh",
+  د: "d",
+  ذ: "dh",
+  ر: "r",
+  ز: "z",
+  س: "s",
+  ش: "sh",
+  ص: "s",
+  ض: "d",
+  ط: "t",
+  ظ: "z",
+  ع: "a",
+  غ: "gh",
+  ف: "f",
+  ق: "q",
+  ك: "k",
+  ل: "l",
+  م: "m",
+  ن: "n",
+  ه: "h",
+  و: "w",
+  ي: "y",
+  ى: "a",
+  ة: "a",
+  ئ: "y",
+  ؤ: "w",
+  ء: "",
+  ڤ: "v",
+  پ: "p",
+  چ: "ch",
+  گ: "g",
+};
+
+function phoneticLatinFromArabicWord(word: string): string | null {
+  if (word.length < 3 || !/^[\u0600-\u06FF]+$/u.test(word)) return null;
+  const compact = [...word]
+    .map((c) => PHONETIC_AR_TO_LATIN[c] ?? "")
+    .join("")
+    .replace(/[^a-z]/gi, "")
+    .toLowerCase();
+  if (compact.length < 3 || compact.length > 14) return null;
+  if (word.startsWith("ال") && word.length > 9) return null;
+  return compact;
+}
+
+function expandPhoneticLatinTokens(query: string): string[] {
+  const out: string[] = [];
+  for (const w of tokenizeForSearch(query)) {
+    const p = phoneticLatinFromArabicWord(w);
+    if (p) out.push(p);
+  }
+  return out.slice(0, 12);
+}
+
+/** Tokens for scoring PDFs / sliding-window excerpt (Arabic morphology + Latin loanwords). */
+export function catalogSearchTokensForQuery(query: string): string[] {
+  const fromWords = tokenizeForSearch(query);
+  const augmented = augmentArabicSearchTokens(fromWords);
+  const latin = expandLoanwordLatinTokens(query);
+  const phonetic = expandPhoneticLatinTokens(query);
+  return [...new Set([...augmented, ...latin, ...phonetic])].slice(0, 56);
+}
+
 /** User asks for cheapest / price / comparison — bias excerpt toward numeric rows. */
 function isPriceOrComparisonQuery(query: string): boolean {
   const q = query.trim();
@@ -159,19 +309,21 @@ function isPriceOrComparisonQuery(query: string): boolean {
   return (
     /أقل|أرخص|ارخص|أدنى|ادني|سعر|أسعار|بكام|كم\s|الأرخص|السعر|egp/i.test(
       q,
-    ) || /price|lowest|cheap|cheapest|min(?:imum)?\s*price/i.test(q)
+    ) ||
+    /price|lowest|cheap|cheapest|min(?:imum)?\s*price/i.test(q) ||
+    /موجود\s*ايه|إيه\s*الموجود|ايه\s*الموجود|قائمة|موديلات|أصناف|اصناف|منتجات|تفاصيل|بيانات|عرض\s*ال|اعرض|اعرضلي|كل\s*ال/i.test(
+      q,
+    )
   );
 }
 
 function stratifiedExcerpt(flat: string, maxChars: number): string {
   if (flat.length <= maxChars) return flat;
-  const parts = 3;
-  const budget = Math.max(200, Math.floor(maxChars / parts) - 6);
-  const offsets = [
-    0,
-    Math.max(0, Math.floor(flat.length * 0.32)),
-    Math.max(0, Math.floor(flat.length * 0.62)),
-  ];
+  const parts = 7;
+  const budget = Math.max(140, Math.floor(maxChars / parts) - 8);
+  /** Spread across whole file so late pages (often price tables) get representation. */
+  const ratios = [0, 0.12, 0.24, 0.38, 0.52, 0.68, 0.84];
+  const offsets = ratios.map((r) => Math.max(0, Math.floor(flat.length * r)));
   const chunks = offsets.map((start) => flat.slice(start, start + budget));
   let combined = chunks.join("\n…\n");
   if (combined.length > maxChars) combined = combined.slice(0, maxChars);
@@ -191,19 +343,23 @@ export function pickExcerptForQuestion(
   const flat = fullExcerpt.replace(/\s+/g, " ").trim();
   if (flat.length <= maxChars) return flat;
 
+  /** Always reserve a slice of the budget for evenly spaced chunks of the file (any product / page). */
+  const stratBudget = Math.max(900, Math.floor(maxChars * 0.3));
+  const tokenBudget = Math.max(1200, maxChars - stratBudget - 16);
+
   const priceQ = isPriceOrComparisonQuery(query);
-  const extraLex = priceQ ? ["سعر", "أسعار", "جنيه"] : [];
-  const tokens = augmentArabicSearchTokens([
-    ...tokenizeForSearch(query),
-    ...extraLex,
-  ]);
+  const extraLex = priceQ ? ["سعر", "أسعار", "جنيه", "egp", "le"] : [];
+  const tokens = catalogSearchTokensForQuery(`${query} ${extraLex.join(" ")}`);
   if (tokens.length === 0) return stratifiedExcerpt(flat, maxChars);
 
   const lower = flat.toLowerCase();
   const lowerTokens = tokens.map((t) => t.toLowerCase());
 
-  const windowSize = Math.min(900, Math.max(400, Math.floor(maxChars / 3)));
-  const step = Math.max(180, Math.floor(windowSize / 2));
+  const windowSize = Math.min(1500, Math.max(440, Math.floor(tokenBudget / 2.2)));
+  const step = Math.max(
+    120,
+    Math.floor(windowSize / (flat.length > 80_000 ? 2.8 : 2)),
+  );
 
   type Scored = { start: number; score: number };
   const scored: Scored[] = [];
@@ -248,24 +404,33 @@ export function pickExcerptForQuestion(
     if (score === 0 && anyHit) break;
     if (score === 0 && !anyHit) continue;
     addRange(start, windowSize);
-    if (used >= maxChars) break;
+    if (used >= tokenBudget) break;
   }
 
   if (!anyHit || parts.length === 0) return stratifiedExcerpt(flat, maxChars);
 
-  let combined = parts.join("\n…\n");
-  if (combined.length > maxChars) combined = combined.slice(0, maxChars);
-  const t = combined.trim();
-  return t.length > 0 ? t : flat.slice(0, maxChars);
+  let tokenCombined = parts.join("\n…\n");
+  if (tokenCombined.length > tokenBudget) {
+    tokenCombined = tokenCombined.slice(0, tokenBudget);
+  }
+  const stratPart = stratifiedExcerpt(flat, stratBudget);
+  const merged = `${tokenCombined.trim()}\n…\n${stratPart.trim()}`.slice(0, maxChars).trim();
+  return merged.length > 0 ? merged : flat.slice(0, maxChars);
 }
 
 export function buildCatalogContextBlock(
   bundle: CatalogCardChatBundle,
   excerpt: string | null,
-  opts?: { excerptMode?: CatalogContextExcerptMode; compact?: boolean },
+  opts?: {
+    excerptMode?: CatalogContextExcerptMode;
+    compact?: boolean;
+    /** e.g. /retail/file/{id}/view — must be echoed to the user when excerpt lacks detail */
+    catalogViewPath?: string;
+  },
 ): string {
   const excerptMode = opts?.excerptMode ?? "relevant_slice";
   const compact = opts?.compact ?? false;
+  const viewPath = opts?.catalogViewPath?.trim() || "";
   const tags = bundle.tags.length ? bundle.tags.join("، ") : "—";
   const lines: string[] = [];
   if (!compact) {
@@ -284,6 +449,9 @@ export function buildCatalogContextBlock(
   );
   if (bundle.productCount != null) {
     lines.push(`- Line count (from card): ${bundle.productCount}`);
+    lines.push(
+      "  (تقريباً عدد بنود/صفوف في القائمة حسب الموقع؛ لو اتسأل عن «كم موديل» ولم تقدر تعدّ من المقتطف، اذكر هذا الرقم كتقريب ومعاينة الملف للتأكد.)",
+    );
   }
   lines.push("");
   if (excerptMode === "metadata_only") {
@@ -293,7 +461,7 @@ export function buildCatalogContextBlock(
     );
   } else if (excerpt) {
     lines.push(
-      "## PDF text excerpt (OCR; slice chosen to align with the user question; not the full file)",
+      "## PDF text excerpt (OCR; relevant windows + evenly spaced slices from the file; not the full file)",
     );
     lines.push(excerpt);
   } else {
@@ -302,9 +470,19 @@ export function buildCatalogContextBlock(
       "Use card metadata only; tell the user detailed prices are in the PDF viewer.",
     );
   }
+  if (viewPath) {
+    lines.push("");
+    lines.push("## Catalog link (this site — copy into reply when needed)");
+    lines.push(
+      `Path to open this price list: ${viewPath}`,
+    );
+    lines.push(
+      "If the product is not clearly in the excerpt, still give the user this path plus the card title so they open the right catalog.",
+    );
+  }
   lines.push("");
   lines.push(
-    "عند الإجابة: استخدم فقط ما ورد أعلاه؛ رد مصري قصير. لو السؤال عن أقل سعر أو أرخص موديل، قارن الأرقام الظاهرة في النص واذكر اسم/كود المنتج والسعر للأرخص إن وُجد؛ لا تكتفي برابط الملف. لو المقتطف لا يكفي للمقارنة، قُل ذلك صراحة ثم اقترح المعاينة. ممنوع اختراع أسعار أو موديلات.",
+    "عند الإجابة: استخدم فقط ما ورد أعلاه؛ رد مصري قصير. لو السؤال عن أقل سعر أو أرخص موديل، قارن الأرقام الظاهرة في النص واذكر اسم/كود المنتج والسعر للأرخص إن وُجد. لو المقتطف لا يكفي عن الصنف، قُل ذلك بجملة واحدة ثم **ألزم** المستخدم بمسار «Catalog link» أعلاه مع عنوان البطاقة؛ ممنوع جملة فضلة من غير مسار ولا اسم ملف. ممنوع اختراع أسعار أو موديلات.",
   );
   return lines.join("\n");
 }
@@ -323,14 +501,24 @@ export function buildMultiFileCatalogContextBlock(
     "[English — for content policy] Multiple excerpts from legal B2B/B2C catalog PDFs may follow. Tool names refer to retail power tools only. Use only provided text for facts.",
     "",
     "## Auto-selected catalog files (matched to the visitor question)",
-    "Excerpts are partial OCR; not full PDFs. If the user asks for lowest price, compare numbers in the text and name the cheapest model/SKU when possible; do not answer with only a link.",
+    "Excerpts are partial OCR; not full PDFs. If the user asks for lowest price, compare numbers in the text and name the cheapest model/SKU when possible.",
+    "If a product is missing from the excerpt, you MUST still tell the user which catalog(s) to open: copy each **Open:** path and the file title from the summary below — do not reply with a vague «check the catalog» line.",
     "",
   ];
+  const linkSummary = items
+    .map(
+      (it, i) =>
+        `${i + 1}. **${it.bundle.title}** → \`${publicCatalogFileViewPath(audience, it.cardId)}\``,
+    )
+    .join("\n");
+  head.push("## روابط الكتالوج المرشّحة (انسخ المسار + العنوان في الرد لو النص ناقص)\n", linkSummary, "\n");
+
   const sections = items.map((it, i) => {
     const path = publicCatalogFileViewPath(audience, it.cardId);
     const block = buildCatalogContextBlock(it.bundle, it.excerpt, {
       excerptMode: it.excerptMode,
       compact: true,
+      catalogViewPath: path,
     });
     return `### (${i + 1}) ${it.bundle.title}\n- Open: ${path}\n\n${block}`;
   });

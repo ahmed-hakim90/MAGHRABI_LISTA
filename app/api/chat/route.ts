@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
-import type { CatalogAudience } from "@/lib/constants/catalogChannels";
+import {
+  type CatalogAudience,
+  publicCatalogFileViewPath,
+} from "@/lib/constants/catalogChannels";
 import {
   buildCatalogContextBlock,
   buildMultiFileCatalogContextBlock,
@@ -62,11 +65,11 @@ function systemPrompt(
       : "المستخدم يتصفح كتالوج التجزئة فقط. اذكر كتالوج التجزئة عند الحاجة ولا تخلطه بجملة.";
 
   const priceRule = hasFileContext
-    ? "لو وُجد «نص PDF» أو «Auto-selected catalog files» أو بيانات بطاقة، اذكر المنتجات والأسعار **من النص فقط** حرفياً قدر الإمكان. لو السؤال عن **أقل سعر** أو **أرخص موديل** أو **بكام**: قارن الأرقام في المقتطف واذكر **اسم أو كود المنتج** والسعر للأرخص إن وُجد؛ **ممنوع** الاكتفاء برابط الملف بدون إجابة من النص. لو المقتطف لا يكفي للمقارنة، قُل ذلك بجملة ثم يمكنك رابط المعاينة مرة واحدة. لو مش ظاهر في المقتطف، قُل باختصار إن الباقي في معاينة الملف أو ملف تاني من القائمة."
+    ? "لو وُجد «نص PDF» أو «Auto-selected catalog files» أو بيانات بطاقة، اذكر المنتجات والأسعار **من النص فقط** حرفياً قدر الإمكان. لو السؤال عن **صنف معيّن** (مثل خلاط أو مكنسة): ابحث في المقتطف عن أقرب اسم/كود بالعربي أو الإنجليزي واذكر **السعر والموديل/الكود** لكل صف واضح؛ لو وُجد أكثر من سطر للصنف، عِدّهم وقل **عدد الموديلات الظاهر** في المقتطف. لو السؤال عن **أقل سعر** أو **أرخص موديل** أو **بكام**: قارن الأرقام في المقتطف واذكر **اسم أو كود المنتج** والسعر للأرخص إن وُجد. **روابط الكتالوج:** لو المقتطف ناقص، اعرض الرابط كـ Markdown: `[عنوان القائمة](/wholesale/file/…/view)` أو `[العنوان](/retail/file/…/view)` بحيث **يظهر للمستخدم العنوان فقط** والمسار يكون داخل الأقواس — **ممنوع** كتابة المسار الخام ظاهراً ثم «بعنوان»؛ انسخ المسار من «Catalog link» أو «Open:» أو السياق داخل أقواس Markdown. **ممنوع** الاكتفاء بعبارة عامة من غير رابط Markdown. لو وُجد «Line count (from card)» ولم تستطع العدّ من النص، اذكره كتقريب لحجم القائمة مع تنبيه أن التفاصيل في المعاينة."
     : "من غير مقتطف PDF: ما تذكرش أسعار ولا تفاصيل منتج من جدول؛ لو فيه قائمة عناوين ملفات في المجلد استخدمها، وإلا وجّه يفتح الملف المناسب أو يتواصل مع المبيعات.";
 
   const folderRule = hasFolderContext
-    ? "قسم «Current folder» يعرض عناوين قوائم الأسعار في المجلد الحالي؛ لو اتسأل «أنهي كتالوج؟» أو «إيه المتاح؟» جاوب بأسماء الملفات دي باختصار وقُل يفتح الملف للتفاصيل والأسعار."
+    ? "قسم «Current folder» فيه عناوين الملفات و**مسارات الفتح** (`/wholesale/file/...` أو `/retail/file/...`)؛ لو اتسأل «أنهي كتالوج؟» أو «إيه المتاح؟» أو عن صنف معيّن، اذكر **العنوان + المسار** من السياق عشان المستخدم يفتح الملف الصح مباشرة."
     : "";
 
   return `أنت مساعد موقع كتالوج المغربي (ElMaghraby).
@@ -377,7 +380,7 @@ async function handleChatPost(
         excerptMode = "metadata_only";
         excerptForModel = null;
       } else {
-        const cap = attempt === 0 ? 4200 : 1600;
+        const cap = attempt === 0 ? 12_000 : 6000;
         excerptForModel = pickExcerptForQuestion(fullPdfExcerpt, message, cap);
         if (!excerptForModel && fullPdfExcerpt) {
           excerptForModel = fullPdfExcerpt.slice(0, cap);
@@ -385,10 +388,14 @@ async function handleChatPost(
       }
       catalogBlock = buildCatalogContextBlock(loadedCard.bundle, excerptForModel, {
         excerptMode,
+        catalogViewPath: publicCatalogFileViewPath(
+          audience as CatalogAudience,
+          cardIdRaw,
+        ),
       });
     } else if (autoPickedCards.length > 0) {
       excerptMode = attempt === 2 ? "metadata_only" : "relevant_slice";
-      const capPer = attempt === 0 ? 2000 : 900;
+      const capPer = attempt === 0 ? 4200 : 2400;
       const items = autoPickedCards.map((c) => ({
         cardId: c.cardId,
         bundle: c.bundle,
@@ -438,7 +445,7 @@ async function handleChatPost(
         body: JSON.stringify({
           model: model.trim(),
           messages,
-          max_tokens: hasFileContext ? 420 : 260,
+          max_tokens: hasFileContext ? 560 : 260,
           temperature: 0.25,
         }),
         signal: AbortSignal.timeout(20_000),

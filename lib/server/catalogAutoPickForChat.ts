@@ -11,9 +11,9 @@ import {
 } from "@/lib/server/catalogCardChatContext";
 import { getCatalogTextForChatFromBundle } from "@/lib/server/catalogTextIndex";
 
-const MAX_FINAL_FILES = 4;
+const MAX_FINAL_FILES = 6;
 /** When card metadata does not match the question, probe this many PDFs (cached) then re-rank. */
-const MAX_PDF_PROBE = 12;
+const MAX_PDF_PROBE = 18;
 /** If the best metadata score reaches this, only those top files are fetched (save work). */
 const META_STRONG = 5;
 

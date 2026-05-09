@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ChatMessageContent } from "@/components/public/ChatMessageContent";
 
 export type FloatingAiChatAudience = "wholesale" | "retail";
@@ -16,10 +16,36 @@ const STORAGE_KEYS: Record<FloatingAiChatAudience, string> = {
 const MAX_STORED_MESSAGES = 4;
 const MAX_INPUT = 300;
 
-const FAB_GREETING_AR =
-  "مرحبا لو بتدور علي منتج معين انا هنا لمساعدتك";
+/** نص مختصر لزر الفقاعة (title / aria) */
+const FAB_ASSISTANT_HINT_AR =
+  "مساعد ذكي للأسئلة عن الكتالوج وملفات الأسعار";
 
 const GREETING_SHOW_DELAY_MS = 550;
+
+function fabGreetingBullets(
+  activeCardId: string | undefined,
+  activeFolderId: string | undefined,
+): string[] {
+  if (activeCardId) {
+    return [
+      "تلخيص أو أسئلة عن النص المستخرج من ملف الـ PDF المفتوح",
+      "البحث عن منتجات وملفات أسعار تانية في الكتالوج",
+      "مساعدتك في فهم المحتوى والتنقّل بين الملفات",
+    ];
+  }
+  if (activeFolderId) {
+    return [
+      "ذكر عناوين قوائم الأسعار الظاهرة في المجلد الحالي",
+      "البحث في الكتالوج وملفات PDF حسب سؤالك",
+      "الإجابة عن أسئلة عامة عن المحتوى والتنقّل",
+    ];
+  }
+  return [
+    "البحث عن منتج أو ملف أسعار داخل الكتالوج",
+    "قراءة مقتطفات من نصوص PDF تلقائياً حسب سؤالك",
+    "شرح التنقّل والإجابة عن أسئلة عن المحتوى",
+  ];
+}
 
 function greetingDismissedStorageKey(audience: FloatingAiChatAudience): string {
   return `elmaghraby-fab-greeting-dismissed-${audience}`;
@@ -200,6 +226,11 @@ export function FloatingAiChat({ audience }: { audience: FloatingAiChatAudience 
     }
   }, [activeCardId, activeFolderId, audience, input, loading, messages, popLastUser]);
 
+  const fabBullets = useMemo(
+    () => fabGreetingBullets(activeCardId, activeFolderId),
+    [activeCardId, activeFolderId],
+  );
+
   const welcome =
     messages.length === 0 ? (
       <div className="rounded-2xl bg-primary/8 px-3 py-2.5 text-sm text-foreground leading-relaxed">
@@ -236,14 +267,23 @@ export function FloatingAiChat({ audience }: { audience: FloatingAiChatAudience 
         {!open && !greetingDismissed ? (
           <div
             dir="rtl"
-            className={`max-w-[min(14rem,calc(100vw-5rem))] rounded-xl border border-border bg-card py-1.5 ps-2.5 pe-1 text-sm leading-snug text-foreground shadow-md ring-1 ring-border/80 transition-all duration-300 ease-out ${
+            className={`max-w-[min(19rem,calc(100vw-3.5rem))] rounded-xl border border-border bg-card py-1.5 ps-2.5 pe-1 text-foreground shadow-md ring-1 ring-border/80 transition-all duration-300 ease-out ${
               greetingVisible
                 ? "translate-y-0 scale-100 opacity-100"
                 : "pointer-events-none translate-y-1 scale-[0.98] opacity-0"
             }`}
           >
             <div className="flex items-start gap-1">
-              <p className="min-w-0 flex-1 pt-0.5">{FAB_GREETING_AR}</p>
+              <div className="min-w-0 flex-1 pt-0.5">
+                <p className="mb-1 text-xs font-semibold text-foreground">
+                  المساعد يقدر يعمل إيه؟
+                </p>
+                <ul className="list-disc space-y-0.5 ps-4 text-[13px] leading-snug text-foreground marker:text-muted">
+                  {fabBullets.map((line) => (
+                    <li key={line}>{line}</li>
+                  ))}
+                </ul>
+              </div>
               <button
                 type="button"
                 onClick={(e) => {
@@ -262,8 +302,8 @@ export function FloatingAiChat({ audience }: { audience: FloatingAiChatAudience 
           type="button"
           onClick={() => setOpen((v) => !v)}
           className="flex h-14 w-14 transform-gpu items-center justify-center rounded-full bg-primary text-white shadow-lg ring-1 ring-black/10 transition-transform duration-200 hover:scale-105 hover:shadow-xl active:scale-95 [backface-visibility:hidden]"
-          title={FAB_GREETING_AR}
-          aria-label={`مساعد المغربي — ${FAB_GREETING_AR}`}
+          title={FAB_ASSISTANT_HINT_AR}
+          aria-label={`مساعد المغربي — ${FAB_ASSISTANT_HINT_AR}`}
           aria-expanded={open}
         >
           <ChatGlyph className="h-7 w-7" aria-hidden />

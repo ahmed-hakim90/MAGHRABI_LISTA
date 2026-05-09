@@ -11,6 +11,7 @@ import {
   replaceFileCardThumbnail,
   setFileCardActive,
 } from "@/lib/services/fileCards";
+import { fireCatalogTextReindex } from "@/lib/services/catalogTextReindexClient";
 import { PdfFirstPagePreview } from "@/components/public/PdfFirstPagePreview";
 import { PdfThumbnailPlaceholder } from "@/components/public/PdfThumbnailPlaceholder";
 import { ProgressBar } from "@/components/ui/ProgressBar";
@@ -56,6 +57,12 @@ export function FileTable() {
         onProgress: (p) =>
           setUploadJob((j) => (j ? { ...j, progress: p } : null)),
       });
+      try {
+        const token = await user.getIdToken();
+        void fireCatalogTextReindex(card.id, token);
+      } catch {
+        /* best-effort */
+      }
       await load();
     } catch {
       /* surface via browser or future toast */

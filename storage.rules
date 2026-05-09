@@ -7,8 +7,30 @@ service firebase.storage {
       return request.auth != null && request.auth.token.admin == true;
     }
 
-    // Must match NEXT_PUBLIC_FIREBASE_STORAGE_FOLDER (e.g. magrabi-lista). Redeploy when the folder changes.
-    match /magrabi-lista/{allPaths=**} {
+    // Plain-text catalog extracts for server-side chat only (Admin SDK reads; clients cannot read).
+    match /magrabi-lista/{seg}/chat-index/{fileName} {
+      allow read: if false;
+      allow write: if isAdmin();
+    }
+
+    // Explicit prefixes so chat-index above stays non-public (avoid a single ** rule).
+    match /magrabi-lista/{seg}/files/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /magrabi-lista/{seg}/images/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /magrabi-lista/files/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /magrabi-lista/images/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /magrabi-lista/site/{allPaths=**} {
       allow read: if true;
       allow write: if isAdmin();
     }

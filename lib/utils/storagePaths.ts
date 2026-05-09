@@ -22,6 +22,17 @@ export function getThumbnailPathForAudience(
   return `${STORAGE_FOLDER}/${seg}/images/${cardId}/thumbnail.webp`;
 }
 
+/**
+ * Server-only plain-text extract for AI chat (not publicly readable — see storage.rules).
+ */
+export function getChatIndexTextPathForAudience(
+  audience: CatalogAudience,
+  cardId: string,
+): string {
+  const seg = storagePrefixForAudience(audience);
+  return `${STORAGE_FOLDER}/${seg}/chat-index/${cardId}.txt`;
+}
+
 /** @deprecated Prefer getPdfPathForAudience — kept for legacy paths in DB */
 export function getPdfPath(cardId: string): string {
   return `${STORAGE_FOLDER}/files/${cardId}/document.pdf`;

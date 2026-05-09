@@ -2,6 +2,7 @@ import { initializeApp, getApps, cert, type App } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
 import { getFirestore } from "firebase-admin/firestore";
 import { getMessaging } from "firebase-admin/messaging";
+import { getStorage } from "firebase-admin/storage";
 
 function parseServiceAccount(): {
   projectId: string;
@@ -51,4 +52,11 @@ export function getAdminFirestore() {
 
 export function getAdminMessaging() {
   return getMessaging(getAdminApp());
+}
+
+/** Default bucket matches client uploads (see NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET). */
+export function getAdminBucket() {
+  const name = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET?.trim();
+  const storage = getStorage(getAdminApp());
+  return name ? storage.bucket(name) : storage.bucket();
 }

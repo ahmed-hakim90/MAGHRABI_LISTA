@@ -574,6 +574,7 @@ export async function deleteFileCard(cardId: string): Promise<void> {
   const data = snap.data() as Record<string, unknown>;
   const fp = String(data.filePath ?? "");
   const tp = String(data.thumbnailPath ?? "");
+  const catalogTextPath = String(data.catalogTextPath ?? "").trim();
   try {
     if (fp) await deleteObject(ref(st, fp));
   } catch {
@@ -581,6 +582,11 @@ export async function deleteFileCard(cardId: string): Promise<void> {
   }
   try {
     if (tp) await deleteObject(ref(st, tp));
+  } catch {
+    /* ignore */
+  }
+  try {
+    if (catalogTextPath) await deleteObject(ref(st, catalogTextPath));
   } catch {
     /* ignore */
   }

@@ -12,6 +12,7 @@ import {
   replaceFileCardThumbnail,
   updateFileCardMeta,
 } from "@/lib/services/fileCards";
+import { fireCatalogTextReindex } from "@/lib/services/catalogTextReindexClient";
 import { listAllFileFoldersAdmin } from "@/lib/services/fileFolders";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { UploadField } from "./UploadField";
@@ -20,9 +21,11 @@ type Props = {
   mode: "create" | "edit";
   uid: string;
   initial?: FileCard | null;
+  /** When set, triggers server text extraction for AI chat after save. */
+  idTokenGetter?: () => Promise<string>;
 };
 
-export function FileForm({ mode, uid, initial }: Props) {
+export function FileForm({ mode, uid, initial, idTokenGetter }: Props) {
   const router = useRouter();
   const [title, setTitle] = useState(initial?.title ?? "");
   const [description, setDescription] = useState(initial?.description ?? "");
@@ -102,7 +105,7 @@ export function FileForm({ mode, uid, initial }: Props) {
           setUploadProgress(null);
           return;
         }
-        await createFileCard(
+        const newId = await createFileCard(
           {
             audience,
             title,
@@ -119,6 +122,14 @@ export function FileForm({ mode, uid, initial }: Props) {
           },
           { onProgress: (p) => setUploadProgress(p) },
         );
+        if (idTokenGetter) {
+          try {
+            const token = await idTokenGetter();
+            void fireCatalogTextReindex(newId, token);
+          } catch {
+            /* reindex is best-effort */
+          }
+        }
         setUploadProgress(null);
         router.push("/admin/files");
         router.refresh();
@@ -148,6 +159,14 @@ export function FileForm({ mode, uid, initial }: Props) {
         },
         { onProgress: (p) => setUploadProgress(p) },
       );
+      if (idTokenGetter) {
+        try {
+          const token = await idTokenGetter();
+          void fireCatalogTextReindex(initial.id, token);
+        } catch {
+          /* best-effort */
+        }
+      }
       router.push("/admin/files");
       router.refresh();
     } catch (err) {

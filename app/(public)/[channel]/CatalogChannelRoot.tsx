@@ -3,6 +3,7 @@
 import { NotificationPromptModal } from "@/components/public/NotificationPromptModal";
 import { CatalogChannelProvider } from "@/components/public/CatalogChannelContext";
 import { PwaInstallModal } from "@/components/public/PwaInstallModal";
+import { FloatingAiChat } from "@/components/public/FloatingAiChat";
 import { WhatsAppFloatingButton } from "@/components/public/WhatsAppFloatingButton";
 import {
   CHANNEL_TO_AUDIENCE,
@@ -23,6 +24,9 @@ export function CatalogChannelRoot({
       <NotificationPromptModal />
       <PwaInstallModal />
       <WhatsAppFloatingButton />
+      {channel === "wholesale" || channel === "retail" ? (
+        <FloatingAiChat audience={channel} />
+      ) : null}
       {children}
     </CatalogChannelProvider>
   );

@@ -1,0 +1,347 @@
+"use client";
+
+import { usePathname } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { ChatMessageContent } from "@/components/public/ChatMessageContent";
+
+export type FloatingAiChatAudience = "wholesale" | "retail";
+
+type ChatMessage = { role: "user" | "assistant"; content: string };
+
+const STORAGE_KEYS: Record<FloatingAiChatAudience, string> = {
+  wholesale: "elmaghraby-chat-wholesale",
+  retail: "elmaghraby-chat-retail",
+};
+
+const MAX_STORED_MESSAGES = 4;
+const MAX_INPUT = 300;
+
+const FAB_GREETING_AR =
+  "مرحبا لو بتدور علي منتج معين انا هنا لمساعدتك";
+
+const GREETING_SHOW_DELAY_MS = 550;
+
+function parseStored(raw: string | null): ChatMessage[] {
+  if (!raw) return [];
+  try {
+    const data = JSON.parse(raw) as unknown;
+    if (!Array.isArray(data)) return [];
+    const out: ChatMessage[] = [];
+    for (const item of data) {
+      if (!item || typeof item !== "object") continue;
+      const role = (item as { role?: unknown }).role;
+      const content = (item as { content?: unknown }).content;
+      if (role !== "user" && role !== "assistant") continue;
+      if (typeof content !== "string" || !content.trim()) continue;
+      out.push({ role, content: content.trim() });
+    }
+    return out.slice(-MAX_STORED_MESSAGES);
+  } catch {
+    return [];
+  }
+}
+
+export function FloatingAiChat({ audience }: { audience: FloatingAiChatAudience }) {
+  const pathname = usePathname() ?? "";
+  const filePathMatch = pathname.match(/^\/(wholesale|retail)\/file\/([^/]+)/);
+  const folderPathMatch = pathname.match(/^\/(wholesale|retail)\/folder\/([^/]+)/);
+  const pathChannel = filePathMatch?.[1] as FloatingAiChatAudience | undefined;
+  const folderPathChannel = folderPathMatch?.[1] as FloatingAiChatAudience | undefined;
+  const pathCardId = filePathMatch?.[2];
+  const pathFolderId = folderPathMatch?.[2];
+  const activeCardId =
+    pathChannel === audience && pathCardId ? pathCardId : undefined;
+  const activeFolderId =
+    folderPathChannel === audience && pathFolderId ? pathFolderId : undefined;
+
+  const storageKey = STORAGE_KEYS[audience];
+  const [open, setOpen] = useState(false);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [hydrated, setHydrated] = useState(false);
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [greetingVisible, setGreetingVisible] = useState(false);
+  const endRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (open) {
+      setGreetingVisible(false);
+      return;
+    }
+    const t = window.setTimeout(() => setGreetingVisible(true), GREETING_SHOW_DELAY_MS);
+    return () => window.clearTimeout(t);
+  }, [open]);
+
+  useEffect(() => {
+    setMessages(parseStored(typeof window !== "undefined" ? localStorage.getItem(storageKey) : null));
+    setHydrated(true);
+  }, [storageKey]);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(messages));
+    } catch {
+      /* ignore quota */
+    }
+  }, [messages, hydrated, storageKey]);
+
+  const scrollToEnd = useCallback(() => {
+    endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+  }, []);
+
+  useEffect(() => {
+    if (open) scrollToEnd();
+  }, [open, messages, loading, scrollToEnd]);
+
+  const clearChat = useCallback(() => {
+    setMessages([]);
+    setError(null);
+    try {
+      localStorage.removeItem(storageKey);
+    } catch {
+      /* ignore */
+    }
+  }, [storageKey]);
+
+  const popLastUser = useCallback(() => {
+    setMessages((prev) => (prev.at(-1)?.role === "user" ? prev.slice(0, -1) : prev));
+  }, []);
+
+  const send = useCallback(async () => {
+    const text = input.trim();
+    if (!text || loading) return;
+    if (text.length > MAX_INPUT) return;
+
+    setError(null);
+    setInput("");
+    const history = messages.slice(-MAX_STORED_MESSAGES);
+    setLoading(true);
+    setMessages((prev) =>
+      [...prev, { role: "user" as const, content: text }].slice(-MAX_STORED_MESSAGES),
+    );
+
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: text,
+          history,
+          audience,
+          ...(activeCardId ? { cardId: activeCardId } : {}),
+          ...(activeFolderId && !activeCardId ? { folderId: activeFolderId } : {}),
+        }),
+      });
+
+      let payload: { reply?: string; error?: string; code?: string; message?: string };
+      try {
+        payload = (await res.json()) as typeof payload;
+      } catch {
+        setError("حصل خطأ. حاول مرة تانية.");
+        popLastUser();
+        return;
+      }
+
+      if (!res.ok) {
+        const msg =
+          typeof payload.message === "string" && payload.message.trim()
+            ? payload.message
+            : res.status === 429
+              ? payload.error === "quota" || payload.code === "quota"
+                ? "الخدمة وصلت لحد الاستخدام. جرّب تاني لاحقاً."
+                : "وصلت للحد المسموح من الرسائل. جرّب بعد ساعة."
+              : res.status === 504
+                ? "الطلب استغرق وقت طويل. حاول مرة تانية."
+                : "حصل خطأ. حاول مرة تانية.";
+        setError(msg);
+        popLastUser();
+        return;
+      }
+
+      const reply = typeof payload.reply === "string" ? payload.reply.trim() : "";
+      if (!reply) {
+        setError("مفيش رد من المساعد. حاول تاني.");
+        popLastUser();
+        return;
+      }
+
+      setMessages((prev) =>
+        [...prev, { role: "assistant" as const, content: reply }].slice(
+          -MAX_STORED_MESSAGES,
+        ),
+      );
+    } catch {
+      setError("حصل خطأ في الاتصال. حاول مرة تانية.");
+      popLastUser();
+    } finally {
+      setLoading(false);
+    }
+  }, [activeCardId, activeFolderId, audience, input, loading, messages, popLastUser]);
+
+  const welcome =
+    messages.length === 0 ? (
+      <div className="rounded-2xl bg-primary/8 px-3 py-2.5 text-sm text-foreground leading-relaxed">
+        أسئلة عن الملفات أو التنقّل في الكتالوج.
+        {activeCardId ? (
+          <>
+            {" "}
+            أنت جوّا <strong>ملف PDF</strong>؛ نقدر نلخّص من النص المستخرج (مش الملف كامل).
+          </>
+        ) : activeFolderId ? (
+          <>
+            {" "}
+            أنت في <strong>مجلد</strong>؛ نقدر نذكر عناوين قوائم الأسعار الظاهرة هنا؛ للتفاصيل افتح الملف.
+          </>
+        ) : (
+          <>
+            {" "}
+            من هنا نقدر ندور على ملفات الأسعار ونقرأ مقتطفات من الـ PDF تلقائياً حسب سؤالك؛
+            للتفاصيل الكاملة افتح الملف من الكتالوج.
+          </>
+        )}
+      </div>
+    ) : null;
+
+  const fabCornerClass =
+    "bottom-[max(1.25rem,env(safe-area-inset-bottom))] right-[max(1.25rem,env(safe-area-inset-right))]";
+
+  return (
+    <>
+      <div
+        dir="ltr"
+        className={`fixed ${fabCornerClass} z-[100] flex flex-col items-end gap-2`}
+      >
+        {!open ? (
+          <div
+            dir="rtl"
+            className={`max-w-[min(14rem,calc(100vw-5rem))] rounded-xl border border-border bg-card px-2.5 py-1.5 text-sm leading-snug text-foreground shadow-md ring-1 ring-border/80 transition-all duration-300 ease-out ${
+              greetingVisible
+                ? "translate-y-0 scale-100 opacity-100"
+                : "pointer-events-none translate-y-1 scale-[0.98] opacity-0"
+            }`}
+          >
+            {FAB_GREETING_AR}
+          </div>
+        ) : null}
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          className="flex h-14 w-14 transform-gpu items-center justify-center rounded-full bg-primary text-white shadow-lg ring-1 ring-black/10 transition-transform duration-200 hover:scale-105 hover:shadow-xl active:scale-95 [backface-visibility:hidden]"
+          title={FAB_GREETING_AR}
+          aria-label={`مساعد المغربي — ${FAB_GREETING_AR}`}
+          aria-expanded={open}
+        >
+          <ChatGlyph className="h-7 w-7" aria-hidden />
+        </button>
+      </div>
+
+      {open ? (
+        <div
+          className={`fixed bottom-[calc(4rem+max(1.25rem,env(safe-area-inset-bottom)))] right-[max(1.25rem,env(safe-area-inset-right))] z-[100] grid max-h-[min(56vh,28rem)] w-[min(100vw-2rem,22rem)] min-h-0 grid-rows-[auto_minmax(0,1fr)_auto] overflow-hidden rounded-2xl bg-card text-foreground shadow-xl ring-1 ring-border`}
+          role="dialog"
+          aria-label="مساعد المغربي"
+        >
+          <header className="flex min-h-0 shrink-0 items-center justify-between gap-2 border-b border-border bg-card px-3 py-2.5">
+            <h2 className="text-sm font-semibold">مساعد المغربي</h2>
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={clearChat}
+                className="min-h-touch min-w-touch rounded-lg px-2 text-xs text-muted hover:bg-surface"
+              >
+                مسح
+              </button>
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                className="min-h-touch min-w-touch rounded-lg px-2 text-lg leading-none text-muted hover:bg-surface"
+                aria-label="إغلاق"
+              >
+                ×
+              </button>
+            </div>
+          </header>
+
+          <div className="flex min-h-0 flex-col gap-2 overflow-y-auto overflow-x-hidden overscroll-contain px-3 py-2 [scrollbar-gutter:stable]">
+            {welcome}
+            {messages.map((m, i) => (
+              <div
+                key={`${m.role}-${i}-${m.content.slice(0, 12)}`}
+                dir="rtl"
+                className={
+                  m.role === "user"
+                    ? "ms-6 min-w-0 max-w-full rounded-2xl bg-primary/12 px-3 py-2 text-sm leading-relaxed [overflow-wrap:anywhere]"
+                    : "me-6 min-w-0 max-w-full rounded-2xl bg-surface px-3 py-2 text-sm leading-relaxed ring-1 ring-border [overflow-wrap:anywhere]"
+                }
+              >
+                <ChatMessageContent content={m.content} />
+              </div>
+            ))}
+            {loading ? (
+              <div className="me-6 rounded-2xl bg-surface px-3 py-2 text-sm text-muted ring-1 ring-border">
+                جاري الإرسال…
+              </div>
+            ) : null}
+            {error ? (
+              <div className="rounded-xl bg-amber-500/12 px-3 py-2 text-sm text-foreground ring-1 ring-amber-500/25">
+                {error}
+              </div>
+            ) : null}
+            <div ref={endRef} className="h-px shrink-0" aria-hidden />
+          </div>
+
+          <footer className="min-h-0 shrink-0 border-t border-border p-2">
+            <div className="flex gap-2">
+              <input
+                type="text"
+                dir="rtl"
+                maxLength={MAX_INPUT}
+                value={input}
+                disabled={loading}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    void send();
+                  }
+                }}
+                placeholder="اكتب سؤالك…"
+                className="min-h-touch min-w-0 flex-1 rounded-xl border border-border bg-surface px-3 text-sm outline-none ring-primary/30 placeholder:text-muted focus:ring-2 disabled:opacity-50"
+                aria-label="رسالتك"
+              />
+              <button
+                type="button"
+                onClick={() => void send()}
+                disabled={loading || !input.trim()}
+                className="min-h-touch shrink-0 rounded-xl bg-primary px-4 text-sm font-medium text-white disabled:opacity-40"
+              >
+                إرسال
+              </button>
+            </div>
+            <p className="mt-1 text-center text-[10px] text-muted">
+              {input.length}/{MAX_INPUT}
+            </p>
+          </footer>
+        </div>
+      ) : null}
+    </>
+  );
+}
+
+function ChatGlyph({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path
+        d="M12 3C7.03 3 3 6.58 3 11c0 2.13 1.02 4.05 2.67 5.4L4.5 21l5.02-1.32C10.62 20.23 11.3 20.33 12 20.33c4.97 0 9-3.58 9-8s-4.03-8-9-8Z"
+        fill="currentColor"
+        opacity="0.9"
+      />
+      <path
+        d="M8.25 11.25h1.5v1.5h-1.5v-1.5Zm3 0h1.5v1.5h-1.5v-1.5Zm3 0h1.5v1.5h-1.5v-1.5Z"
+        fill="white"
+      />
+    </svg>
+  );
+}

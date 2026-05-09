@@ -27,5 +27,12 @@ export default function EditFilePage({
     return <p className="text-muted">الملف غير موجود.</p>;
   }
 
-  return <FileForm mode="edit" uid={user.uid} initial={card} />;
+  return (
+    <FileForm
+      mode="edit"
+      uid={user.uid}
+      initial={card}
+      idTokenGetter={() => user.getIdToken()}
+    />
+  );
 }

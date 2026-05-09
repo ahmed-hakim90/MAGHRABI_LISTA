@@ -12,7 +12,7 @@ dotenv.config({ path: path.join(root, ".env") });
 
 const FB_VERSION = "12.13.0";
 /** Bump when SW caching logic changes so old caches are purged. */
-const SW_CACHE_VERSION = "v1";
+const SW_CACHE_VERSION = "v2";
 
 const config = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "",
@@ -106,6 +106,40 @@ function networkFirstCache(request, cacheName) {
   });
 }
 
+function navigateUrlVariants(requestUrl) {
+  try {
+    var u = new URL(requestUrl);
+    var o = u.origin;
+    var p = u.pathname;
+    var qs = u.search || '';
+    var variants = [];
+    function add(s) {
+      if (variants.indexOf(s) === -1) variants.push(s);
+    }
+    add(o + p + qs);
+    if (p !== '/' && !p.endsWith('/')) add(o + p + '/' + qs);
+    if (p.length > 1 && p.endsWith('/')) {
+      add(o + p.replace(/\\/+$/, '') + qs);
+    }
+    add(o + '/' + qs);
+    return variants;
+  } catch {
+    return [requestUrl];
+  }
+}
+
+function cacheMatchAny(urls) {
+  var i = 0;
+  function step() {
+    if (i >= urls.length) return Promise.resolve(undefined);
+    var u = urls[i++];
+    return caches.match(u).then(function (h) {
+      return h || step();
+    });
+  }
+  return step();
+}
+
 function navigateWithOfflineFallback(request) {
   return fetch(request)
     .then(function (response) {
@@ -119,15 +153,25 @@ function navigateWithOfflineFallback(request) {
       return response;
     })
     .catch(function () {
-      return caches.match(request).then(function (hit) {
+      var urls = navigateUrlVariants(request.url);
+      return cacheMatchAny(urls).then(function (hit) {
         if (hit) return hit;
-        return caches.match(self.location.origin + '/');
-      }).then(function (hit) {
-        if (hit) return hit;
-        return new Response('Offline', { status: 503, statusText: 'Offline' });
+        return caches.match(self.location.origin + '/').then(function (h2) {
+          if (h2) return h2;
+          return new Response('Offline', { status: 503, statusText: 'Offline' });
+        });
       });
     });
 }
+
+self.addEventListener('install', function (event) {
+  event.waitUntil(
+    caches.open(CACHE_PAGES).then(function (cache) {
+      var root = new URL('/', self.location.origin).href;
+      return cache.add(root).catch(function () {});
+    }),
+  );
+});
 
 self.addEventListener('message', function (event) {
   var d = event.data;

@@ -18,6 +18,7 @@ import {
   getClientFirestore,
   syncAuthTokenForFirestore,
 } from "@/lib/firebase/client";
+import { getDocsWithCacheFallback } from "@/lib/firestore/queryWithCacheFallback";
 import type { FileFolder } from "@/lib/types/models";
 
 function fromDoc(id: string, data: Record<string, unknown>): FileFolder {
@@ -41,7 +42,7 @@ export async function listActiveFileFolders(): Promise<FileFolder[]> {
     where("isActive", "==", true),
     orderBy("order", "asc"),
   );
-  const snap = await getDocs(q);
+  const snap = await getDocsWithCacheFallback(q);
   return snap.docs.map((d) => fromDoc(d.id, d.data() as Record<string, unknown>));
 }
 

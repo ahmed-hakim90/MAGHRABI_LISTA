@@ -21,6 +21,7 @@ import {
   getClientStorage,
   syncAuthTokenForFirestore,
 } from "@/lib/firebase/client";
+import { getDocsWithCacheFallback } from "@/lib/firestore/queryWithCacheFallback";
 import { runResumableUpload } from "@/lib/firebase/storageUpload";
 import type { FileCard } from "@/lib/types/models";
 import {
@@ -80,7 +81,7 @@ export async function listActiveFileCards(): Promise<FileCard[]> {
     orderBy("order", "asc"),
     orderBy("updatedAt", "desc"),
   );
-  const snap = await getDocs(q);
+  const snap = await getDocsWithCacheFallback(q);
   return snap.docs.map((d) => fromDoc(d.id, d.data() as Record<string, unknown>));
 }
 

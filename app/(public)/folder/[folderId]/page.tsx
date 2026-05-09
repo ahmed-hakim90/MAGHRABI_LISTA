@@ -1,20 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { use, useEffect, useMemo, useState } from "react";
+import { use, useMemo, useState } from "react";
 import { useCatalogView } from "@/components/public/CatalogViewToggle";
 import { CatalogSearchBar } from "@/components/public/CatalogSearchBar";
 import { FileGrid } from "@/components/public/FileGrid";
 import { LoadingOverlay } from "@/components/public/LoadingOverlay";
 import { LogoHeader } from "@/components/public/LogoHeader";
+import { OfflineCatalogBanner } from "@/components/public/OfflineCatalogBanner";
 import { useFileCards } from "@/hooks/useFileCards";
-import {
-  DEFAULT_SITE_APP_NAME,
-  DEFAULT_SITE_HOME_TITLE,
-  DEFAULT_SITE_PRIMARY_COLOR,
-} from "@/lib/constants/siteDefaults";
-import { getSiteSettings } from "@/lib/services/settings";
-import type { SiteSettings } from "@/lib/types/models";
+import { useNavigatorOnline } from "@/hooks/useNavigatorOnline";
+import { usePublicSiteSettings } from "@/hooks/usePublicSiteSettings";
 import { matchesFileCardSearch } from "@/lib/utils/fileCardSearch";
 
 export default function FolderPage({
@@ -23,14 +19,13 @@ export default function FolderPage({
   params: Promise<{ folderId: string }>;
 }) {
   const { folderId } = use(params);
-  const { cards, folders, loading, error } = useFileCards();
+  const { cards, folders, loading, error, stale } = useFileCards();
+  const online = useNavigatorOnline();
+  const s = usePublicSiteSettings();
   const [q, setQ] = useState("");
-  const [settings, setSettings] = useState<SiteSettings | null>(null);
   const [catalogView, setCatalogView] = useCatalogView();
 
-  useEffect(() => {
-    void getSiteSettings().then(setSettings);
-  }, []);
+  const hasCatalogData = cards.length > 0 || folders.length > 0;
 
   const folder = useMemo(
     () => folders.find((f) => f.id === folderId),
@@ -45,19 +40,10 @@ export default function FolderPage({
     [cards, folderId, q],
   );
 
-  const s = settings ?? {
-    appName: DEFAULT_SITE_APP_NAME,
-    logoUrl: "",
-    logoPath: "",
-    homeTitle: DEFAULT_SITE_HOME_TITLE,
-    homeSubtitle: "",
-    primaryColor: DEFAULT_SITE_PRIMARY_COLOR,
-    updatedAt: null,
-  };
-
   return (
     <div className="flex min-h-dvh flex-col bg-surface">
       <LoadingOverlay open={loading} />
+      <OfflineCatalogBanner offline={!online && hasCatalogData} stale={stale && online && hasCatalogData} />
       <LogoHeader
         appName={s.appName}
         logoUrl={s.logoUrl}
@@ -75,7 +61,7 @@ export default function FolderPage({
       </div>
       {loading ? (
         <main className="min-h-[min(12rem,40dvh)] flex-1" aria-hidden />
-      ) : error ? (
+      ) : error && !hasCatalogData ? (
         <main className="flex flex-1 flex-col">
           <p className="flex-1 py-16 text-center text-red-800">{error}</p>
         </main>

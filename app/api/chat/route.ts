@@ -279,18 +279,26 @@ export async function POST(request: Request) {
 
   let loadedCard: LoadedCard = { kind: "none" };
   if (cardIdRaw) {
-    const bundle = await getActiveCardChatBundle(
-      cardIdRaw,
-      audience as CatalogAudience,
-    );
-    if (bundle) {
-      const excerpt = await getCatalogTextForChatFromBundle(bundle);
-      loadedCard = { kind: "ok", bundle, excerpt };
-    } else if (process.env.NODE_ENV === "development") {
-      console.warn(
-        "[api/chat] cardId ignored (inactive, wrong channel, or missing file):",
+    try {
+      const bundle = await getActiveCardChatBundle(
         cardIdRaw,
+        audience as CatalogAudience,
       );
+      if (bundle) {
+        const excerpt = await getCatalogTextForChatFromBundle(bundle);
+        loadedCard = { kind: "ok", bundle, excerpt };
+      } else if (process.env.NODE_ENV === "development") {
+        console.warn(
+          "[api/chat] cardId ignored (inactive, wrong channel, or missing file):",
+          cardIdRaw,
+        );
+      }
+    } catch (e) {
+      console.warn(
+        "[api/chat] card context unavailable (often missing Firebase Admin on server):",
+        e,
+      );
+      loadedCard = { kind: "none" };
     }
   }
 
@@ -309,9 +317,7 @@ export async function POST(request: Request) {
         { folderId: folderIdRaw || undefined },
       );
     } catch (e) {
-      if (process.env.NODE_ENV === "development") {
-        console.warn("[api/chat] auto-pick catalog failed", e);
-      }
+      console.warn("[api/chat] auto-pick catalog failed", e);
     }
   }
 

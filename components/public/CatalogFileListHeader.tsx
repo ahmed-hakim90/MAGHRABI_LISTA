@@ -2,12 +2,17 @@ import Link from "next/link";
 
 type Kind = "files" | "folders";
 
+function isCatalogPdfStreamHref(href: string): boolean {
+  return /\/file\/[^/]+\/pdf$/.test(href);
+}
+
 export function CatalogListKebab({
   href,
   title,
   viewLabel = "عرض",
   downloadHref,
   openViewInNewTab = false,
+  onPrimaryClick,
 }: {
   href: string;
   title: string;
@@ -16,6 +21,8 @@ export function CatalogListKebab({
   downloadHref?: string;
   /** When true, «عرض» opens in a new tab (e.g. full PDF in mobile browser). */
   openViewInNewTab?: boolean;
+  /** Fires before navigating to `href` (e.g. view counter when opening raw PDF). */
+  onPrimaryClick?: () => void;
 }) {
   return (
     <details
@@ -42,16 +49,31 @@ export function CatalogListKebab({
         dir="rtl"
         role="menu"
       >
-        <Link
-          href={href}
-          role="menuitem"
-          className="block px-3 py-2 text-sm text-foreground hover:bg-surface"
-          {...(openViewInNewTab
-            ? { target: "_blank", rel: "noopener noreferrer" }
-            : {})}
-        >
-          {viewLabel}
-        </Link>
+        {isCatalogPdfStreamHref(href) ? (
+          <a
+            href={href}
+            role="menuitem"
+            className="block px-3 py-2 text-sm text-foreground hover:bg-surface"
+            onClick={onPrimaryClick}
+            {...(openViewInNewTab
+              ? { target: "_blank", rel: "noopener noreferrer" }
+              : {})}
+          >
+            {viewLabel}
+          </a>
+        ) : (
+          <Link
+            href={href}
+            role="menuitem"
+            className="block px-3 py-2 text-sm text-foreground hover:bg-surface"
+            onClick={onPrimaryClick}
+            {...(openViewInNewTab
+              ? { target: "_blank", rel: "noopener noreferrer" }
+              : {})}
+          >
+            {viewLabel}
+          </Link>
+        )}
         {downloadHref ? (
           <a
             href={downloadHref}

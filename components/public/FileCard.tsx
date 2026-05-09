@@ -26,6 +26,14 @@ function hasThumbnail(card: FileCardType): boolean {
   return Boolean(card.thumbnailUrl?.trim());
 }
 
+function pingCatalogView(cardId: string) {
+  void fetch("/api/catalog/view", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ cardId }),
+  }).catch(() => {});
+}
+
 const gridShell =
   "group/card flex min-w-0 touch-manipulation flex-col overflow-hidden rounded-xl border border-border/90 bg-card shadow-sm transition duration-200 ease-out motion-reduce:transition-none [@media(hover:hover)]:hover:border-border [@media(hover:hover)]:hover:shadow-md active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2";
 
@@ -49,6 +57,8 @@ export function FileCard({
   const isList = variant === "list";
   const viewHref = `${basePath}/file/${card.id}/view`;
   const pdfHref = `${basePath}/file/${card.id}/pdf`;
+  /** On narrow / touch layouts: open the PDF stream in a new tab (native viewer, no site chrome). */
+  const primaryOpenHref = openFileInNewTab ? pdfHref : viewHref;
   const freshness = getFileCardFreshnessBadge(card);
 
   const freshnessEl =
@@ -75,9 +85,10 @@ export function FileCard({
       <article className={`${catalogListRowClass} min-w-0`} dir="rtl">
         {openFileInNewTab ? (
           <a
-            href={viewHref}
+            href={primaryOpenHref}
             className="absolute inset-y-0 start-0 z-0 end-10 rounded-none"
             aria-label={`عرض ${card.title}`}
+            onClick={() => pingCatalogView(card.id)}
             {...newTabAttrs}
           />
         ) : (
@@ -120,10 +131,13 @@ export function FileCard({
         </div>
         <div className="relative z-[2] shrink-0 pointer-events-auto">
           <CatalogListKebab
-            href={viewHref}
+            href={primaryOpenHref}
             title={card.title}
             downloadHref={`${pdfHref}?download`}
             openViewInNewTab
+            onPrimaryClick={
+              openFileInNewTab ? () => pingCatalogView(card.id) : undefined
+            }
           />
         </div>
       </article>
@@ -184,7 +198,12 @@ export function FileCard({
 
   if (openFileInNewTab) {
     return (
-      <a href={viewHref} className={gridShell} {...newTabAttrs}>
+      <a
+        href={primaryOpenHref}
+        className={gridShell}
+        onClick={() => pingCatalogView(card.id)}
+        {...newTabAttrs}
+      >
         {gridBody}
       </a>
     );

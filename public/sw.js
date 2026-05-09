@@ -1,4 +1,4 @@
-var SW_CACHE_VERSION = 'v2';
+var SW_CACHE_VERSION = 'v2-local';
 var CACHE_STATIC = 'maghrabi-static-' + SW_CACHE_VERSION;
 var CACHE_PAGES = 'maghrabi-pages-' + SW_CACHE_VERSION;
 

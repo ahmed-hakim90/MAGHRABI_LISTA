@@ -9,7 +9,15 @@ function syncWaitingBanner(
   reg: ServiceWorkerRegistration | undefined,
   setShow: (v: boolean) => void,
 ) {
-  if (!reg?.waiting || !navigator.serviceWorker.controller) {
+  if (!reg?.waiting) {
+    setShow(false);
+    return;
+  }
+  // New worker is waiting: show if an older worker still controls (typical) or
+  // if this is a rare no-controller state but an active registration exists.
+  const controlled = Boolean(navigator.serviceWorker.controller);
+  const hasActive = Boolean(reg.active);
+  if (!controlled && !hasActive) {
     setShow(false);
     return;
   }
@@ -74,15 +82,22 @@ export function PwaUpdatePull() {
     };
     document.addEventListener("visibilitychange", onVisibleOrFocus);
     window.addEventListener("focus", onVisibleOrFocus);
+    window.addEventListener("pageshow", onVisibleOrFocus);
+
+    const intervalId = window.setInterval(() => {
+      if (document.visibilityState === "visible") checkForUpdate();
+    }, 120_000);
 
     return () => {
       cancelled = true;
+      window.clearInterval(intervalId);
       navigator.serviceWorker.removeEventListener(
         "controllerchange",
         onControllerChange,
       );
       document.removeEventListener("visibilitychange", onVisibleOrFocus);
       window.removeEventListener("focus", onVisibleOrFocus);
+      window.removeEventListener("pageshow", onVisibleOrFocus);
     };
   }, []);
 
@@ -130,7 +145,8 @@ export function PwaUpdatePull() {
       role="status"
     >
       <p className="text-sm text-neutral-800">
-        يتوفر تحديث للتطبيق. اسحب للأسفل لتحديث الصفحة، أو اضغط الزر أدناه.
+        يتوفر تحديث للتطبيق. اضغط «تحديث الآن»، أو اسحب للأسفل من أعلى الشاشة.
+        إذا لم يتغيّر شيء، أغلق التطبيق من قائمة التطبيقات الأخيرة وأعد فتحه.
       </p>
       <button
         type="button"

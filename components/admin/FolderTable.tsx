@@ -4,7 +4,8 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import type { FileFolder } from "@/lib/types/models";
 import {
-  deleteFileFolder,
+  deleteFileFolderAndContents,
+  deleteFileFolderDetachCards,
   listAllFileFoldersAdmin,
   setFileFolderActive,
 } from "@/lib/services/fileFolders";
@@ -50,15 +51,27 @@ export function FolderTable() {
     await load();
   }
 
-  async function onDelete(folder: FileFolder) {
+  async function onDeleteFolderOnly(folder: FileFolder) {
     if (!user) return;
     if (
       !confirm(
-        `حذف المجلد «${folder.name}»؟ ستُفصل الملفات عنه وتبقى محفوظة.`,
+        `حذف المجلد «${folder.name}» فقط؟ قوائم الأسعار داخله ستبقى محفوظة (بدون مجلد) في قاعدة البيانات والتخزين.`,
       )
     )
       return;
-    await deleteFileFolder(folder.id, user.uid);
+    await deleteFileFolderDetachCards(folder.id, user.uid);
+    await load();
+  }
+
+  async function onDeleteFolderAndContents(folder: FileFolder) {
+    if (!user) return;
+    if (
+      !confirm(
+        `حذف المجلد «${folder.name}» وكل محتواه؟ سيتم حذف جميع قوائم الأسعار داخله نهائيًا من قاعدة البيانات والتخزين (PDF والصور المصغّرة). لا يمكن التراجع.`,
+      )
+    )
+      return;
+    await deleteFileFolderAndContents(folder.id);
     await load();
   }
 
@@ -121,10 +134,17 @@ export function FolderTable() {
                   </button>
                   <button
                     type="button"
-                    className="text-start text-xs text-red-700 hover:underline"
-                    onClick={() => void onDelete(folder)}
+                    className="text-start text-xs text-amber-800 hover:underline"
+                    onClick={() => void onDeleteFolderOnly(folder)}
                   >
-                    حذف
+                    حذف المجلد (الملفات تبقى)
+                  </button>
+                  <button
+                    type="button"
+                    className="text-start text-xs font-medium text-red-700 hover:underline"
+                    onClick={() => void onDeleteFolderAndContents(folder)}
+                  >
+                    حذف المجلد والملفات نهائيًا
                   </button>
                 </div>
               </td>

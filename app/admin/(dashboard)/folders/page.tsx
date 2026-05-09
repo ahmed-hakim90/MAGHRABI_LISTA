@@ -11,7 +11,8 @@ export default function AdminFoldersPage() {
           <h1 className="text-xl font-semibold text-foreground">المجلدات</h1>
           <p className="mt-1 text-sm text-muted">
             تجميع الملفات في مجلدات بأسماء. تعطيل مجلد يخفيه ويخفي ملفاته عن
-            الزوار.
+            الزوار. عند الحذف يمكن إزالة المجلد فقط مع إبقاء الملفات، أو حذف
+            المجلد مع كل محتواه من التخزين.
           </p>
         </div>
         <Link

@@ -11,8 +11,20 @@ dotenv.config({ path: path.join(root, ".env.local") });
 dotenv.config({ path: path.join(root, ".env") });
 
 const FB_VERSION = "12.13.0";
-/** Bump when SW caching logic changes so old caches are purged. */
-const SW_CACHE_VERSION = "v2";
+
+/** Unique per deploy so browsers fetch a new sw.js and activate updates. */
+function getSwCacheVersion() {
+  const raw =
+    process.env.VERCEL_DEPLOYMENT_ID?.trim() ||
+    process.env.CF_PAGES_COMMIT_SHA?.trim() ||
+    process.env.SW_CACHE_BUMP?.trim() ||
+    "";
+  if (raw)
+    return raw.replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 48);
+  return "v2-local";
+}
+
+const SW_CACHE_VERSION = getSwCacheVersion();
 
 const config = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "",

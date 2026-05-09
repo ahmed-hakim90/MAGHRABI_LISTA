@@ -20,6 +20,7 @@ import {
 } from "@/lib/firebase/client";
 import { getDocsWithCacheFallback } from "@/lib/firestore/queryWithCacheFallback";
 import type { FileFolder } from "@/lib/types/models";
+import { deleteFileCard } from "@/lib/services/fileCards";
 
 function fromDoc(id: string, data: Record<string, unknown>): FileFolder {
   return {
@@ -161,10 +162,13 @@ export async function setFileFolderActive(
 }
 
 /**
- * Deletes the folder and detaches all linked cards (sets folderId="" and folderIsActive=true).
- * Cards themselves are preserved.
+ * Deletes the folder only. Linked cards are detached (no folder) and stay in
+ * Firestore + Storage.
  */
-export async function deleteFileFolder(folderId: string, uid: string): Promise<void> {
+export async function deleteFileFolderDetachCards(
+  folderId: string,
+  uid: string,
+): Promise<void> {
   const db = getClientFirestore();
   const cardsSnap = await getDocs(
     query(collection(db, "fileCards"), where("folderId", "==", folderId)),
@@ -181,6 +185,22 @@ export async function deleteFileFolder(folderId: string, uid: string): Promise<v
       });
     }
     await batch.commit();
+  }
+  await deleteDoc(doc(db, "fileFolders", folderId));
+}
+
+/**
+ * Deletes the folder and every file card inside it (Firestore + PDF/thumbnail in Storage).
+ */
+export async function deleteFileFolderAndContents(
+  folderId: string,
+): Promise<void> {
+  const db = getClientFirestore();
+  const cardsSnap = await getDocs(
+    query(collection(db, "fileCards"), where("folderId", "==", folderId)),
+  );
+  for (const c of cardsSnap.docs) {
+    await deleteFileCard(c.id);
   }
   await deleteDoc(doc(db, "fileFolders", folderId));
 }

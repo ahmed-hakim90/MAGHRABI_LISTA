@@ -43,8 +43,8 @@ export function FileCard({
 }: Props) {
   const { basePath } = useCatalogChannel();
   const openFileInNewTab = useNarrowViewportForNewTab();
-  const newTabLinkProps = openFileInNewTab
-    ? ({ target: "_blank", rel: "noopener noreferrer" } as const)
+  const newTabAttrs = openFileInNewTab
+    ? ({ target: "_blank" as const, rel: "noopener noreferrer" })
     : {};
   const isList = variant === "list";
   const viewHref = `${basePath}/file/${card.id}/view`;
@@ -73,12 +73,20 @@ export function FileCard({
 
     return (
       <article className={`${catalogListRowClass} min-w-0`} dir="rtl">
-        <Link
-          href={viewHref}
-          className="absolute inset-y-0 start-0 z-0 end-10 rounded-none"
-          aria-label={`عرض ${card.title}`}
-          {...newTabLinkProps}
-        />
+        {openFileInNewTab ? (
+          <a
+            href={viewHref}
+            className="absolute inset-y-0 start-0 z-0 end-10 rounded-none"
+            aria-label={`عرض ${card.title}`}
+            {...newTabAttrs}
+          />
+        ) : (
+          <Link
+            href={viewHref}
+            className="absolute inset-y-0 start-0 z-0 end-10 rounded-none"
+            aria-label={`عرض ${card.title}`}
+          />
+        )}
         <div className="relative z-[1] flex min-w-0 flex-1 items-center gap-2 pointer-events-none sm:gap-3">
           <div
             className="relative h-9 w-9 shrink-0 overflow-hidden rounded-md border border-border/60 bg-surface sm:h-10 sm:w-10"
@@ -122,8 +130,8 @@ export function FileCard({
     );
   }
 
-  return (
-    <Link href={viewHref} className={gridShell} {...newTabLinkProps}>
+  const gridBody = (
+    <>
       <div className="relative isolate aspect-square w-full shrink-0 overflow-hidden bg-surface">
         <div className="relative z-0 h-full w-full min-h-0">
           {hasThumbnail(card) ? (
@@ -171,6 +179,16 @@ export function FileCard({
           </p>
         )}
       </div>
-    </Link>
+    </>
   );
+
+  if (openFileInNewTab) {
+    return (
+      <a href={viewHref} className={gridShell} {...newTabAttrs}>
+        {gridBody}
+      </a>
+    );
+  }
+
+  return <Link href={viewHref} className={gridShell}>{gridBody}</Link>;
 }

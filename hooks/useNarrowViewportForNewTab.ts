@@ -2,11 +2,13 @@
 
 import { useEffect, useState } from "react";
 
-const QUERY = "(max-width: 639px)";
+/** Below `lg` (1024px), or touch-primary devices (covers iPhone “desktop site” wide viewport). */
+const QUERY =
+  "(max-width: 1023px), (hover: none) and (pointer: coarse)";
 
 /**
- * True when the viewport is below Tailwind's default `sm` breakpoint.
- * Used so file cards open in a new tab on phone-sized layouts only (SSR-safe).
+ * True on typical phones/tablets and on touch-first devices.
+ * Used so file cards open in a new tab on mobile only (SSR-safe).
  */
 export function useNarrowViewportForNewTab(): boolean {
   const [narrow, setNarrow] = useState(false);

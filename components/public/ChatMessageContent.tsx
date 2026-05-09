@@ -252,17 +252,17 @@ export function ChatMessageContent({ content }: { content: string }) {
         }
         const catalogInternal =
           !s.external && /^\/(?:wholesale|retail|lists)\/file\//i.test(s.href);
+        /* Product rule: every chat link opens a new tab (internal + external). Do not revert to same-tab for relative paths. */
+        const linkClass = catalogInternal
+          ? "touch-manipulation font-semibold text-primary underline underline-offset-2 hover:opacity-90"
+          : "touch-manipulation font-medium text-primary underline underline-offset-2 hover:opacity-90";
         return (
           <a
             key={i}
             href={s.href}
-            className={
-              catalogInternal
-                ? "font-semibold text-primary underline underline-offset-2 hover:opacity-90"
-                : "font-medium text-primary underline underline-offset-2 hover:opacity-90"
-            }
-            target={s.external ? "_blank" : undefined}
-            rel={s.external ? "noopener noreferrer" : undefined}
+            className={linkClass}
+            target="_blank"
+            rel="noopener noreferrer"
           >
             {s.label}
           </a>

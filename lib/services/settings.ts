@@ -14,7 +14,7 @@ import { STORAGE_FOLDER } from "@/lib/utils/storagePaths";
 import { fileToWebpBlob } from "@/lib/utils/imageWebp";
 import {
   normalizeWhatsappContactsForSave,
-  resolvedWhatsappContactsForSite,
+  parseWhatsappContactsRaw,
 } from "@/lib/utils/siteWhatsappContacts";
 
 const SITE_DOC = "site";
@@ -23,9 +23,7 @@ function fromData(data: Record<string, unknown>): SiteSettings {
   const appName = String(data.appName ?? "").trim() || DEFAULT_SITE_APP_NAME;
   const homeTitle =
     String(data.homeTitle ?? "").trim() || DEFAULT_SITE_HOME_TITLE;
-  const whatsappContacts = resolvedWhatsappContactsForSite(
-    data.whatsappContacts,
-  );
+  const whatsappContacts = parseWhatsappContactsRaw(data.whatsappContacts);
   return {
     appName,
     logoUrl: String(data.logoUrl ?? ""),

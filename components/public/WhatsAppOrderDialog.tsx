@@ -44,12 +44,12 @@ export function WhatsAppOrderDialog({ open, onClose }: Props) {
       setMessage(PUBLIC_WHATSAPP_ORDER_PREFILL);
       setSelectedId("");
       setFileQuery("");
+      setSelectedWhatsappId("");
     }
     setSelectedWhatsappId((cur) => {
       if (whatsappContacts.length === 0) return "";
-      if (isNewOpen) return whatsappContacts[0]!.id;
       if (cur && whatsappContacts.some((c) => c.id === cur)) return cur;
-      return whatsappContacts[0]!.id;
+      return "";
     });
   }, [open, whatsappContacts]);
 
@@ -94,8 +94,8 @@ export function WhatsAppOrderDialog({ open, onClose }: Props) {
   const selected = selectedId ? cards.find((c) => c.id === selectedId) : undefined;
 
   const selectedWhatsapp = useMemo(() => {
-    const byId = whatsappContacts.find((c) => c.id === selectedWhatsappId);
-    return byId ?? whatsappContacts[0];
+    if (!selectedWhatsappId) return undefined;
+    return whatsappContacts.find((c) => c.id === selectedWhatsappId);
   }, [whatsappContacts, selectedWhatsappId]);
 
   const finalMessage = useMemo(() => {
@@ -145,23 +145,24 @@ export function WhatsAppOrderDialog({ open, onClose }: Props) {
         </div>
 
         <div className="max-h-[min(70dvh,32rem)] space-y-4 overflow-y-auto px-5 py-4">
-          {whatsappContacts.length > 1 ? (
+          {whatsappContacts.length > 0 ? (
             <div className="space-y-1.5">
               <label
                 htmlFor="whatsapp-dest"
                 className="text-sm font-medium text-[#2F3437]"
               >
-                جهة التواصل
+                جهة التواصل{" "}
+                <span className="font-normal text-[#6B6B6B]">(مطلوب)</span>
               </label>
               <select
                 id="whatsapp-dest"
-                value={
-                  selectedWhatsappId || whatsappContacts[0]?.id || ""
-                }
+                value={selectedWhatsappId}
                 onChange={(e) => setSelectedWhatsappId(e.target.value)}
+                data-autofocus={whatsappContacts.length > 0 ? true : undefined}
                 className="w-full rounded-xl border border-[#E5E2DA] bg-white px-3 py-2.5 text-sm text-[#2F3437] outline-none focus:border-[#2F3437]/40 focus:ring-2 focus:ring-[#2F3437]/20"
                 aria-label="اختر جهة واتساب"
               >
+                <option value="">— اختر الاسم —</option>
                 {whatsappContacts.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.displayName}
@@ -169,12 +170,15 @@ export function WhatsAppOrderDialog({ open, onClose }: Props) {
                 ))}
               </select>
             </div>
-          ) : selectedWhatsapp ? (
-            <p className="rounded-xl border border-[#E5E2DA] bg-white/80 px-3 py-2 text-sm text-[#6B6B6B]">
-              <span className="font-medium text-[#2F3437]">التواصل مع: </span>
-              {selectedWhatsapp.displayName}
+          ) : (
+            <p
+              className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-sm text-amber-950"
+              role="status"
+            >
+              لا توجد أرقام واتساب مُعدّة. يُرجى إضافة أرقام من لوحة التحكم → إعدادات
+              الموقع.
             </p>
-          ) : null}
+          )}
 
           <div className="space-y-1.5">
             <label htmlFor="whatsapp-msg" className="text-sm font-medium text-[#2F3437]">
@@ -182,7 +186,7 @@ export function WhatsAppOrderDialog({ open, onClose }: Props) {
             </label>
             <textarea
               id="whatsapp-msg"
-              data-autofocus
+              {...(whatsappContacts.length === 0 ? { "data-autofocus": true } : {})}
               dir="rtl"
               rows={8}
               value={message}

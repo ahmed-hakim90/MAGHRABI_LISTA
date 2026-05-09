@@ -12,8 +12,6 @@ import {
 } from "@/lib/constants/siteDefaults";
 import { getSiteSettings } from "@/lib/services/settings";
 import type { SiteSettings } from "@/lib/types/models";
-import { resolvedWhatsappContactsForSite } from "@/lib/utils/siteWhatsappContacts";
-
 const defaults: SiteSettings = {
   appName: DEFAULT_SITE_APP_NAME,
   logoUrl: "",
@@ -21,7 +19,7 @@ const defaults: SiteSettings = {
   homeTitle: DEFAULT_SITE_HOME_TITLE,
   homeSubtitle: "",
   primaryColor: DEFAULT_SITE_PRIMARY_COLOR,
-  whatsappContacts: resolvedWhatsappContactsForSite(undefined),
+  whatsappContacts: [],
   updatedAt: null,
 };
 

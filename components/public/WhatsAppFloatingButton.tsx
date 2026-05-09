@@ -2,9 +2,15 @@
 
 import { useState } from "react";
 import { WhatsAppOrderDialog } from "@/components/public/WhatsAppOrderDialog";
+import { usePublicSiteSettings } from "@/hooks/usePublicSiteSettings";
 
 export function WhatsAppFloatingButton() {
   const [dialogOpen, setDialogOpen] = useState(false);
+  const site = usePublicSiteSettings();
+
+  if (site.whatsappContacts.length === 0) {
+    return null;
+  }
 
   return (
     <>

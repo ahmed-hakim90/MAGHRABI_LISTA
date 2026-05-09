@@ -25,7 +25,7 @@ export async function POST(request: Request) {
   const expected = process.env.ADMIN_SETUP_TOKEN?.trim();
   if (!expected || expected.length < 24) {
     return NextResponse.json(
-      { error: "Admin registration is not configured." },
+      { error: "تسجيل المسؤول غير مُعدّ في الخادم." },
       { status: 503 },
     );
   }
@@ -34,22 +34,22 @@ export async function POST(request: Request) {
   try {
     body = (await request.json()) as Body;
   } catch {
-    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+    return NextResponse.json({ error: "بيانات غير صالحة." }, { status: 400 });
   }
 
   const setupToken = typeof body.setupToken === "string" ? body.setupToken : "";
   if (!isValidSetupToken(setupToken, expected)) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return NextResponse.json({ error: "غير مسموح." }, { status: 403 });
   }
 
   const email = typeof body.email === "string" ? body.email.trim() : "";
   const password = typeof body.password === "string" ? body.password : "";
   if (!email || !email.includes("@")) {
-    return NextResponse.json({ error: "Invalid email" }, { status: 400 });
+    return NextResponse.json({ error: "بريد إلكتروني غير صالح." }, { status: 400 });
   }
   if (password.length < 8) {
     return NextResponse.json(
-      { error: "Password must be at least 8 characters." },
+      { error: "كلمة المرور يجب ألا تقل عن 8 أحرف." },
       { status: 400 },
     );
   }
@@ -72,10 +72,10 @@ export async function POST(request: Request) {
         : "";
     if (code === "auth/email-already-exists") {
       return NextResponse.json(
-        { error: "An account with this email already exists." },
+        { error: "يوجد حساب بهذا البريد مسبقًا." },
         { status: 409 },
       );
     }
-    return NextResponse.json({ error: "Could not create admin." }, { status: 500 });
+    return NextResponse.json({ error: "تعذّر إنشاء حساب المسؤول." }, { status: 500 });
   }
 }

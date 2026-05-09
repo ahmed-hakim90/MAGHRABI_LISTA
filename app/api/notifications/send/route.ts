@@ -23,14 +23,14 @@ export async function POST(request: Request) {
   try {
     body = (await request.json()) as Body;
   } catch {
-    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+    return NextResponse.json({ error: "بيانات غير صالحة." }, { status: 400 });
   }
 
   const authHeader = request.headers.get("authorization");
   const token =
     authHeader?.startsWith("Bearer ") ? authHeader.slice(7).trim() : null;
   if (!token) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "غير مصرّح." }, { status: 401 });
   }
 
   let uid: string;
@@ -38,7 +38,7 @@ export async function POST(request: Request) {
     const decoded = await getAdminAuth().verifyIdToken(token);
     uid = decoded.uid;
   } catch {
-    return NextResponse.json({ error: "Invalid token" }, { status: 401 });
+    return NextResponse.json({ error: "رمز غير صالح." }, { status: 401 });
   }
 
   let db: Firestore;
@@ -48,20 +48,20 @@ export async function POST(request: Request) {
     messaging = getAdminMessaging();
   } catch {
     return NextResponse.json(
-      { error: "Server Firebase Admin not configured" },
+      { error: "إعدادات Firebase Admin غير مكتملة على الخادم." },
       { status: 503 },
     );
   }
 
   if (!(await verifyAdmin(db, uid))) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return NextResponse.json({ error: "غير مسموح." }, { status: 403 });
   }
 
   const title = String(body.title ?? "").trim();
   const text = String(body.body ?? "").trim();
   if (!title || !text) {
     return NextResponse.json(
-      { error: "title and body are required" },
+      { error: "العنوان والنص مطلوبان." },
       { status: 400 },
     );
   }

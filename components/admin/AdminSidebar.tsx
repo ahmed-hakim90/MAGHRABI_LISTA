@@ -4,11 +4,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const links = [
-  { href: "/admin", label: "Dashboard" },
-  { href: "/admin/folders", label: "Folders" },
-  { href: "/admin/files", label: "Files" },
-  { href: "/admin/notifications", label: "Notifications" },
-  { href: "/admin/settings", label: "Settings" },
+  { href: "/admin", label: "لوحة التحكم" },
+  { href: "/admin/folders", label: "المجلدات" },
+  { href: "/admin/files", label: "الملفات" },
+  { href: "/admin/notifications", label: "الإشعارات" },
+  { href: "/admin/settings", label: "إعدادات الموقع" },
 ];
 
 export function AdminSidebar() {
@@ -17,7 +17,7 @@ export function AdminSidebar() {
   return (
     <aside className="flex w-full flex-col border-b border-border bg-card px-4 py-4 lg:w-56 lg:border-b-0 lg:border-r">
       <p className="mb-4 text-xs font-semibold uppercase tracking-wide text-muted">
-        Admin
+        الإدارة
       </p>
       <nav className="flex flex-wrap gap-2 lg:flex-col lg:gap-1">
         {links.map((l) => {

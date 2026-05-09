@@ -87,13 +87,13 @@ export function FileTable() {
 
   async function onDelete(card: FileCard) {
     if (!user) return;
-    if (!confirm(`Delete “${card.title}”?`)) return;
+    if (!confirm(`حذف «${card.title}»؟`)) return;
     await deleteFileCard(card.id);
     await load();
   }
 
   if (loading) {
-    return <p className="text-muted">Loading files…</p>;
+    return <p className="text-muted">جاري تحميل الملفات…</p>;
   }
 
   return (
@@ -104,16 +104,16 @@ export function FileTable() {
         </div>
       ) : null}
       <div className="overflow-x-auto rounded-2xl border border-border bg-card shadow-sm">
-        <table className="w-full min-w-[720px] text-left text-sm">
+        <table className="w-full min-w-[720px] text-start text-sm">
         <thead>
           <tr className="border-b border-border text-muted">
-            <th className="p-3 font-medium">Thumb</th>
-            <th className="p-3 font-medium">Title</th>
-            <th className="p-3 font-medium">Folder</th>
-            <th className="p-3 font-medium">Category</th>
-            <th className="p-3 font-medium">Active</th>
-            <th className="p-3 font-medium">Updated</th>
-            <th className="p-3 font-medium">Actions</th>
+            <th className="p-3 font-medium">مصغّر</th>
+            <th className="p-3 font-medium">العنوان</th>
+            <th className="p-3 font-medium">المجلد</th>
+            <th className="p-3 font-medium">التصنيف</th>
+            <th className="p-3 font-medium">نشط</th>
+            <th className="p-3 font-medium">آخر تحديث</th>
+            <th className="p-3 font-medium">إجراءات</th>
           </tr>
         </thead>
         <tbody>
@@ -163,11 +163,11 @@ export function FileTable() {
                       : "bg-neutral-100 text-neutral-600"
                   }`}
                 >
-                  {card.isActive ? "Yes" : "No"}
+                  {card.isActive ? "نعم" : "لا"}
                 </span>
               </td>
               <td className="p-3 text-muted">
-                {formatDisplayDate(card.updatedAt)}
+                {formatDisplayDate(card.updatedAt, "ar")}
               </td>
               <td className="p-3">
                 <div className="flex flex-col gap-1">
@@ -175,10 +175,10 @@ export function FileTable() {
                     href={`/admin/files/${card.id}/edit`}
                     className="text-foreground underline"
                   >
-                    Edit
+                    تعديل
                   </Link>
                   <label className="cursor-pointer text-xs text-muted hover:text-foreground">
-                    Replace PDF
+                    استبدال PDF
                     <input
                       type="file"
                       accept="application/pdf"
@@ -189,7 +189,7 @@ export function FileTable() {
                     />
                   </label>
                   <label className="cursor-pointer text-xs text-muted hover:text-foreground">
-                    Replace thumbnail
+                    استبدال المصغّرة
                     <input
                       type="file"
                       accept="image/*"
@@ -201,17 +201,17 @@ export function FileTable() {
                   </label>
                   <button
                     type="button"
-                    className="text-left text-xs text-muted hover:text-foreground"
+                    className="text-start text-xs text-muted hover:text-foreground"
                     onClick={() => void onToggle(card)}
                   >
-                    {card.isActive ? "Deactivate" : "Activate"}
+                    {card.isActive ? "تعطيل" : "تفعيل"}
                   </button>
                   <button
                     type="button"
-                    className="text-left text-xs text-red-700 hover:underline"
+                    className="text-start text-xs text-red-700 hover:underline"
                     onClick={() => void onDelete(card)}
                   >
-                    Delete
+                    حذف
                   </button>
                 </div>
               </td>
@@ -220,7 +220,7 @@ export function FileTable() {
         </tbody>
         </table>
         {rows.length === 0 ? (
-          <p className="p-6 text-center text-muted">No files yet.</p>
+          <p className="p-6 text-center text-muted">لا توجد ملفات بعد.</p>
         ) : null}
       </div>
     </div>

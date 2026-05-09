@@ -21,16 +21,11 @@ export default function EditFolderPage({
 
   if (!user) return null;
   if (folder === undefined) {
-    return <p className="text-muted">Loading…</p>;
+    return <p className="text-muted">جاري التحميل…</p>;
   }
   if (!folder) {
-    return <p className="text-muted">Folder not found.</p>;
+    return <p className="text-muted">المجلد غير موجود.</p>;
   }
 
-  return (
-    <div className="space-y-4">
-      <h1 className="text-xl font-semibold text-foreground">Edit folder</h1>
-      <FolderForm mode="edit" uid={user.uid} initial={folder} />
-    </div>
-  );
+  return <FolderForm mode="edit" uid={user.uid} initial={folder} />;
 }

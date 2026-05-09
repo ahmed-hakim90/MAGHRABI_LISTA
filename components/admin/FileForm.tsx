@@ -72,7 +72,7 @@ export function FileForm({ mode, uid, initial }: Props) {
       return Math.floor(n);
     })();
     if (productCount === undefined) {
-      setError("Product count must be a non-negative number or empty.");
+      setError("عدد المنتجات يجب أن يكون رقمًا صحيحًا غير سالب أو فارغًا.");
       return;
     }
     setSaving(true);
@@ -81,7 +81,7 @@ export function FileForm({ mode, uid, initial }: Props) {
       const folderFields = resolveFolderFields();
       if (mode === "create") {
         if (!pdf) {
-          setError("PDF is required.");
+          setError("ملف PDF مطلوب.");
           setSaving(false);
           setUploadProgress(null);
           return;
@@ -89,7 +89,7 @@ export function FileForm({ mode, uid, initial }: Props) {
         await createFileCard(
           {
             title,
-            description,
+            description: "",
             category,
             tags,
             order: Number(order) || 0,
@@ -122,7 +122,7 @@ export function FileForm({ mode, uid, initial }: Props) {
       router.push("/admin/files");
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Save failed");
+      setError(err instanceof Error ? err.message : "فشل الحفظ");
     } finally {
       setUploadProgress(null);
       setSaving(false);
@@ -135,7 +135,7 @@ export function FileForm({ mode, uid, initial }: Props) {
       className="mx-auto max-w-xl space-y-4 rounded-2xl border border-border bg-card p-6 shadow-sm"
     >
       <h1 className="text-lg font-semibold text-foreground">
-        {mode === "create" ? "New file" : "Edit file"}
+        {mode === "create" ? "ملف جديد" : "تعديل الملف"}
       </h1>
       {error ? (
         <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-800">
@@ -150,7 +150,7 @@ export function FileForm({ mode, uid, initial }: Props) {
         />
       ) : null}
       <label className="block">
-        <span className="text-sm font-medium text-foreground">Title</span>
+        <span className="text-sm font-medium text-foreground">العنوان</span>
         <input
           required
           className="mt-1 w-full rounded-xl border border-border px-3 py-2 text-[15px]"
@@ -158,18 +158,19 @@ export function FileForm({ mode, uid, initial }: Props) {
           onChange={(e) => setTitle(e.target.value)}
         />
       </label>
+      {mode === "edit" ? (
+        <label className="block">
+          <span className="text-sm font-medium text-foreground">الوصف</span>
+          <textarea
+            rows={3}
+            className="mt-1 w-full rounded-xl border border-border px-3 py-2 text-[15px]"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
+        </label>
+      ) : null}
       <label className="block">
-        <span className="text-sm font-medium text-foreground">Description</span>
-        <textarea
-          required
-          rows={3}
-          className="mt-1 w-full rounded-xl border border-border px-3 py-2 text-[15px]"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-        />
-      </label>
-      <label className="block">
-        <span className="text-sm font-medium text-foreground">Category</span>
+        <span className="text-sm font-medium text-foreground">التصنيف</span>
         <input
           className="mt-1 w-full rounded-xl border border-border px-3 py-2 text-[15px]"
           value={category}
@@ -178,7 +179,7 @@ export function FileForm({ mode, uid, initial }: Props) {
       </label>
       <label className="block">
         <span className="text-sm font-medium text-foreground">
-          Product count (optional)
+          عدد المنتجات (اختياري)
         </span>
         <input
           type="number"
@@ -187,28 +188,28 @@ export function FileForm({ mode, uid, initial }: Props) {
           className="mt-1 w-full rounded-xl border border-border px-3 py-2 text-[15px]"
           value={productCountStr}
           onChange={(e) => setProductCountStr(e.target.value)}
-          placeholder="e.g. number of SKUs"
+          placeholder="مثال: عدد الأصناف"
         />
       </label>
       <label className="block">
-        <span className="text-sm font-medium text-foreground">Folder</span>
+        <span className="text-sm font-medium text-foreground">المجلد</span>
         <select
           className="mt-1 w-full rounded-xl border border-border bg-card px-3 py-2 text-[15px]"
           value={folderId}
           onChange={(e) => setFolderId(e.target.value)}
         >
-          <option value="">— No folder —</option>
+          <option value="">— بدون مجلد —</option>
           {folders.map((f) => (
             <option key={f.id} value={f.id}>
               {f.name}
-              {f.isActive ? "" : " (inactive)"}
+              {f.isActive ? "" : " (غير نشط)"}
             </option>
           ))}
         </select>
       </label>
       <label className="block">
         <span className="text-sm font-medium text-foreground">
-          Tags (comma-separated)
+          الوسوم (مفصولة بفاصلة)
         </span>
         <input
           className="mt-1 w-full rounded-xl border border-border px-3 py-2 text-[15px]"
@@ -217,7 +218,7 @@ export function FileForm({ mode, uid, initial }: Props) {
         />
       </label>
       <label className="block">
-        <span className="text-sm font-medium text-foreground">Order</span>
+        <span className="text-sm font-medium text-foreground">الترتيب</span>
         <input
           type="number"
           className="mt-1 w-full rounded-xl border border-border px-3 py-2 text-[15px]"
@@ -231,19 +232,19 @@ export function FileForm({ mode, uid, initial }: Props) {
           checked={isActive}
           onChange={(e) => setIsActive(e.target.checked)}
         />
-        <span className="text-sm text-foreground">Active (visible to public)</span>
+        <span className="text-sm text-foreground">نشط (يظهر للزوار)</span>
       </label>
       {mode === "create" ? (
         <>
           <UploadField
-            label="PDF"
+            label="ملف PDF"
             accept="application/pdf"
             file={pdf}
             onFile={setPdf}
             required
           />
           <UploadField
-            label="Thumbnail (optional — PDF icon is used if empty)"
+            label="صورة مصغّرة (اختياري — إن تُركت فارغة يُستخدم أيقونة PDF)"
             accept="image/*"
             file={thumb}
             onFile={setThumb}
@@ -256,14 +257,14 @@ export function FileForm({ mode, uid, initial }: Props) {
           disabled={saving}
           className="rounded-xl bg-primary px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-50"
         >
-          {saving ? "Saving…" : "Save"}
+          {saving ? "جاري الحفظ…" : "حفظ"}
         </button>
         <button
           type="button"
           onClick={() => router.back()}
           className="rounded-xl border border-border px-4 py-2 text-sm text-foreground"
         >
-          Cancel
+          إلغاء
         </button>
       </div>
     </form>

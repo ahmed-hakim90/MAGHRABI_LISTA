@@ -27,7 +27,7 @@ export function FolderForm({ mode, uid, initial }: Props) {
     e.preventDefault();
     setError(null);
     if (!name.trim()) {
-      setError("Folder name is required.");
+      setError("اسم المجلد مطلوب.");
       return;
     }
     setSaving(true);
@@ -52,7 +52,7 @@ export function FolderForm({ mode, uid, initial }: Props) {
       router.push("/admin/folders");
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Save failed");
+      setError(err instanceof Error ? err.message : "فشل الحفظ");
     } finally {
       setSaving(false);
     }
@@ -64,7 +64,7 @@ export function FolderForm({ mode, uid, initial }: Props) {
       className="mx-auto max-w-xl space-y-4 rounded-2xl border border-border bg-card p-6 shadow-sm"
     >
       <h1 className="text-lg font-semibold text-foreground">
-        {mode === "create" ? "New folder" : "Edit folder"}
+        {mode === "create" ? "مجلد جديد" : "تعديل المجلد"}
       </h1>
       {error ? (
         <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-800">
@@ -72,7 +72,7 @@ export function FolderForm({ mode, uid, initial }: Props) {
         </p>
       ) : null}
       <label className="block">
-        <span className="text-sm font-medium text-foreground">Name</span>
+        <span className="text-sm font-medium text-foreground">الاسم</span>
         <input
           required
           className="mt-1 w-full rounded-xl border border-border px-3 py-2 text-[15px]"
@@ -81,7 +81,7 @@ export function FolderForm({ mode, uid, initial }: Props) {
         />
       </label>
       <label className="block">
-        <span className="text-sm font-medium text-foreground">Description</span>
+        <span className="text-sm font-medium text-foreground">الوصف</span>
         <textarea
           rows={2}
           className="mt-1 w-full rounded-xl border border-border px-3 py-2 text-[15px]"
@@ -90,7 +90,7 @@ export function FolderForm({ mode, uid, initial }: Props) {
         />
       </label>
       <label className="block">
-        <span className="text-sm font-medium text-foreground">Order</span>
+        <span className="text-sm font-medium text-foreground">الترتيب</span>
         <input
           type="number"
           className="mt-1 w-full rounded-xl border border-border px-3 py-2 text-[15px]"
@@ -104,9 +104,7 @@ export function FolderForm({ mode, uid, initial }: Props) {
           checked={isActive}
           onChange={(e) => setIsActive(e.target.checked)}
         />
-        <span className="text-sm text-foreground">
-          Active (visible to public)
-        </span>
+        <span className="text-sm text-foreground">نشط (يظهر للزوار)</span>
       </label>
       <div className="flex gap-2 pt-2">
         <button
@@ -114,14 +112,14 @@ export function FolderForm({ mode, uid, initial }: Props) {
           disabled={saving}
           className="rounded-xl bg-primary px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-50"
         >
-          {saving ? "Saving…" : "Save"}
+          {saving ? "جاري الحفظ…" : "حفظ"}
         </button>
         <button
           type="button"
           onClick={() => router.back()}
           className="rounded-xl border border-border px-4 py-2 text-sm text-foreground"
         >
-          Cancel
+          إلغاء
         </button>
       </div>
     </form>

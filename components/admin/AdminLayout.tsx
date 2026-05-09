@@ -18,7 +18,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
   if (loading || !user || !isAdmin) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-surface text-muted">
-        Loading…
+        جاري التحميل…
       </div>
     );
   }
@@ -33,7 +33,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
             onClick={() => void signOut().then(() => router.replace("/admin/login"))}
             className="w-full rounded-xl border border-border bg-card px-3 py-2 text-sm text-foreground transition hover:bg-surface"
           >
-            Logout
+            تسجيل الخروج
           </button>
         </div>
       </div>
@@ -44,7 +44,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
           onClick={() => void signOut().then(() => router.replace("/admin/login"))}
           className="w-full rounded-xl border border-border px-3 py-2 text-sm text-foreground"
         >
-          Logout
+          تسجيل الخروج
         </button>
       </div>
     </div>

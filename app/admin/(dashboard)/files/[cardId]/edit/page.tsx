@@ -21,16 +21,11 @@ export default function EditFilePage({
 
   if (!user) return null;
   if (card === undefined) {
-    return <p className="text-muted">Loading…</p>;
+    return <p className="text-muted">جاري التحميل…</p>;
   }
   if (!card) {
-    return <p className="text-muted">File not found.</p>;
+    return <p className="text-muted">الملف غير موجود.</p>;
   }
 
-  return (
-    <div className="space-y-4">
-      <h1 className="text-xl font-semibold text-foreground">Edit file</h1>
-      <FileForm mode="edit" uid={user.uid} initial={card} />
-    </div>
-  );
+  return <FileForm mode="edit" uid={user.uid} initial={card} />;
 }

@@ -54,9 +54,9 @@ export default function AdminSettingsPage() {
       const next = await getSiteSettings();
       setInitial(next);
       setLogoFile(null);
-      setMsg("Saved.");
+      setMsg("تم الحفظ.");
     } catch (err) {
-      setMsg(err instanceof Error ? err.message : "Save failed");
+      setMsg(err instanceof Error ? err.message : "فشل الحفظ");
     } finally {
       setUploadProgress(null);
       setBusy(false);
@@ -64,12 +64,12 @@ export default function AdminSettingsPage() {
   }
 
   if (!initial) {
-    return <p className="text-muted">Loading…</p>;
+    return <p className="text-muted">جاري التحميل…</p>;
   }
 
   return (
     <div className="mx-auto max-w-lg space-y-4">
-      <h1 className="text-xl font-semibold text-foreground">Site settings</h1>
+      <h1 className="text-xl font-semibold text-foreground">إعدادات الموقع</h1>
       <form
         onSubmit={(e) => void onSubmit(e)}
         className="space-y-4 rounded-2xl border border-border bg-card p-6 shadow-sm"
@@ -87,7 +87,7 @@ export default function AdminSettingsPage() {
           />
         ) : null}
         <label className="block">
-          <span className="text-sm font-medium text-foreground">App name</span>
+          <span className="text-sm font-medium text-foreground">اسم التطبيق</span>
           <input
             className="mt-1 w-full rounded-xl border border-border px-3 py-2"
             value={appName}
@@ -95,7 +95,7 @@ export default function AdminSettingsPage() {
           />
         </label>
         <label className="block">
-          <span className="text-sm font-medium text-foreground">Home title</span>
+          <span className="text-sm font-medium text-foreground">عنوان الصفحة الرئيسية</span>
           <input
             className="mt-1 w-full rounded-xl border border-border px-3 py-2"
             value={homeTitle}
@@ -104,7 +104,7 @@ export default function AdminSettingsPage() {
         </label>
         <label className="block">
           <span className="text-sm font-medium text-foreground">
-            Home subtitle
+            نص فرعي للصفحة الرئيسية
           </span>
           <textarea
             rows={2}
@@ -115,7 +115,7 @@ export default function AdminSettingsPage() {
         </label>
         <label className="block">
           <span className="text-sm font-medium text-foreground">
-            Primary color (hex)
+            اللون الأساسي (hex)
           </span>
           <input
             className="mt-1 w-full rounded-xl border border-border px-3 py-2"
@@ -124,7 +124,7 @@ export default function AdminSettingsPage() {
           />
         </label>
         <div>
-          <span className="text-sm font-medium text-foreground">Logo</span>
+          <span className="text-sm font-medium text-foreground">الشعار</span>
           {initial.logoUrl ? (
             <div className="relative mt-2 h-16 w-16 overflow-hidden rounded-xl border border-border">
               <Image
@@ -148,7 +148,7 @@ export default function AdminSettingsPage() {
           disabled={busy}
           className="rounded-xl bg-primary px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
         >
-          {busy ? "Saving…" : "Save"}
+          {busy ? "جاري الحفظ…" : "حفظ"}
         </button>
       </form>
     </div>

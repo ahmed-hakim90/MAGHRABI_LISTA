@@ -11,6 +11,19 @@ import type { FileCard } from "@/lib/types/models";
 import type { NotificationDoc } from "@/lib/types/models";
 import { formatDisplayDate } from "@/lib/utils/dates";
 
+function notificationStatusAr(status: string): string {
+  switch (status) {
+    case "sent":
+      return "مُرسل";
+    case "failed":
+      return "فشل";
+    case "pending":
+      return "قيد الانتظار";
+    default:
+      return status;
+  }
+}
+
 export default function AdminNotificationsPage() {
   const { user } = useAdminAuth();
   const [title, setTitle] = useState("");
@@ -55,16 +68,16 @@ export default function AdminNotificationsPage() {
         targetCardId: targetCardId || null,
       });
       if (!res.ok) {
-        setMsg(res.error ?? "Send failed");
+        setMsg(res.error ?? "فشل الإرسال");
         return;
       }
       setTitle("");
       setBody("");
       setTargetCardId("");
-      setMsg("Notification sent.");
+      setMsg("تم إرسال الإشعار.");
       await load();
     } catch (err) {
-      setMsg(err instanceof Error ? err.message : "Send failed");
+      setMsg(err instanceof Error ? err.message : "فشل الإرسال");
     } finally {
       setBusy(false);
     }
@@ -73,9 +86,9 @@ export default function AdminNotificationsPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-xl font-semibold text-foreground">Notifications</h1>
+        <h1 className="text-xl font-semibold text-foreground">الإشعارات</h1>
         <p className="mt-1 text-sm text-muted">
-          Push to subscribed PWA visitors (FCM).
+          إشعارات دفع لزوار تطبيق الويب المشتركين (FCM).
         </p>
       </div>
 
@@ -89,7 +102,7 @@ export default function AdminNotificationsPage() {
           </p>
         ) : null}
         <label className="block">
-          <span className="text-sm font-medium text-foreground">Title</span>
+          <span className="text-sm font-medium text-foreground">عنوان الإشعار</span>
           <input
             required
             className="mt-1 w-full rounded-xl border border-border px-3 py-2"
@@ -98,7 +111,7 @@ export default function AdminNotificationsPage() {
           />
         </label>
         <label className="block">
-          <span className="text-sm font-medium text-foreground">Body</span>
+          <span className="text-sm font-medium text-foreground">نص الإشعار</span>
           <textarea
             required
             rows={3}
@@ -109,14 +122,14 @@ export default function AdminNotificationsPage() {
         </label>
         <label className="block">
           <span className="text-sm font-medium text-foreground">
-            Related file (optional)
+            ملف مرتبط (اختياري)
           </span>
           <select
             className="mt-1 w-full rounded-xl border border-border px-3 py-2"
             value={targetCardId}
             onChange={(e) => setTargetCardId(e.target.value)}
           >
-            <option value="">— None —</option>
+            <option value="">— بدون —</option>
             {cards.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.title}
@@ -129,12 +142,12 @@ export default function AdminNotificationsPage() {
           disabled={busy}
           className="rounded-xl bg-primary px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
         >
-          {busy ? "Sending…" : "Send notification"}
+          {busy ? "جاري الإرسال…" : "إرسال الإشعار"}
         </button>
       </form>
 
       <div>
-        <h2 className="mb-3 text-sm font-semibold text-foreground">History</h2>
+        <h2 className="mb-3 text-sm font-semibold text-foreground">السجل</h2>
         <ul className="space-y-2">
           {rows.map((r) => (
             <li
@@ -152,19 +165,19 @@ export default function AdminNotificationsPage() {
                         : "bg-neutral-100 text-neutral-600"
                   }`}
                 >
-                  {r.status}
+                  {notificationStatusAr(r.status)}
                 </span>
               </div>
               <p className="mt-1 text-muted">{r.body}</p>
               <p className="mt-2 text-xs text-muted">
-                {formatDisplayDate(r.createdAt)}
-                {r.targetCardId ? ` · Card ${r.targetCardId}` : ""}
+                {formatDisplayDate(r.createdAt, "ar")}
+                {r.targetCardId ? ` · ملف ${r.targetCardId}` : ""}
               </p>
             </li>
           ))}
         </ul>
         {rows.length === 0 ? (
-          <p className="text-sm text-muted">No notifications yet.</p>
+          <p className="text-sm text-muted">لا توجد إشعارات بعد.</p>
         ) : null}
       </div>
     </div>

@@ -24,11 +24,11 @@ export function UploadField({
       <input
         type="file"
         accept={accept}
-        className="block w-full text-sm text-muted file:mr-3 file:rounded-lg file:border-0 file:bg-surface file:px-3 file:py-2 file:text-sm file:font-medium file:text-foreground"
+        className="block w-full text-sm text-muted file:me-3 file:rounded-lg file:border-0 file:bg-surface file:px-3 file:py-2 file:text-sm file:font-medium file:text-foreground"
         onChange={(e) => onFile(e.target.files?.[0] ?? null)}
       />
       {file ? (
-        <p className="mt-1 text-xs text-muted">Selected: {file.name}</p>
+        <p className="mt-1 text-xs text-muted">المحدد: {file.name}</p>
       ) : null}
     </label>
   );

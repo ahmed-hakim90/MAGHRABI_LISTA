@@ -6,10 +6,5 @@ import { useAdminAuth } from "@/hooks/useAdminAuth";
 export default function NewFolderPage() {
   const { user } = useAdminAuth();
   if (!user) return null;
-  return (
-    <div className="space-y-4">
-      <h1 className="text-xl font-semibold text-foreground">New folder</h1>
-      <FolderForm mode="create" uid={user.uid} />
-    </div>
-  );
+  return <FolderForm mode="create" uid={user.uid} />;
 }

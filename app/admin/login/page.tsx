@@ -29,7 +29,7 @@ function AdminLoginForm() {
         snap.exists() &&
         (snap.data() as { isActive?: boolean }).isActive === true;
       if (!ok) {
-        setError("You are not authorized as an active admin.");
+        setError("ليس لديك صلاحية كمسؤول نشط.");
         const { signOutAdmin } = await import("@/lib/firebase/auth");
         await signOutAdmin();
         setBusy(false);
@@ -38,7 +38,7 @@ function AdminLoginForm() {
       router.replace("/admin");
       router.refresh();
     } catch {
-      setError("Invalid email or password.");
+      setError("البريد أو كلمة المرور غير صحيحة.");
     } finally {
       setBusy(false);
     }
@@ -50,10 +50,10 @@ function AdminLoginForm() {
         onSubmit={(e) => void onSubmit(e)}
         className="w-full max-w-sm space-y-4 rounded-2xl border border-border bg-card p-6 shadow-sm"
       >
-        <h1 className="text-lg font-semibold text-foreground">Admin sign in</h1>
+        <h1 className="text-lg font-semibold text-foreground">تسجيل دخول المسؤول</h1>
         {justRegistered ? (
           <p className="rounded-xl bg-emerald-50 px-3 py-2 text-sm text-emerald-900">
-            Account created. Sign in with your new credentials.
+            تم إنشاء الحساب. سجّل الدخول ببياناتك الجديدة.
           </p>
         ) : null}
         {error ? (
@@ -62,7 +62,7 @@ function AdminLoginForm() {
           </p>
         ) : null}
         <label className="block">
-          <span className="text-sm text-foreground">Email</span>
+          <span className="text-sm text-foreground">البريد الإلكتروني</span>
           <input
             type="email"
             required
@@ -73,7 +73,7 @@ function AdminLoginForm() {
           />
         </label>
         <label className="block">
-          <span className="text-sm text-foreground">Password</span>
+          <span className="text-sm text-foreground">كلمة المرور</span>
           <input
             type="password"
             required
@@ -88,10 +88,10 @@ function AdminLoginForm() {
           disabled={busy}
           className="w-full rounded-xl bg-primary py-2 text-sm font-medium text-white disabled:opacity-50"
         >
-          {busy ? "Signing in…" : "Sign in"}
+          {busy ? "جاري تسجيل الدخول…" : "تسجيل الدخول"}
         </button>
         <Link href="/" className="block text-center text-xs text-muted hover:underline">
-          ← Public library
+          ← المكتبة العامة
         </Link>
       </form>
     </div>
@@ -103,7 +103,7 @@ export default function AdminLoginPage() {
     <Suspense
       fallback={
         <div className="flex min-h-screen items-center justify-center bg-surface text-muted">
-          Loading…
+          جاري التحميل…
         </div>
       }
     >

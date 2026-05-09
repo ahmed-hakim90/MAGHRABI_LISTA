@@ -10,7 +10,7 @@ export default function AdminRootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div dir="ltr" lang="en" className="min-h-dvh">
+    <div dir="rtl" lang="ar" className="min-h-dvh">
       {children}
     </div>
   );

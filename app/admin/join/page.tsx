@@ -17,7 +17,7 @@ function JoinAdminForm() {
   if (!token) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-surface px-4 text-center">
-        <p className="text-sm text-muted">Page not found.</p>
+        <p className="text-sm text-muted">الصفحة غير موجودة.</p>
       </div>
     );
   }
@@ -34,13 +34,13 @@ function JoinAdminForm() {
       });
       const data = (await res.json()) as { error?: string };
       if (!res.ok) {
-        setError(data.error ?? "Something went wrong.");
+        setError(data.error ?? "حدث خطأ ما.");
         return;
       }
       router.replace("/admin/login?registered=1");
       router.refresh();
     } catch {
-      setError("Network error.");
+      setError("خطأ في الشبكة.");
     } finally {
       setBusy(false);
     }
@@ -52,15 +52,15 @@ function JoinAdminForm() {
         onSubmit={(e) => void onSubmit(e)}
         className="w-full max-w-sm space-y-4 rounded-2xl border border-border bg-card p-6 shadow-sm"
       >
-        <h1 className="text-lg font-semibold text-foreground">Admin registration</h1>
+        <h1 className="text-lg font-semibold text-foreground">تسجيل مسؤول</h1>
         <p className="text-xs text-muted">
-          This page is only reachable with the private setup link. Do not share it.
+          هذه الصفحة متاحة فقط عبر رابط الإعداد الخاص. لا تشاركه.
         </p>
         {error ? (
           <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-800">{error}</p>
         ) : null}
         <label className="block">
-          <span className="text-sm text-foreground">Email</span>
+          <span className="text-sm text-foreground">البريد الإلكتروني</span>
           <input
             type="email"
             required
@@ -71,7 +71,7 @@ function JoinAdminForm() {
           />
         </label>
         <label className="block">
-          <span className="text-sm text-foreground">Password</span>
+          <span className="text-sm text-foreground">كلمة المرور</span>
           <input
             type="password"
             required
@@ -87,13 +87,13 @@ function JoinAdminForm() {
           disabled={busy}
           className="w-full rounded-xl bg-primary py-2 text-sm font-medium text-white disabled:opacity-50"
         >
-          {busy ? "Creating account…" : "Create admin account"}
+          {busy ? "جاري إنشاء الحساب…" : "إنشاء حساب مسؤول"}
         </button>
         <Link
           href="/"
           className="block text-center text-xs text-muted hover:underline"
         >
-          ← Public library
+          ← المكتبة العامة
         </Link>
       </form>
     </div>
@@ -105,7 +105,7 @@ export default function AdminJoinPage() {
     <Suspense
       fallback={
         <div className="flex min-h-screen items-center justify-center bg-surface text-muted">
-          Loading…
+          جاري التحميل…
         </div>
       }
     >

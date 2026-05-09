@@ -54,7 +54,7 @@ export function FolderTable() {
     if (!user) return;
     if (
       !confirm(
-        `Delete folder “${folder.name}”? Files in this folder will be detached but kept.`,
+        `حذف المجلد «${folder.name}»؟ ستُفصل الملفات عنه وتبقى محفوظة.`,
       )
     )
       return;
@@ -63,19 +63,19 @@ export function FolderTable() {
   }
 
   if (loading) {
-    return <p className="text-muted">Loading folders…</p>;
+    return <p className="text-muted">جاري تحميل المجلدات…</p>;
   }
 
   return (
     <div className="overflow-x-auto rounded-2xl border border-border bg-card shadow-sm">
-      <table className="w-full min-w-[640px] text-left text-sm">
+      <table className="w-full min-w-[640px] text-start text-sm">
         <thead>
           <tr className="border-b border-border text-muted">
-            <th className="p-3 font-medium">Name</th>
-            <th className="p-3 font-medium">Order</th>
-            <th className="p-3 font-medium">Active</th>
-            <th className="p-3 font-medium">Updated</th>
-            <th className="p-3 font-medium">Actions</th>
+            <th className="p-3 font-medium">الاسم</th>
+            <th className="p-3 font-medium">الترتيب</th>
+            <th className="p-3 font-medium">نشط</th>
+            <th className="p-3 font-medium">آخر تحديث</th>
+            <th className="p-3 font-medium">إجراءات</th>
           </tr>
         </thead>
         <tbody>
@@ -98,11 +98,11 @@ export function FolderTable() {
                       : "bg-neutral-100 text-neutral-600"
                   }`}
                 >
-                  {folder.isActive ? "Yes" : "No"}
+                  {folder.isActive ? "نعم" : "لا"}
                 </span>
               </td>
               <td className="p-3 text-muted">
-                {formatDisplayDate(folder.updatedAt)}
+                {formatDisplayDate(folder.updatedAt, "ar")}
               </td>
               <td className="p-3">
                 <div className="flex flex-col gap-1">
@@ -110,21 +110,21 @@ export function FolderTable() {
                     href={`/admin/folders/${folder.id}/edit`}
                     className="text-foreground underline"
                   >
-                    Edit
+                    تعديل
                   </Link>
                   <button
                     type="button"
-                    className="text-left text-xs text-muted hover:text-foreground"
+                    className="text-start text-xs text-muted hover:text-foreground"
                     onClick={() => void onToggle(folder)}
                   >
-                    {folder.isActive ? "Deactivate" : "Activate"}
+                    {folder.isActive ? "تعطيل" : "تفعيل"}
                   </button>
                   <button
                     type="button"
-                    className="text-left text-xs text-red-700 hover:underline"
+                    className="text-start text-xs text-red-700 hover:underline"
                     onClick={() => void onDelete(folder)}
                   >
-                    Delete
+                    حذف
                   </button>
                 </div>
               </td>
@@ -133,7 +133,7 @@ export function FolderTable() {
         </tbody>
       </table>
       {rows.length === 0 ? (
-        <p className="p-6 text-center text-muted">No folders yet.</p>
+        <p className="p-6 text-center text-muted">لا توجد مجلدات بعد.</p>
       ) : null}
     </div>
   );

@@ -70,16 +70,16 @@ export default function AdminHomePage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
+        <h1 className="text-2xl font-bold text-foreground">لوحة التحكم</h1>
         <p className="mt-1 text-sm text-muted">
-          Signed in as {user?.email ?? "—"}
+          مسجّل كـ {user?.email ?? "—"}
         </p>
       </div>
 
       <section className="grid gap-3 sm:grid-cols-3">
         <div className="rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-card)]">
           <p className="text-xs font-semibold uppercase tracking-wide text-muted">
-            Active price lists
+            قوائم أسعار نشطة
           </p>
           <p className="mt-2 text-3xl font-bold tabular-nums text-foreground">
             {activeFileCount ?? "—"}
@@ -87,7 +87,7 @@ export default function AdminHomePage() {
         </div>
         <div className="rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-card)]">
           <p className="text-xs font-semibold uppercase tracking-wide text-muted">
-            Active folders
+            مجلدات نشطة
           </p>
           <p className="mt-2 text-3xl font-bold tabular-nums text-foreground">
             {folderCount ?? "—"}
@@ -95,7 +95,7 @@ export default function AdminHomePage() {
         </div>
         <div className="rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-card)]">
           <p className="text-xs font-semibold uppercase tracking-wide text-muted">
-            Notifications sent
+            إشعارات مُرسلة
           </p>
           <p className="mt-2 text-3xl font-bold tabular-nums text-foreground">
             {sentNotifications ?? "—"}
@@ -108,37 +108,37 @@ export default function AdminHomePage() {
           href="/admin/files/new"
           className="inline-flex min-h-touch flex-1 items-center justify-center rounded-2xl bg-primary px-5 py-3 text-sm font-bold text-white shadow-[var(--shadow-card)] transition hover:bg-primary/90 sm:flex-none sm:px-8"
         >
-          Upload price list
+          رفع قائمة أسعار
         </Link>
         <Link
           href="/admin/notifications"
           className="inline-flex min-h-touch flex-1 items-center justify-center rounded-2xl border border-border bg-card px-5 py-3 text-sm font-bold text-foreground shadow-sm transition hover:border-primary/30 sm:flex-none sm:px-8"
         >
-          Send push notification
+          إرسال إشعار دفع
         </Link>
         <Link
           href="/admin/settings"
           className="inline-flex min-h-touch flex-1 items-center justify-center rounded-2xl border border-border bg-card px-5 py-3 text-sm font-bold text-foreground shadow-sm transition hover:border-primary/30 sm:flex-none sm:px-8"
         >
-          Site settings
+          إعدادات الموقع
         </Link>
         <Link
           href="/admin/files"
           className="inline-flex min-h-touch flex-1 items-center justify-center rounded-2xl border border-border bg-card px-5 py-3 text-sm font-bold text-foreground shadow-sm transition hover:border-primary/30 sm:flex-none sm:px-8"
         >
-          Manage files
+          إدارة الملفات
         </Link>
       </section>
 
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-card)]">
-          <h2 className="text-sm font-bold text-foreground">Recent uploads</h2>
-          <p className="mt-0.5 text-xs text-muted">By last updated</p>
+          <h2 className="text-sm font-bold text-foreground">أحدث الملفات المرفوعة</h2>
+          <p className="mt-0.5 text-xs text-muted">حسب آخر تحديث</p>
           <ul className="mt-4 space-y-2">
             {cards === null ? (
-              <li className="text-sm text-muted">Loading…</li>
+              <li className="text-sm text-muted">جاري التحميل…</li>
             ) : recent.length === 0 ? (
-              <li className="text-sm text-muted">No files yet.</li>
+              <li className="text-sm text-muted">لا توجد ملفات بعد.</li>
             ) : (
               recent.map((c) => (
                 <li
@@ -152,7 +152,7 @@ export default function AdminHomePage() {
                     {c.title || c.id}
                   </Link>
                   <span className="shrink-0 tabular-nums text-xs text-muted">
-                    {c.viewCount ?? 0} views
+                    {c.viewCount ?? 0} مشاهدة
                   </span>
                 </li>
               ))
@@ -160,13 +160,13 @@ export default function AdminHomePage() {
           </ul>
         </div>
         <div className="rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-card)]">
-          <h2 className="text-sm font-bold text-foreground">Most viewed</h2>
-          <p className="mt-0.5 text-xs text-muted">All files (including inactive)</p>
+          <h2 className="text-sm font-bold text-foreground">الأكثر مشاهدة</h2>
+          <p className="mt-0.5 text-xs text-muted">كل الملفات (بما فيها غير النشطة)</p>
           <ul className="mt-4 space-y-2">
             {cards === null ? (
-              <li className="text-sm text-muted">Loading…</li>
+              <li className="text-sm text-muted">جاري التحميل…</li>
             ) : topViews.length === 0 ? (
-              <li className="text-sm text-muted">No data yet.</li>
+              <li className="text-sm text-muted">لا توجد بيانات بعد.</li>
             ) : (
               topViews.map((c) => (
                 <li

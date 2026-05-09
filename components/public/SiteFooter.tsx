@@ -4,7 +4,8 @@ import { usePathname } from "next/navigation";
 
 const PORTFOLIO_URL = "https://portfolio-flame-tau-19.vercel.app/";
 
-const FILE_VIEW_PATH = /^\/file\/[^/]+\/view$/;
+const FILE_VIEW_PATH =
+  /^\/(wholesale|retail|lists)\/file\/[^/]+\/view$/;
 
 function HeartIcon({ className }: { className?: string }) {
   return (

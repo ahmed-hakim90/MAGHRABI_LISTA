@@ -1,8 +1,9 @@
 {
-  "name": "المغربي - Maghrabi",
-  "short_name": "Maghrabi",
-  "description": "Browse public PDF documents",
+  "name": "Maghrabi Wholesale",
+  "short_name": "Wholesale",
+  "description": "Wholesale catalog — PDF lists",
   "start_url": "/wholesale",
+  "scope": "/wholesale",
   "display": "standalone",
   "background_color": "#F5F7FA",
   "theme_color": "#F5F7FA",

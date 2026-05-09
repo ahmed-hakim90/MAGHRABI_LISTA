@@ -1,7 +1,10 @@
 import type { Timestamp } from "firebase/firestore";
+import type { CatalogAudience } from "@/lib/constants/catalogChannels";
 
 export type FileCard = {
   id: string;
+  /** Catalog channel: wholesale, retail, or no-price lists */
+  audience: CatalogAudience;
   title: string;
   description: string;
   category: string;

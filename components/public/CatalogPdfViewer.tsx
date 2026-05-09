@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useCatalogChannel } from "@/components/public/CatalogChannelContext";
 
 type Props = {
   cardId: string;
@@ -10,6 +11,7 @@ type Props = {
 
 export function CatalogPdfViewer({ cardId, title }: Props) {
   const router = useRouter();
+  const { basePath } = useCatalogChannel();
   const [entered, setEntered] = useState(false);
 
   useEffect(() => {
@@ -25,7 +27,7 @@ export function CatalogPdfViewer({ cardId, title }: Props) {
     }).catch(() => {});
   }, [cardId]);
 
-  const pdfSrc = `/file/${cardId}/pdf`;
+  const pdfSrc = `${basePath}/file/${cardId}/pdf`;
 
   return (
     <div
@@ -41,7 +43,7 @@ export function CatalogPdfViewer({ cardId, title }: Props) {
             if (typeof window !== "undefined" && window.history.length > 1) {
               router.back();
             } else {
-              router.push("/");
+              router.push(basePath);
             }
           }}
           className="inline-flex min-h-touch min-w-touch shrink-0 items-center justify-center rounded-xl text-white/90 transition hover:bg-white/10"
@@ -65,7 +67,7 @@ export function CatalogPdfViewer({ cardId, title }: Props) {
           {title}
         </h1>
         <a
-          href={`/file/${cardId}/pdf?download`}
+          href={`${pdfSrc}?download`}
           className="inline-flex min-h-touch min-w-touch shrink-0 items-center justify-center rounded-xl text-white/90 transition hover:bg-white/10"
           aria-label="تحميل PDF"
           download

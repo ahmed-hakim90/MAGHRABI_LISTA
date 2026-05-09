@@ -6,6 +6,7 @@ import type { FileCard as FileCardType } from "@/lib/types/models";
 import { formatDisplayDate } from "@/lib/utils/dates";
 import { formatFileSize } from "@/lib/utils/formatFileSize";
 import { getFileCardFreshnessBadge } from "@/lib/utils/fileCardBadges";
+import { useCatalogChannel } from "@/components/public/CatalogChannelContext";
 import {
   CatalogListKebab,
   catalogListRowClass,
@@ -39,9 +40,10 @@ export function FileCard({
   variant = "grid",
   imagePriority = false,
 }: Props) {
+  const { basePath } = useCatalogChannel();
   const isList = variant === "list";
-  /** Open in new tab: native browser PDF (full document on mobile). */
-  const openPdfHref = `/file/${card.id}/pdf`;
+  const viewHref = `${basePath}/file/${card.id}/view`;
+  const pdfHref = `${basePath}/file/${card.id}/pdf`;
   const freshness = getFileCardFreshnessBadge(card);
 
   const freshnessEl =
@@ -67,9 +69,7 @@ export function FileCard({
     return (
       <article className={`${catalogListRowClass} min-w-0`} dir="rtl">
         <Link
-          href={openPdfHref}
-          target="_blank"
-          rel="noopener noreferrer"
+          href={viewHref}
           className="absolute inset-y-0 start-0 z-0 end-10 rounded-none"
           aria-label={`عرض ${card.title}`}
         />
@@ -88,7 +88,7 @@ export function FileCard({
                 priority={imagePriority}
               />
             ) : (
-              <PdfFirstPagePreview cardId={card.id} />
+              <PdfFirstPagePreview cardId={card.id} pdfUrl={pdfHref} />
             )}
           </div>
           <div className="min-w-0 flex-1 ps-0.5">
@@ -106,9 +106,9 @@ export function FileCard({
         </div>
         <div className="relative z-[2] shrink-0 pointer-events-auto">
           <CatalogListKebab
-            href={openPdfHref}
+            href={viewHref}
             title={card.title}
-            downloadHref={`/file/${card.id}/pdf?download`}
+            downloadHref={`${pdfHref}?download`}
             openViewInNewTab
           />
         </div>
@@ -117,12 +117,7 @@ export function FileCard({
   }
 
   return (
-    <Link
-      href={openPdfHref}
-      target="_blank"
-      rel="noopener noreferrer"
-      className={gridShell}
-    >
+    <Link href={viewHref} className={gridShell}>
       <div className="relative isolate aspect-square w-full shrink-0 overflow-hidden bg-surface">
         <div className="relative z-0 h-full w-full min-h-0">
           {hasThumbnail(card) ? (
@@ -136,7 +131,7 @@ export function FileCard({
               priority={imagePriority}
             />
           ) : (
-            <PdfFirstPagePreview cardId={card.id} />
+            <PdfFirstPagePreview cardId={card.id} pdfUrl={pdfHref} />
           )}
         </div>
         <div

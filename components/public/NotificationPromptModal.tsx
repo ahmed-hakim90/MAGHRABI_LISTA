@@ -2,20 +2,27 @@
 
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useCatalogChannel } from "@/components/public/CatalogChannelContext";
 import { useFcmToken } from "@/hooks/useFcmToken";
 
 const AUTO_DELAY_MS = 4800;
 
 function isEligiblePath(pathname: string | null): boolean {
   if (!pathname) return false;
-  if (pathname === "/") return true;
-  if (pathname.startsWith("/folder/")) return true;
+  if (
+    pathname.startsWith("/wholesale") ||
+    pathname.startsWith("/retail") ||
+    pathname.startsWith("/lists")
+  ) {
+    return true;
+  }
   return false;
 }
 
 export function NotificationPromptModal() {
   const pathname = usePathname();
-  const { status, message, registerAndSaveToken } = useFcmToken();
+  const { audience } = useCatalogChannel();
+  const { status, message, registerAndSaveToken } = useFcmToken(audience);
   const [open, setOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
 

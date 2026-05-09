@@ -2,6 +2,11 @@ import { FieldValue } from "firebase-admin/firestore";
 import type { Firestore } from "firebase-admin/firestore";
 import { NextResponse } from "next/server";
 import {
+  AUDIENCE_TO_CHANNEL,
+  type CatalogAudience,
+  normalizeAudienceFromDoc,
+} from "@/lib/constants/catalogChannels";
+import {
   getAdminAuth,
   getAdminFirestore,
   getAdminMessaging,
@@ -11,7 +16,28 @@ type Body = {
   title: string;
   body: string;
   targetCardId: string | null;
+  notifyAudience?: string;
 };
+
+type NotifyFilter = "all" | CatalogAudience;
+
+function parseBroadcastAudience(raw: unknown): NotifyFilter {
+  if (raw === "all") return "all";
+  if (raw === "wholesale" || raw === "retail" || raw === "no_prices") {
+    return raw;
+  }
+  return "all";
+}
+
+function tokenMatchesNotifyAudience(
+  data: Record<string, unknown>,
+  filter: NotifyFilter,
+): boolean {
+  if (filter === "all") return true;
+  const raw = data.audience;
+  if (raw == null || raw === "") return filter === "wholesale";
+  return normalizeAudienceFromDoc(raw) === filter;
+}
 
 async function verifyAdmin(db: Firestore, uid: string): Promise<boolean> {
   const snap = await db.collection("adminUsers").doc(uid).get();
@@ -71,6 +97,43 @@ export async function POST(request: Request) {
       ? null
       : String(body.targetCardId);
 
+  const origin = new URL(request.url).origin;
+
+  let notifyFilter: NotifyFilter = "all";
+  let relativeUrl = "/wholesale";
+  let data: Record<string, string>;
+
+  if (targetCardId != null) {
+    const cardSnap = await db.collection("fileCards").doc(targetCardId).get();
+    if (!cardSnap.exists) {
+      return NextResponse.json({ error: "الملف غير موجود." }, { status: 400 });
+    }
+    const c = cardSnap.data() as Record<string, unknown>;
+    const aud = normalizeAudienceFromDoc(c.audience);
+    notifyFilter = aud;
+    const ch = AUDIENCE_TO_CHANNEL[aud];
+    relativeUrl = `/${ch}/file/${targetCardId}/view`;
+    data = {
+      type: "file_card",
+      cardId: targetCardId,
+      url: relativeUrl,
+    };
+  } else {
+    notifyFilter = parseBroadcastAudience(body.notifyAudience);
+    if (notifyFilter === "all") {
+      relativeUrl = "/wholesale";
+    } else {
+      const ch = AUDIENCE_TO_CHANNEL[notifyFilter];
+      relativeUrl = `/${ch}`;
+    }
+    data = {
+      type: "announcement",
+      url: relativeUrl,
+    };
+  }
+
+  const webPushLink = `${origin}${relativeUrl}`;
+
   const notifRef = await db.collection("notifications").add({
     title,
     body: text,
@@ -80,23 +143,6 @@ export async function POST(request: Request) {
     createdAt: FieldValue.serverTimestamp(),
   });
 
-  const data: Record<string, string> =
-    targetCardId != null
-      ? {
-          type: "file_card",
-          cardId: targetCardId,
-          url: `/file/${targetCardId}/view`,
-        }
-      : {
-          type: "announcement",
-          url: "/",
-        };
-
-  const origin = new URL(request.url).origin;
-  const path =
-    targetCardId != null ? `/file/${targetCardId}/view` : "/";
-  const webPushLink = `${origin}${path}`;
-
   const tokensSnap = await db
     .collection("fcmTokens")
     .where("isActive", "==", true)
@@ -105,6 +151,7 @@ export async function POST(request: Request) {
   const tokens = [
     ...new Set(
       tokensSnap.docs
+        .filter((d) => tokenMatchesNotifyAudience(d.data(), notifyFilter))
         .map((d) => String(d.data().token ?? ""))
         .filter(Boolean),
     ),

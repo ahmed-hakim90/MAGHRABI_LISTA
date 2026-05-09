@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { use, useMemo, useState } from "react";
+import { useCatalogChannel } from "@/components/public/CatalogChannelContext";
 import { useCatalogView } from "@/components/public/CatalogViewToggle";
 import { CatalogSearchBar } from "@/components/public/CatalogSearchBar";
 import { FileGrid } from "@/components/public/FileGrid";
@@ -13,13 +14,14 @@ import { useNavigatorOnline } from "@/hooks/useNavigatorOnline";
 import { usePublicSiteSettings } from "@/hooks/usePublicSiteSettings";
 import { matchesFileCardSearch } from "@/lib/utils/fileCardSearch";
 
-export default function FolderPage({
+export default function ChannelFolderPage({
   params,
 }: {
   params: Promise<{ folderId: string }>;
 }) {
   const { folderId } = use(params);
-  const { cards, folders, loading, error, stale } = useFileCards();
+  const { basePath, audience } = useCatalogChannel();
+  const { cards, folders, loading, error, stale } = useFileCards(audience);
   const online = useNavigatorOnline();
   const s = usePublicSiteSettings();
   const [q, setQ] = useState("");
@@ -53,7 +55,7 @@ export default function FolderPage({
       />
       <div className="mx-auto w-full max-w-6xl px-4 pb-2">
         <Link
-          href="/"
+          href={basePath}
           className="inline-flex text-sm font-semibold text-primary underline-offset-4 hover:underline"
         >
           ← العودة للرئيسية

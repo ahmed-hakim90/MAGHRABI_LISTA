@@ -2,10 +2,13 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { CatalogShareLinksCard } from "@/components/admin/CatalogShareLinksCard";
+import { DEFAULT_SITE_APP_NAME } from "@/lib/constants/siteDefaults";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { listAllFileCardsAdmin } from "@/lib/services/fileCards";
 import { listAllFileFoldersAdmin } from "@/lib/services/fileFolders";
 import { listNotifications } from "@/lib/services/notifications";
+import { getSiteSettings } from "@/lib/services/settings";
 import type { FileCard } from "@/lib/types/models";
 
 function byUpdatedDesc(a: FileCard, b: FileCard): number {
@@ -25,6 +28,19 @@ export default function AdminHomePage() {
   const [sentNotifications, setSentNotifications] = useState<number | null>(
     null,
   );
+  const [shareAppName, setShareAppName] = useState(DEFAULT_SITE_APP_NAME);
+
+  useEffect(() => {
+    let cancelled = false;
+    void getSiteSettings()
+      .then((s) => {
+        if (!cancelled) setShareAppName(s.appName || DEFAULT_SITE_APP_NAME);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -128,6 +144,10 @@ export default function AdminHomePage() {
         >
           إدارة الملفات
         </Link>
+      </section>
+
+      <section className="rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-card)]">
+        <CatalogShareLinksCard appName={shareAppName} />
       </section>
 
       <div className="grid gap-6 lg:grid-cols-2">

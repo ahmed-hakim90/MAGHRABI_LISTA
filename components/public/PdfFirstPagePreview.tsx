@@ -5,6 +5,8 @@ import { PdfThumbnailPlaceholder } from "./PdfThumbnailPlaceholder";
 
 type Props = {
   cardId: string;
+  /** App PDF proxy path, e.g. `/wholesale/file/{id}/pdf` */
+  pdfUrl: string;
   className?: string;
 };
 
@@ -12,7 +14,11 @@ type Props = {
  * Renders the first PDF page into a canvas (Google Drive–style preview) when no
  * custom `thumbnailUrl` is set. Loads only when the card scrolls near the viewport.
  */
-export function PdfFirstPagePreview({ cardId, className = "" }: Props) {
+export function PdfFirstPagePreview({
+  cardId,
+  pdfUrl,
+  className = "",
+}: Props) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const docRef = useRef<{ destroy: () => Promise<void> } | null>(null);
@@ -58,7 +64,7 @@ export function PdfFirstPagePreview({ cardId, className = "" }: Props) {
       if (cw < 4 || ch < 4) return;
 
       try {
-        const res = await fetch(`/file/${cardId}/pdf`, { signal: ac.signal });
+        const res = await fetch(pdfUrl, { signal: ac.signal });
         if (!res.ok) throw new Error("pdf fetch");
 
         const buf = await res.arrayBuffer();
@@ -129,7 +135,7 @@ export function PdfFirstPagePreview({ cardId, className = "" }: Props) {
       docRef.current = null;
       if (d) void d.destroy().catch(() => {});
     };
-  }, [shouldLoad, rendered, failed, cardId]);
+  }, [shouldLoad, rendered, failed, cardId, pdfUrl]);
 
   return (
     <div

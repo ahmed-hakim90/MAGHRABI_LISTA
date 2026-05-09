@@ -15,7 +15,12 @@ import {
   where,
   writeBatch,
 } from "firebase/firestore";
-import { deleteObject, getDownloadURL, ref } from "firebase/storage";
+import {
+  deleteObject,
+  getBytes,
+  getDownloadURL,
+  ref,
+} from "firebase/storage";
 import {
   getClientFirestore,
   getClientStorage,
@@ -23,10 +28,12 @@ import {
 } from "@/lib/firebase/client";
 import { getDocsWithCacheFallback } from "@/lib/firestore/queryWithCacheFallback";
 import { runResumableUpload } from "@/lib/firebase/storageUpload";
+import type { CatalogAudience } from "@/lib/constants/catalogChannels";
+import { normalizeAudienceFromDoc } from "@/lib/constants/catalogChannels";
 import type { FileCard } from "@/lib/types/models";
 import {
-  getPdfPath,
-  getThumbnailPath,
+  getPdfPathForAudience,
+  getThumbnailPathForAudience,
   STORAGE_FOLDER,
 } from "@/lib/utils/storagePaths";
 import { fileToWebpBlob } from "@/lib/utils/imageWebp";
@@ -37,6 +44,7 @@ function fromDoc(
 ): FileCard {
   return {
     id,
+    audience: normalizeAudienceFromDoc(data.audience),
     title: String(data.title ?? ""),
     description: String(data.description ?? ""),
     category: String(data.category ?? ""),
@@ -72,12 +80,34 @@ function fromDoc(
   };
 }
 
-export async function listActiveFileCards(): Promise<FileCard[]> {
+export async function listActiveFileCards(
+  audience: CatalogAudience,
+): Promise<FileCard[]> {
   const db = getClientFirestore();
+  /**
+   * Legacy cards often omit `audience`. Firestore equality does not match
+   * missing fields, but `fromDoc` + `normalizeAudienceFromDoc` treat that as
+   * wholesale. For /wholesale we query without audience and filter in memory
+   * so old data appears without requiring an admin backfill visit.
+   */
+  if (audience === "wholesale") {
+    const q = query(
+      collection(db, "fileCards"),
+      where("isActive", "==", true),
+      where("folderIsActive", "==", true),
+      orderBy("order", "asc"),
+      orderBy("updatedAt", "desc"),
+    );
+    const snap = await getDocsWithCacheFallback(q);
+    return snap.docs
+      .map((d) => fromDoc(d.id, d.data() as Record<string, unknown>))
+      .filter((c) => c.audience === "wholesale");
+  }
   const q = query(
     collection(db, "fileCards"),
     where("isActive", "==", true),
     where("folderIsActive", "==", true),
+    where("audience", "==", audience),
     orderBy("order", "asc"),
     orderBy("updatedAt", "desc"),
   );
@@ -119,6 +149,30 @@ export async function backfillFileCardsFolderFields(
   return targets.length;
 }
 
+/**
+ * Sets audience = wholesale on cards missing it (idempotent).
+ * Required so filtered public queries return legacy documents.
+ */
+export async function backfillFileCardsAudience(uid: string): Promise<number> {
+  const db = getClientFirestore();
+  const snap = await getDocs(collection(db, "fileCards"));
+  const targets = snap.docs.filter((d) => {
+    const data = d.data() as Record<string, unknown>;
+    return data.audience === undefined || data.audience === null || data.audience === "";
+  });
+  if (targets.length === 0) return 0;
+  const batch = writeBatch(db);
+  for (const d of targets) {
+    batch.update(d.ref, {
+      audience: "wholesale",
+      updatedBy: uid,
+      updatedAt: serverTimestamp(),
+    });
+  }
+  await batch.commit();
+  return targets.length;
+}
+
 export async function listAllFileCardsAdmin(): Promise<FileCard[]> {
   await syncAuthTokenForFirestore();
   const db = getClientFirestore();
@@ -138,6 +192,7 @@ export type UploadProgressHandler = (ratio01: number) => void;
 
 export async function createFileCard(
   input: {
+    audience: CatalogAudience;
     title: string;
     description: string;
     category: string;
@@ -159,8 +214,8 @@ export async function createFileCard(
   const db = getClientFirestore();
   const st = getClientStorage();
   const cardId = doc(collection(db, "fileCards")).id;
-  const pdfPath = getPdfPath(cardId);
-  const thumbPath = getThumbnailPath(cardId);
+  const pdfPath = getPdfPathForAudience(input.audience, cardId);
+  const thumbPath = getThumbnailPathForAudience(input.audience, cardId);
   const pdfRef = ref(st, pdfPath);
   const thumbRef = ref(st, thumbPath);
   try {
@@ -196,6 +251,7 @@ export async function createFileCard(
       storedThumbPath = thumbPath;
     }
     await setDoc(doc(db, "fileCards", cardId), {
+      audience: input.audience,
       title: input.title.trim(),
       description: input.description.trim(),
       category: input.category.trim(),
@@ -238,9 +294,121 @@ export async function createFileCard(
   }
 }
 
+/**
+ * Moves PDF (and custom thumbnail if any) to the storage prefix for `newAudience`,
+ * updates Firestore URLs/paths, then deletes old objects. No-op if audience unchanged.
+ */
+export async function migrateFileCardStorageAudience(
+  cardId: string,
+  newAudience: CatalogAudience,
+  uid: string,
+  opts?: { onProgress?: UploadProgressHandler },
+): Promise<void> {
+  const on = opts?.onProgress;
+  const db = getClientFirestore();
+  const st = getClientStorage();
+  const snap = await getDoc(doc(db, "fileCards", cardId));
+  if (!snap.exists()) {
+    throw new Error("البطاقة غير موجودة.");
+  }
+  const data = snap.data() as Record<string, unknown>;
+  const oldAudience = normalizeAudienceFromDoc(data.audience);
+  if (oldAudience === newAudience) return;
+
+  const oldPdfPath = String(data.filePath ?? "").trim();
+  const fileUrl = String(data.fileUrl ?? "").trim();
+  if (!oldPdfPath && !fileUrl) {
+    throw new Error("لا يوجد مسار أو رابط لملف PDF.");
+  }
+
+  let pdfBlob: Blob;
+  if (oldPdfPath) {
+    const bytes = await getBytes(ref(st, oldPdfPath));
+    pdfBlob = new Blob([bytes], { type: "application/pdf" });
+  } else {
+    const res = await fetch(fileUrl);
+    if (!res.ok) throw new Error("تعذر قراءة ملف PDF الحالي.");
+    pdfBlob = await res.blob();
+  }
+
+  const newPdfPath = getPdfPathForAudience(newAudience, cardId);
+  const newPdfRef = ref(st, newPdfPath);
+  await runResumableUpload(
+    newPdfRef,
+    pdfBlob,
+    { contentType: "application/pdf" },
+    (r) => on?.(r * 0.78),
+  );
+  const newFileUrl = await getDownloadURL(newPdfRef);
+  on?.(0.8);
+
+  const oldThumbPath = String(data.thumbnailPath ?? "").trim();
+  let thumbnailPath = "";
+  let thumbnailUrl = "";
+  if (oldThumbPath) {
+    try {
+      const thumbBytes = await getBytes(ref(st, oldThumbPath));
+      const thumbBlob = new Blob([thumbBytes], {
+        type: "image/webp",
+      });
+      const newThumbPath = getThumbnailPathForAudience(newAudience, cardId);
+      const newTRef = ref(st, newThumbPath);
+      await runResumableUpload(
+        newTRef,
+        thumbBlob,
+        { contentType: thumbBlob.type || "image/webp" },
+        (r) => on?.(0.8 + r * 0.18),
+      );
+      thumbnailUrl = await getDownloadURL(newTRef);
+      thumbnailPath = newThumbPath;
+    } catch {
+      thumbnailPath = "";
+      thumbnailUrl = "";
+      try {
+        await deleteObject(ref(st, oldThumbPath));
+      } catch {
+        /* ignore */
+      }
+    }
+  }
+
+  await updateDoc(doc(db, "fileCards", cardId), {
+    audience: newAudience,
+    fileUrl: newFileUrl,
+    filePath: newPdfPath,
+    thumbnailUrl,
+    thumbnailPath,
+    updatedAt: serverTimestamp(),
+    updatedBy: uid,
+    version: increment(1),
+  });
+  on?.(0.98);
+
+  if (oldPdfPath && oldPdfPath !== newPdfPath) {
+    try {
+      await deleteObject(ref(st, oldPdfPath));
+    } catch {
+      /* ignore */
+    }
+  }
+  if (
+    oldThumbPath &&
+    thumbnailPath &&
+    oldThumbPath !== thumbnailPath
+  ) {
+    try {
+      await deleteObject(ref(st, oldThumbPath));
+    } catch {
+      /* ignore */
+    }
+  }
+  on?.(1);
+}
+
 export async function updateFileCardMeta(
   cardId: string,
   input: {
+    audience: CatalogAudience;
     title: string;
     description: string;
     category: string;
@@ -253,9 +421,24 @@ export async function updateFileCardMeta(
     productCount: number | null;
     uid: string;
   },
+  opts?: { onProgress?: UploadProgressHandler },
 ): Promise<void> {
   const db = getClientFirestore();
+  const snap = await getDoc(doc(db, "fileCards", cardId));
+  if (!snap.exists()) return;
+  const prevAudience = normalizeAudienceFromDoc(
+    (snap.data() as Record<string, unknown>).audience,
+  );
+  if (input.audience !== prevAudience) {
+    await migrateFileCardStorageAudience(
+      cardId,
+      input.audience,
+      input.uid,
+      opts,
+    );
+  }
   await updateDoc(doc(db, "fileCards", cardId), {
+    audience: input.audience,
     title: input.title.trim(),
     description: input.description.trim(),
     category: input.category.trim(),
@@ -280,7 +463,14 @@ export async function replaceFileCardPdf(
   const on = opts?.onProgress;
   const db = getClientFirestore();
   const st = getClientStorage();
-  const pdfPath = getPdfPath(cardId);
+  const snap = await getDoc(doc(db, "fileCards", cardId));
+  if (!snap.exists()) return;
+  const data = snap.data() as Record<string, unknown>;
+  const audience = normalizeAudienceFromDoc(data.audience);
+  const existingPath = String(data.filePath ?? "").trim();
+  const pdfPath =
+    existingPath ||
+    getPdfPathForAudience(audience, cardId);
   const pdfRef = ref(st, pdfPath);
   await runResumableUpload(
     pdfRef,
@@ -337,7 +527,13 @@ export async function replaceFileCardThumbnail(
   const on = opts?.onProgress;
   const db = getClientFirestore();
   const st = getClientStorage();
-  const thumbPath = getThumbnailPath(cardId);
+  const snap = await getDoc(doc(db, "fileCards", cardId));
+  if (!snap.exists()) return;
+  const data = snap.data() as Record<string, unknown>;
+  const audience = normalizeAudienceFromDoc(data.audience);
+  const existingThumb = String(data.thumbnailPath ?? "").trim();
+  const thumbPath =
+    existingThumb || getThumbnailPathForAudience(audience, cardId);
   const thumbRef = ref(st, thumbPath);
   const thumbBlob = await fileToWebpBlob(thumbnailFile);
   await runResumableUpload(

@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useCatalogChannel } from "@/components/public/CatalogChannelContext";
 import { useActiveFileCardsWhen } from "@/hooks/useFileCards";
 import { usePublicSiteSettings } from "@/hooks/usePublicSiteSettings";
+import { publicCatalogFileViewPath } from "@/lib/constants/catalogChannels";
 import { PUBLIC_WHATSAPP_ORDER_PREFILL } from "@/lib/constants/publicWhatsApp";
 import type { FileCard } from "@/lib/types/models";
 import { matchesFileCardSearch } from "@/lib/utils/fileCardSearch";
@@ -22,6 +24,7 @@ function cardMatchesQuery(q: string, card: FileCard) {
 }
 
 export function WhatsAppOrderDialog({ open, onClose }: Props) {
+  const { audience } = useCatalogChannel();
   const panelRef = useRef<HTMLDivElement>(null);
   const site = usePublicSiteSettings();
   const whatsappContacts = site.whatsappContacts;
@@ -31,7 +34,7 @@ export function WhatsAppOrderDialog({ open, onClose }: Props) {
   const [fileQuery, setFileQuery] = useState("");
   const wasOpenRef = useRef(false);
 
-  const { cards, loading, error } = useActiveFileCardsWhen(open);
+  const { cards, loading, error } = useActiveFileCardsWhen(open, audience);
 
   useEffect(() => {
     if (!open) {
@@ -101,9 +104,12 @@ export function WhatsAppOrderDialog({ open, onClose }: Props) {
   const finalMessage = useMemo(() => {
     const base = message.trimEnd();
     if (!selected) return base;
-    const fileLine = `\n\n—\nالملف: «${selected.fileName}»`;
+    const origin =
+      typeof window !== "undefined" ? window.location.origin : "";
+    const viewPath = publicCatalogFileViewPath(audience, selected.id);
+    const fileLine = `\n\n—\nالملف: «${selected.fileName}»\nالرابط: ${origin}${viewPath}`;
     return base ? `${base}${fileLine}` : fileLine.trimStart();
-  }, [message, selected]);
+  }, [message, selected, audience]);
 
   const openWhatsApp = () => {
     if (!selectedWhatsapp?.phoneDigits) return;

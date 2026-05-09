@@ -16,9 +16,11 @@ const PWA_INSTALL_OPEN_EVENT = "maghrabi-lista-open-pwa-install";
 
 function isEligiblePath(pathname: string | null): boolean {
   if (!pathname) return false;
-  if (pathname === "/") return true;
-  if (pathname.startsWith("/folder/")) return true;
-  return false;
+  return (
+    pathname.startsWith("/wholesale") ||
+    pathname.startsWith("/retail") ||
+    pathname.startsWith("/lists")
+  );
 }
 
 function readDismissed(): boolean {

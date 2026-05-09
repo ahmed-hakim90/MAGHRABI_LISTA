@@ -1,9 +1,15 @@
 "use client";
 
 import { Timestamp } from "firebase/firestore";
+import {
+  type CatalogAudience,
+  normalizeAudienceFromDoc,
+} from "@/lib/constants/catalogChannels";
 import type { FileCard, FileFolder } from "@/lib/types/models";
 
-export const CATALOG_SNAPSHOT_STORAGE_KEY = "maghrabi-catalog-v2";
+export function catalogSnapshotStorageKey(audience: CatalogAudience): string {
+  return `maghrabi-catalog-v3-${audience}`;
+}
 
 type WireCard = Omit<FileCard, "createdAt" | "updatedAt"> & {
   createdAtMs: number | null;
@@ -16,7 +22,8 @@ type WireFolder = Omit<FileFolder, "createdAt" | "updatedAt"> & {
 };
 
 type CatalogSnapshotWire = {
-  v: 2;
+  v: 3;
+  audience?: CatalogAudience;
   savedAt: number;
   cards: WireCard[];
   folders: WireFolder[];
@@ -46,8 +53,12 @@ function toWireCard(c: FileCard): WireCard {
 
 function fromWireCard(w: WireCard): FileCard {
   const { createdAtMs, updatedAtMs, ...rest } = w;
+  const r = rest as Omit<FileCard, "createdAt" | "updatedAt">;
   return {
-    ...rest,
+    ...r,
+    audience: normalizeAudienceFromDoc(
+      (w as { audience?: unknown }).audience,
+    ),
     createdAt: msToTs(createdAtMs),
     updatedAt: msToTs(updatedAtMs),
   };
@@ -77,13 +88,22 @@ export type CatalogSnapshot = {
   savedAt: number;
 };
 
-export function readCatalogSnapshot(): CatalogSnapshot | null {
+export function readCatalogSnapshot(
+  audience: CatalogAudience,
+): CatalogSnapshot | null {
   if (typeof window === "undefined") return null;
   try {
-    const raw = window.localStorage.getItem(CATALOG_SNAPSHOT_STORAGE_KEY);
+    const raw = window.localStorage.getItem(catalogSnapshotStorageKey(audience));
     if (!raw) return null;
     const parsed = JSON.parse(raw) as CatalogSnapshotWire;
-    if (parsed.v !== 2 || !Array.isArray(parsed.cards) || !Array.isArray(parsed.folders)) {
+    if (
+      parsed.v !== 3 ||
+      !Array.isArray(parsed.cards) ||
+      !Array.isArray(parsed.folders)
+    ) {
+      return null;
+    }
+    if (parsed.audience != null && parsed.audience !== audience) {
       return null;
     }
     return {
@@ -96,16 +116,24 @@ export function readCatalogSnapshot(): CatalogSnapshot | null {
   }
 }
 
-export function writeCatalogSnapshot(cards: FileCard[], folders: FileFolder[]): void {
+export function writeCatalogSnapshot(
+  audience: CatalogAudience,
+  cards: FileCard[],
+  folders: FileFolder[],
+): void {
   if (typeof window === "undefined") return;
   try {
     const wire: CatalogSnapshotWire = {
-      v: 2,
+      v: 3,
+      audience,
       savedAt: Date.now(),
       cards: cards.map(toWireCard),
       folders: folders.map(toWireFolder),
     };
-    window.localStorage.setItem(CATALOG_SNAPSHOT_STORAGE_KEY, JSON.stringify(wire));
+    window.localStorage.setItem(
+      catalogSnapshotStorageKey(audience),
+      JSON.stringify(wire),
+    );
   } catch {
     /* quota or private mode */
   }

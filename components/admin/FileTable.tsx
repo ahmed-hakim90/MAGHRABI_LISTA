@@ -14,6 +14,7 @@ import {
 import { PdfFirstPagePreview } from "@/components/public/PdfFirstPagePreview";
 import { PdfThumbnailPlaceholder } from "@/components/public/PdfThumbnailPlaceholder";
 import { ProgressBar } from "@/components/ui/ProgressBar";
+import { publicCatalogFilePdfPath } from "@/lib/constants/catalogChannels";
 import { formatDisplayDate } from "@/lib/utils/dates";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 
@@ -110,6 +111,7 @@ export function FileTable() {
             <th className="p-3 font-medium">مصغّر</th>
             <th className="p-3 font-medium">العنوان</th>
             <th className="p-3 font-medium">المجلد</th>
+            <th className="p-3 font-medium">القناة</th>
             <th className="p-3 font-medium">التصنيف</th>
             <th className="p-3 font-medium">نشط</th>
             <th className="p-3 font-medium">آخر تحديث</th>
@@ -130,7 +132,10 @@ export function FileTable() {
                       unoptimized
                     />
                   ) : card.isActive ? (
-                    <PdfFirstPagePreview cardId={card.id} />
+                    <PdfFirstPagePreview
+                      cardId={card.id}
+                      pdfUrl={publicCatalogFilePdfPath(card.audience, card.id)}
+                    />
                   ) : (
                     <PdfThumbnailPlaceholder />
                   )}
@@ -153,6 +158,13 @@ export function FileTable() {
                 ) : (
                   <span className="text-xs text-muted/70">—</span>
                 )}
+              </td>
+              <td className="p-3 text-muted">
+                {card.audience === "wholesale"
+                  ? "جملة"
+                  : card.audience === "retail"
+                    ? "تجزئة"
+                    : "بدون أسعار"}
               </td>
               <td className="p-3 text-muted">{card.category}</td>
               <td className="p-3">

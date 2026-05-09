@@ -2,6 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import type { CatalogAudience } from "@/lib/constants/catalogChannels";
+import { AUDIENCE_LABELS_AR } from "@/lib/constants/catalogChannels";
 import type { FileCard, FileFolder } from "@/lib/types/models";
 import Image from "next/image";
 import {
@@ -32,6 +34,9 @@ export function FileForm({ mode, uid, initial }: Props) {
   );
   const [isActive, setIsActive] = useState(initial?.isActive ?? true);
   const [folderId, setFolderId] = useState(initial?.folderId ?? "");
+  const [audience, setAudience] = useState<CatalogAudience>(
+    initial?.audience ?? "wholesale",
+  );
   const [folders, setFolders] = useState<FileFolder[]>([]);
   const [pdf, setPdf] = useState<File | null>(null);
   const [thumb, setThumb] = useState<File | null>(null);
@@ -81,7 +86,10 @@ export function FileForm({ mode, uid, initial }: Props) {
     }
     setSaving(true);
     setUploadProgress(
-      mode === "create" || (mode === "edit" && thumb && !removeThumb)
+      mode === "create" ||
+        (mode === "edit" &&
+          (Boolean(thumb && !removeThumb) ||
+            (initial != null && audience !== initial.audience)))
         ? 0
         : null,
     );
@@ -96,6 +104,7 @@ export function FileForm({ mode, uid, initial }: Props) {
         }
         await createFileCard(
           {
+            audience,
             title,
             description: "",
             category,
@@ -123,17 +132,22 @@ export function FileForm({ mode, uid, initial }: Props) {
           onProgress: (p) => setUploadProgress(p),
         });
       }
-      await updateFileCardMeta(initial.id, {
-        title,
-        description,
-        category,
-        tags,
-        order: Number(order) || 0,
-        isActive,
-        productCount,
-        ...folderFields,
-        uid,
-      });
+      await updateFileCardMeta(
+        initial.id,
+        {
+          audience,
+          title,
+          description,
+          category,
+          tags,
+          order: Number(order) || 0,
+          isActive,
+          productCount,
+          ...folderFields,
+          uid,
+        },
+        { onProgress: (p) => setUploadProgress(p) },
+      );
       router.push("/admin/files");
       router.refresh();
     } catch (err) {
@@ -162,7 +176,11 @@ export function FileForm({ mode, uid, initial }: Props) {
           label={
             mode === "create"
               ? "جاري رفع الملفات…"
-              : "جاري رفع الصورة المصغّرة…"
+              : initial &&
+                  audience !== initial.audience &&
+                  !(thumb && !removeThumb)
+                ? "جاري نقل الملف بين القنوات…"
+                : "جاري رفع الصورة المصغّرة أو تحديث الملفات…"
           }
           value={uploadProgress}
           className="pt-1"
@@ -188,6 +206,36 @@ export function FileForm({ mode, uid, initial }: Props) {
           />
         </label>
       ) : null}
+      <fieldset className="block space-y-2">
+        <legend className="text-sm font-medium text-foreground">
+          نوع الكتالوج
+        </legend>
+        {mode === "edit" ? (
+          <p className="text-xs text-muted">
+            يمكن تغيير القناة بعد الرفع: يُنسخ PDF (والصورة المصغّرة إن وُجدت)
+            تلقائيًا إلى مجلد القناة الجديدة في التخزين.
+          </p>
+        ) : null}
+        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+          {(["wholesale", "retail", "no_prices"] as CatalogAudience[]).map(
+            (a) => (
+              <label
+                key={a}
+                className="flex cursor-pointer items-center gap-2 rounded-xl border border-border px-3 py-2 text-sm has-[:checked]:border-primary has-[:checked]:bg-primary/5"
+              >
+                <input
+                  type="radio"
+                  name="audience"
+                  value={a}
+                  checked={audience === a}
+                  onChange={() => setAudience(a)}
+                />
+                <span>{AUDIENCE_LABELS_AR[a]}</span>
+              </label>
+            ),
+          )}
+        </div>
+      </fieldset>
       <label className="block">
         <span className="text-sm font-medium text-foreground">التصنيف</span>
         <input

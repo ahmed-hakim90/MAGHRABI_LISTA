@@ -5,10 +5,12 @@ import { useAdminAuth } from "@/hooks/useAdminAuth";
 import {
   listNotifications,
   sendNotificationRequest,
+  type NotifyBroadcastAudience,
 } from "@/lib/services/notifications";
 import { listAllFileCardsAdmin } from "@/lib/services/fileCards";
 import type { FileCard } from "@/lib/types/models";
 import type { NotificationDoc } from "@/lib/types/models";
+import { AUDIENCE_LABELS_AR } from "@/lib/constants/catalogChannels";
 import { formatDisplayDate } from "@/lib/utils/dates";
 
 function notificationStatusAr(status: string): string {
@@ -29,6 +31,8 @@ export default function AdminNotificationsPage() {
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [targetCardId, setTargetCardId] = useState<string>("");
+  const [notifyAudience, setNotifyAudience] =
+    useState<NotifyBroadcastAudience>("all");
   const [cards, setCards] = useState<FileCard[]>([]);
   const [rows, setRows] = useState<(NotificationDoc & { id: string })[]>([]);
   const [msg, setMsg] = useState<string | null>(null);
@@ -66,6 +70,8 @@ export default function AdminNotificationsPage() {
         title,
         body,
         targetCardId: targetCardId || null,
+        notifyAudience:
+          targetCardId ? undefined : notifyAudience,
       });
       if (!res.ok) {
         setMsg(res.error ?? "فشل الإرسال");
@@ -132,11 +138,34 @@ export default function AdminNotificationsPage() {
             <option value="">— بدون —</option>
             {cards.map((c) => (
               <option key={c.id} value={c.id}>
-                {c.title}
+                {c.title} — {AUDIENCE_LABELS_AR[c.audience]}
               </option>
             ))}
           </select>
         </label>
+        {!targetCardId ? (
+          <label className="block">
+            <span className="text-sm font-medium text-foreground">
+              جمهور الإرسال (بدون ملف مرتبط)
+            </span>
+            <select
+              className="mt-1 w-full rounded-xl border border-border px-3 py-2"
+              value={notifyAudience}
+              onChange={(e) =>
+                setNotifyAudience(e.target.value as NotifyBroadcastAudience)
+              }
+            >
+              <option value="all">الكل</option>
+              <option value="wholesale">جملة فقط</option>
+              <option value="retail">تجزئة فقط</option>
+              <option value="no_prices">قوائم بدون أسعار فقط</option>
+            </select>
+          </label>
+        ) : (
+          <p className="text-xs text-muted">
+            يُرسل الإشعار لمشتركي نفس قناة الملف فقط.
+          </p>
+        )}
         <button
           type="submit"
           disabled={busy}

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useCatalogChannel } from "@/components/public/CatalogChannelContext";
 import type { FileFolder } from "@/lib/types/models";
 import { formatDisplayDate } from "@/lib/utils/dates";
 import {
@@ -19,8 +20,9 @@ const gridShellDrive =
   "group/folder flex min-w-0 touch-manipulation flex-col overflow-hidden rounded-xl border border-border/90 bg-card shadow-sm transition duration-200 ease-out motion-reduce:transition-none [@media(hover:hover)]:hover:border-border [@media(hover:hover)]:hover:shadow-md active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2";
 
 export function FolderCard({ folder, fileCount, variant = "grid" }: Props) {
+  const { basePath } = useCatalogChannel();
   const isList = variant === "list";
-  const href = `/folder/${folder.id}`;
+  const href = `${basePath}/folder/${folder.id}`;
 
   if (isList) {
     const updated =

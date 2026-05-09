@@ -16,7 +16,7 @@ const ibmPlexSansArabic = IBM_Plex_Sans_Arabic({
 export const metadata: Metadata = {
   title: DEFAULT_SITE_HOME_TITLE,
   description: "Browse public PDF documents",
-  manifest: "/manifest.webmanifest",
+  manifest: "/manifest-wholesale.webmanifest",
   appleWebApp: {
     capable: true,
     title: DEFAULT_SITE_HOME_TITLE,

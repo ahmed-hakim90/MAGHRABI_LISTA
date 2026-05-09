@@ -118,6 +118,20 @@ function networkFirstCache(request, cacheName) {
   });
 }
 
+function catalogHomeFallback(requestUrl) {
+  try {
+    var u = new URL(requestUrl);
+    var o = u.origin;
+    var p = u.pathname;
+    if (p.indexOf('/retail') === 0) return o + '/retail';
+    if (p.indexOf('/lists') === 0) return o + '/lists';
+    if (p.indexOf('/wholesale') === 0) return o + '/wholesale';
+    return o + '/wholesale';
+  } catch {
+    return self.location.origin + '/wholesale';
+  }
+}
+
 function navigateUrlVariants(requestUrl) {
   try {
     var u = new URL(requestUrl);
@@ -168,10 +182,12 @@ function navigateWithOfflineFallback(request) {
       var urls = navigateUrlVariants(request.url);
       return cacheMatchAny(urls).then(function (hit) {
         if (hit) return hit;
-        return caches.match(self.location.origin + '/').then(function (h2) {
-          if (h2) return h2;
-          return new Response('Offline', { status: 503, statusText: 'Offline' });
-        });
+        return caches
+          .match(catalogHomeFallback(request.url))
+          .then(function (h2) {
+            if (h2) return h2;
+            return new Response('Offline', { status: 503, statusText: 'Offline' });
+          });
       });
     });
 }
@@ -179,8 +195,10 @@ function navigateWithOfflineFallback(request) {
 self.addEventListener('install', function (event) {
   event.waitUntil(
     caches.open(CACHE_PAGES).then(function (cache) {
-      var root = new URL('/', self.location.origin).href;
-      return cache.add(root).catch(function () {});
+      var o = self.location.origin;
+      return cache
+        .addAll([o + '/wholesale', o + '/retail', o + '/lists'])
+        .catch(function () {});
     }),
   );
 });
@@ -234,12 +252,15 @@ self.addEventListener('fetch', function (event) {
   if (
     path.indexOf('/_next/static/') === 0 ||
     path.indexOf('/icons/') === 0 ||
-    path === '/manifest.webmanifest'
+    path === '/manifest.webmanifest' ||
+    path === '/manifest-wholesale.webmanifest' ||
+    path === '/manifest-retail.webmanifest' ||
+    path === '/manifest-lists.webmanifest'
   ) {
     event.respondWith(networkFirstCache(req, CACHE_STATIC));
     return;
   }
-  if (/^\\/file\\/[^/]+\\/pdf\\/?$/.test(path)) {
+  if (/^\\/(wholesale|retail|lists)\\/file\\/[^/]+\\/pdf\\/?$/.test(path)) {
     event.respondWith(networkFirstCache(req, CACHE_PAGES));
     return;
   }
@@ -281,7 +302,7 @@ self.addEventListener('notificationclick', function (event) {
   var rel = data.url;
   if (!rel) {
     event.waitUntil(
-      clients.openWindow(self.location.origin + '/'),
+      clients.openWindow(self.location.origin + '/wholesale'),
     );
     return;
   }

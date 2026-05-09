@@ -40,11 +40,19 @@ export async function listNotifications(): Promise<
   );
 }
 
+export type NotifyBroadcastAudience =
+  | "all"
+  | "wholesale"
+  | "retail"
+  | "no_prices";
+
 export async function sendNotificationRequest(input: {
   idToken: string;
   title: string;
   body: string;
   targetCardId: string | null;
+  /** When no target file: which subscribers get the announcement */
+  notifyAudience?: NotifyBroadcastAudience;
 }): Promise<{ ok: boolean; error?: string }> {
   const res = await fetch("/api/notifications/send", {
     method: "POST",
@@ -56,6 +64,7 @@ export async function sendNotificationRequest(input: {
       title: input.title,
       body: input.body,
       targetCardId: input.targetCardId,
+      notifyAudience: input.notifyAudience,
     }),
   });
   if (!res.ok) {

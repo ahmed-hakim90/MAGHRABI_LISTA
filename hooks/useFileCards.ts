@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import type { CatalogAudience } from "@/lib/constants/catalogChannels";
 import type { FileCard, FileFolder } from "@/lib/types/models";
 import {
   readCatalogSnapshot,
@@ -13,7 +14,7 @@ function hasCatalogData(cards: FileCard[], folders: FileFolder[]) {
   return cards.length > 0 || folders.length > 0;
 }
 
-export function useFileCards() {
+export function useFileCards(audience: CatalogAudience) {
   const [cards, setCards] = useState<FileCard[]>([]);
   const [folders, setFolders] = useState<FileFolder[]>([]);
   const [loading, setLoading] = useState(true);
@@ -26,27 +27,27 @@ export function useFileCards() {
   foldersRef.current = folders;
 
   useLayoutEffect(() => {
-    const snap = readCatalogSnapshot();
+    const snap = readCatalogSnapshot(audience);
     if (!snap) return;
     setCards(snap.cards);
     setFolders(snap.folders);
-  }, []);
+  }, [audience]);
 
   const refetch = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
       const [c, f] = await Promise.all([
-        listActiveFileCards(),
+        listActiveFileCards(audience),
         listActiveFileFolders(),
       ]);
       setCards(c);
       setFolders(f);
-      writeCatalogSnapshot(c, f);
+      writeCatalogSnapshot(audience, c, f);
       setStale(false);
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Failed to load files";
-      const local = readCatalogSnapshot();
+      const local = readCatalogSnapshot(audience);
       const prevC = cardsRef.current;
       const prevF = foldersRef.current;
       const nextC = prevC.length > 0 ? prevC : (local?.cards ?? []);
@@ -59,7 +60,7 @@ export function useFileCards() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [audience]);
 
   useEffect(() => {
     let cancelled = false;
@@ -85,7 +86,10 @@ export function useFileCards() {
 }
 
 /** Fetches active catalog cards only while `enabled` is true (e.g. when a modal opens). */
-export function useActiveFileCardsWhen(enabled: boolean) {
+export function useActiveFileCardsWhen(
+  enabled: boolean,
+  audience: CatalogAudience,
+) {
   const [cards, setCards] = useState<FileCard[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -95,7 +99,7 @@ export function useActiveFileCardsWhen(enabled: boolean) {
     let cancelled = false;
     setLoading(true);
     setError(null);
-    void listActiveFileCards()
+    void listActiveFileCards(audience)
       .then((c) => {
         if (!cancelled) setCards(c);
       })
@@ -111,7 +115,7 @@ export function useActiveFileCardsWhen(enabled: boolean) {
     return () => {
       cancelled = true;
     };
-  }, [enabled]);
+  }, [enabled, audience]);
 
   return { cards, loading, error };
 }

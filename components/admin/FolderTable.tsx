@@ -9,7 +9,10 @@ import {
   listAllFileFoldersAdmin,
   setFileFolderActive,
 } from "@/lib/services/fileFolders";
-import { backfillFileCardsFolderFields } from "@/lib/services/fileCards";
+import {
+  backfillFileCardsAudience,
+  backfillFileCardsFolderFields,
+} from "@/lib/services/fileCards";
 import { formatDisplayDate } from "@/lib/utils/dates";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 
@@ -35,6 +38,7 @@ export function FolderTable() {
       if (cancelled || !user) return;
       try {
         await backfillFileCardsFolderFields(user.uid);
+        await backfillFileCardsAudience(user.uid);
       } catch {
         /* non-blocking; old cards may simply stay unmigrated until next attempt */
       }

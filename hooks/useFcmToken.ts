@@ -3,6 +3,7 @@
 import { doc, serverTimestamp, setDoc } from "firebase/firestore";
 import { getToken } from "firebase/messaging";
 import { useCallback, useLayoutEffect, useState } from "react";
+import type { CatalogAudience } from "@/lib/constants/catalogChannels";
 import { firebaseVapidKey } from "@/lib/firebase/config";
 import { getClientFirestore } from "@/lib/firebase/client";
 import { getClientMessaging } from "@/lib/firebase/messaging";
@@ -18,7 +19,7 @@ async function tokenDocId(token: string): Promise<string> {
     .slice(0, 40);
 }
 
-export function useFcmToken() {
+export function useFcmToken(catalogAudience: CatalogAudience) {
   const [status, setStatus] = useState<
     "idle" | "requesting" | "granted" | "denied" | "unsupported" | "error"
   >("idle");
@@ -83,6 +84,7 @@ export function useFcmToken() {
         ref,
         {
           token,
+          audience: catalogAudience,
           userAgent: navigator.userAgent,
           isActive: true,
           updatedAt: serverTimestamp(),
@@ -97,7 +99,7 @@ export function useFcmToken() {
         e instanceof Error ? e.message : "تعذر تفعيل الإشعارات.",
       );
     }
-  }, []);
+  }, [catalogAudience]);
 
   return { status, message, registerAndSaveToken };
 }

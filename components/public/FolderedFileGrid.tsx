@@ -1,6 +1,10 @@
 "use client";
 
 import type { FileCard as FileCardType, FileFolder } from "@/lib/types/models";
+import {
+  CatalogFileListHeader,
+  catalogListContainerClass,
+} from "./CatalogFileListHeader";
 import { CATALOG_GRID_CLASS } from "./catalogLayout";
 import type { CatalogViewMode } from "./CatalogViewToggle";
 import { FileCard } from "./FileCard";
@@ -22,10 +26,15 @@ function CardGrid({
 }) {
   if (view === "list") {
     return (
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-2 sm:gap-3">
-        {cards.map((c) => (
-          <FileCard key={c.id} card={c} variant="list" />
-        ))}
+      <div className={catalogListContainerClass}>
+        <CatalogFileListHeader kind="files" />
+        <div role="list">
+          {cards.map((c) => (
+            <div key={c.id} role="listitem">
+              <FileCard card={c} variant="list" />
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
@@ -64,15 +73,19 @@ export function FolderedFileGrid({ cards, folders, view = "grid" }: Props) {
 
   const folderLayout =
     view === "list" ? (
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-2 sm:gap-3">
-        {orderedFolders.map((f) => (
-          <FolderCard
-            key={f.id}
-            folder={f}
-            fileCount={grouped.get(f.id)?.length ?? 0}
-            variant="list"
-          />
-        ))}
+      <div className={catalogListContainerClass}>
+        <CatalogFileListHeader kind="folders" />
+        <div role="list">
+          {orderedFolders.map((f) => (
+            <div key={f.id} role="listitem">
+              <FolderCard
+                folder={f}
+                fileCount={grouped.get(f.id)?.length ?? 0}
+                variant="list"
+              />
+            </div>
+          ))}
+        </div>
       </div>
     ) : (
       <div className={CATALOG_GRID_CLASS}>
@@ -88,9 +101,9 @@ export function FolderedFileGrid({ cards, folders, view = "grid" }: Props) {
     );
 
   return (
-    <div className="w-full space-y-12 px-safe pb-safe-fab sm:px-4">
-      <section className="space-y-4">
-        <header className="flex flex-col gap-1 border-b border-primary/15 pb-3">
+    <div className="w-full space-y-6 px-safe pb-safe-fab sm:space-y-10 sm:px-4">
+      <section className="space-y-2 sm:space-y-4">
+        <header className="flex flex-col gap-0.5 border-b border-primary/15 pb-2 sm:gap-1 sm:pb-3">
           <h2 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
             المجلدات
           </h2>
@@ -99,8 +112,8 @@ export function FolderedFileGrid({ cards, folders, view = "grid" }: Props) {
         {folderLayout}
       </section>
       {ungrouped.length > 0 ? (
-        <section className="space-y-4">
-          <header className="flex flex-col gap-1 border-b border-primary/15 pb-3">
+        <section className="space-y-2 sm:space-y-4">
+          <header className="flex flex-col gap-0.5 border-b border-primary/15 pb-2 sm:gap-1 sm:pb-3">
             <h2 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
               القوائم والكتالوجات
             </h2>

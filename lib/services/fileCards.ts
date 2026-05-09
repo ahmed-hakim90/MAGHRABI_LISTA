@@ -148,15 +148,13 @@ export async function createFileCard(
     folderIsActive: boolean;
     productCount: number | null;
     pdfFile: File;
-    thumbnailFile: File;
+    /** If omitted, no image is stored; the catalog shows a PDF-style placeholder. */
+    thumbnailFile?: File | null;
     uid: string;
   },
   opts?: { onProgress?: UploadProgressHandler },
 ): Promise<string> {
   const on = opts?.onProgress;
-  const report = (offset: number, weight: number, local: number) => {
-    on?.(offset + local * weight);
-  };
   const db = getClientFirestore();
   const st = getClientStorage();
   const cardId = doc(collection(db, "fileCards")).id;
@@ -164,23 +162,38 @@ export async function createFileCard(
   const thumbPath = getThumbnailPath(cardId);
   const pdfRef = ref(st, pdfPath);
   const thumbRef = ref(st, thumbPath);
-  const thumbBlob = await fileToWebpBlob(input.thumbnailFile);
   try {
-    await runResumableUpload(
-      pdfRef,
-      input.pdfFile,
-      { contentType: "application/pdf" },
-      (r) => report(0, 0.72, r),
-    );
-    await runResumableUpload(
-      thumbRef,
-      thumbBlob,
-      { contentType: thumbBlob.type || "image/webp" },
-      (r) => report(0.72, 0.24, r),
-    );
-    on?.(0.96);
+    if (input.thumbnailFile) {
+      const thumbBlob = await fileToWebpBlob(input.thumbnailFile);
+      await runResumableUpload(
+        pdfRef,
+        input.pdfFile,
+        { contentType: "application/pdf" },
+        (r) => on?.(r * 0.72),
+      );
+      await runResumableUpload(
+        thumbRef,
+        thumbBlob,
+        { contentType: thumbBlob.type || "image/webp" },
+        (r) => on?.(0.72 + r * 0.24),
+      );
+      on?.(0.96);
+    } else {
+      await runResumableUpload(
+        pdfRef,
+        input.pdfFile,
+        { contentType: "application/pdf" },
+        (r) => on?.(r * 0.92),
+      );
+      on?.(0.94);
+    }
     const fileUrl = await getDownloadURL(pdfRef);
-    const thumbnailUrl = await getDownloadURL(thumbRef);
+    let thumbnailUrl = "";
+    let storedThumbPath = "";
+    if (input.thumbnailFile) {
+      thumbnailUrl = await getDownloadURL(thumbRef);
+      storedThumbPath = thumbPath;
+    }
     await setDoc(doc(db, "fileCards", cardId), {
       title: input.title.trim(),
       description: input.description.trim(),
@@ -194,7 +207,7 @@ export async function createFileCard(
       fileType: "pdf",
       storageFolder: STORAGE_FOLDER,
       thumbnailUrl,
-      thumbnailPath: thumbPath,
+      thumbnailPath: storedThumbPath,
       fileUrl,
       filePath: pdfPath,
       fileName: input.pdfFile.name,

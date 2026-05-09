@@ -1,6 +1,10 @@
 "use client";
 
 import type { FileCard as FileCardType } from "@/lib/types/models";
+import {
+  CatalogFileListHeader,
+  catalogListContainerClass,
+} from "./CatalogFileListHeader";
 import { CATALOG_GRID_CLASS } from "./catalogLayout";
 import type { CatalogViewMode } from "./CatalogViewToggle";
 import { FileCard } from "./FileCard";
@@ -17,10 +21,17 @@ export function FileGrid({ cards, view = "grid" }: Props) {
   }
   if (view === "list") {
     return (
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-2.5 px-safe pb-safe-fab sm:gap-3 sm:px-4">
-        {cards.map((card) => (
-          <FileCard key={card.id} card={card} variant="list" />
-        ))}
+      <div className="mx-auto w-full max-w-6xl px-safe pb-safe-fab sm:px-4">
+        <div className={catalogListContainerClass}>
+          <CatalogFileListHeader kind="files" />
+          <div role="list">
+            {cards.map((card) => (
+              <div key={card.id} role="listitem">
+                <FileCard card={card} variant="list" />
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }

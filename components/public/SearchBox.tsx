@@ -31,7 +31,7 @@ export function SearchBox({ value, onChange, placeholder, className }: Props) {
         }
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full min-h-[3.25rem] rounded-2xl border border-border bg-card px-4 py-3 text-[15px] text-foreground shadow-[var(--shadow-card)] outline-none transition placeholder:text-muted/85 focus:border-primary/35 focus:ring-[3px] focus:ring-primary/15 sm:min-h-[3.5rem] sm:rounded-3xl sm:px-5 sm:py-3.5 sm:text-base"
+        className="w-full min-h-[2.75rem] rounded-xl border border-border bg-card px-3 py-2 text-[14px] text-foreground shadow-[var(--shadow-card)] outline-none transition placeholder:text-muted/85 focus:border-primary/35 focus:ring-[3px] focus:ring-primary/15 sm:min-h-[3.5rem] sm:rounded-3xl sm:px-5 sm:py-3.5 sm:text-base"
       />
     </div>
   );

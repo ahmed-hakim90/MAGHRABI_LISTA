@@ -27,34 +27,34 @@ export function PortalHero({
   const subtitle = homeSubtitle.trim() || DEFAULT_SITE_HOME_SUBTITLE;
 
   return (
-    <section className="relative overflow-hidden px-safe pt-safe pb-6 sm:pb-10">
+    <section className="relative overflow-hidden px-safe pt-safe pb-4 sm:pb-10">
       <div
         className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_120%_80%_at_50%_-20%,rgb(29_78_216/0.12),transparent_55%),linear-gradient(180deg,rgb(255_255_255/0.9)_0%,var(--notion-bg)_100%)]"
         aria-hidden
       />
       <div className="relative mx-auto flex max-w-3xl flex-col items-center text-center">
         {logoUrl ? (
-          <div className="relative h-[4.5rem] w-[4.5rem] overflow-hidden rounded-3xl border border-border bg-card shadow-[var(--shadow-card)] sm:h-20 sm:w-20">
+          <div className="relative h-14 w-14 overflow-hidden rounded-3xl border border-border bg-card shadow-[var(--shadow-card)] sm:h-20 sm:w-20">
             <Image
               src={logoUrl}
               alt={appName}
               fill
               className="object-cover object-center scale-[1.22]"
-              sizes="(max-width:640px) 72px, 80px"
+              sizes="(max-width:640px) 56px, 80px"
               unoptimized
             />
           </div>
         ) : (
           <div
-            className="flex h-[4.5rem] w-[4.5rem] items-center justify-center rounded-3xl border border-border bg-card text-3xl shadow-[var(--shadow-card)] sm:h-20 sm:w-20 sm:text-4xl"
+            className="flex h-14 w-14 items-center justify-center rounded-3xl border border-border bg-card text-2xl shadow-[var(--shadow-card)] sm:h-20 sm:w-20 sm:text-4xl"
             aria-hidden
           >
             📚
           </div>
         )}
-        <div className="mt-4 flex flex-wrap items-center justify-center gap-2 sm:mt-5">
+        <div className="mt-2.5 flex flex-wrap items-center justify-center gap-2 sm:mt-5">
           <h1
-            className="text-pretty text-2xl font-bold leading-tight tracking-tight sm:text-4xl sm:leading-tight"
+            className="text-pretty text-xl font-bold leading-tight tracking-tight sm:text-4xl sm:leading-tight"
             style={{ color: primaryColor }}
           >
             {title}
@@ -86,7 +86,7 @@ export function PortalHero({
             </button>
           ) : null}
         </div>
-        <p className="mt-3 max-w-xl text-pretty text-sm leading-relaxed text-muted sm:mt-4 sm:text-base">
+        <p className="mt-2 max-w-xl text-pretty text-xs leading-relaxed text-muted sm:mt-4 sm:text-base">
           {subtitle}
         </p>
       </div>

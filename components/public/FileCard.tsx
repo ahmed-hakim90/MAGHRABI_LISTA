@@ -4,13 +4,30 @@ import Image from "next/image";
 import Link from "next/link";
 import type { FileCard as FileCardType } from "@/lib/types/models";
 import { formatDisplayDate } from "@/lib/utils/dates";
+import { formatFileSize } from "@/lib/utils/formatFileSize";
 import { getFileCardFreshnessBadge } from "@/lib/utils/fileCardBadges";
+import {
+  CatalogListKebab,
+  catalogListRowClass,
+} from "./CatalogFileListHeader";
 import type { CatalogViewMode } from "./CatalogViewToggle";
+import { PdfThumbnailPlaceholder } from "./PdfThumbnailPlaceholder";
 
 type Props = { card: FileCardType; variant?: CatalogViewMode };
 
-const cardShell =
-  "group/card flex touch-manipulation overflow-hidden rounded-3xl border border-border bg-card shadow-[var(--shadow-card)] transition duration-300 ease-out motion-reduce:transition-none motion-reduce:hover:translate-y-0 [@media(hover:hover)]:hover:-translate-y-1 [@media(hover:hover)]:hover:shadow-[var(--shadow-card-hover)] active:scale-[0.99]";
+function hasThumbnail(card: FileCardType): boolean {
+  return Boolean(card.thumbnailUrl?.trim());
+}
+
+const gridShell =
+  "group/card flex min-w-0 touch-manipulation flex-col overflow-hidden rounded-xl border border-border/90 bg-card shadow-sm transition duration-200 ease-out motion-reduce:transition-none [@media(hover:hover)]:hover:border-border [@media(hover:hover)]:hover:shadow-md active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2";
+
+const badgeNew =
+  "rounded-full bg-accent px-1.5 py-px text-[9px] font-bold uppercase tracking-wide text-[#0f172a] shadow-sm sm:text-[10px]";
+const badgeUpdated =
+  "rounded-full bg-primary/90 px-1.5 py-px text-[9px] font-bold uppercase tracking-wide text-white shadow-sm sm:text-[10px]";
+const badgePdf =
+  "rounded-md bg-[#dc2626] px-1.5 py-0.5 text-[9px] font-bold text-white shadow-sm sm:text-[10px]";
 
 export function FileCard({ card, variant = "grid" }: Props) {
   const isList = variant === "list";
@@ -19,143 +36,108 @@ export function FileCard({ card, variant = "grid" }: Props) {
 
   const freshnessEl =
     freshness === "new" ? (
-      <span className="rounded-full bg-accent px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#0f172a] shadow-sm sm:text-[11px]">
-        جديد
-      </span>
+      <span className={badgeNew}>جديد</span>
     ) : freshness === "updated" ? (
-      <span className="rounded-full bg-primary/90 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white shadow-sm sm:text-[11px]">
-        محدّث
-      </span>
+      <span className={badgeUpdated}>محدّث</span>
     ) : null;
 
-  const metaLine = (
-    <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] text-muted sm:text-xs">
-      {card.productCount != null ? (
-        <span className="font-medium text-foreground/90">
-          {card.productCount.toLocaleString("ar")} صنف
-        </span>
-      ) : null}
-      {card.productCount != null ? (
-        <span className="text-border" aria-hidden>
-          ·
-        </span>
-      ) : null}
-      {card.updatedAt ? (
-        <time dateTime={card.updatedAt.toDate().toISOString()}>
-          آخر تحديث {formatDisplayDate(card.updatedAt)}
+  if (isList) {
+    const updated =
+      card.updatedAt != null ? (
+        <time
+          dateTime={card.updatedAt.toDate().toISOString()}
+          className="text-[13px] text-foreground/90 sm:text-sm"
+        >
+          {formatDisplayDate(card.updatedAt)}
         </time>
       ) : (
-        <span>آخر تحديث {formatDisplayDate(card.updatedAt)}</span>
-      )}
-    </div>
-  );
+        <span className="text-[13px] text-muted sm:text-sm">—</span>
+      );
 
-  if (isList) {
     return (
-      <article className={`${cardShell} min-h-[5.5rem] flex-row items-stretch`}>
+      <article className={`${catalogListRowClass} min-w-0`} dir="rtl">
         <Link
           href={viewHref}
-          className="relative aspect-square w-[5.5rem] shrink-0 bg-surface sm:w-28"
-        >
-          {card.thumbnailUrl ? (
-            <Image
-              src={card.thumbnailUrl}
-              alt=""
-              fill
-              className="object-cover transition duration-300 [@media(hover:hover)]:group-hover/card:scale-[1.02]"
-              sizes="(max-width:640px) 88px, 112px"
-              unoptimized
-            />
-          ) : (
-            <div className="flex h-full items-center justify-center text-2xl text-muted/35">
-              📄
-            </div>
-          )}
-          {freshnessEl ? (
-            <div className="absolute end-2 top-2 flex flex-wrap justify-end gap-1">
-              {freshnessEl}
-            </div>
-          ) : null}
-        </Link>
-        <div className="flex min-w-0 flex-1 flex-col justify-center gap-2 p-3 sm:p-4">
-          <div className="flex flex-wrap items-center gap-1.5">
-            <span className="rounded-full bg-surface px-2 py-0.5 text-[10px] font-semibold text-muted ring-1 ring-border sm:text-xs">
-              {card.category?.trim() || "عام"}
-            </span>
-            <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary sm:text-xs">
-              PDF
-            </span>
-          </div>
-          <Link href={viewHref} className="min-w-0">
-            <h2 className="line-clamp-2 text-sm font-bold leading-snug text-foreground sm:text-base">
+          className="absolute inset-y-0 start-0 z-0 end-10 rounded-none"
+          aria-label={`عرض ${card.title}`}
+        />
+        <div className="relative z-[1] flex min-w-0 flex-1 items-center gap-2 pointer-events-none sm:gap-3">
+          <span
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-[#dc2626] text-[9px] font-bold leading-none text-white sm:h-10 sm:w-10 sm:text-[10px]"
+            aria-hidden
+          >
+            PDF
+          </span>
+          <div className="min-w-0 flex-1 ps-0.5">
+            <h2 className="truncate text-[13px] font-semibold text-foreground sm:text-sm">
               {card.title}
             </h2>
-          </Link>
-          {card.description ? (
-            <p className="line-clamp-2 text-sm leading-relaxed text-muted">
-              {card.description}
-            </p>
-          ) : null}
-          {metaLine}
-          <div className="pt-0.5">
-            <Link
-              href={viewHref}
-              className="inline-flex min-h-touch items-center justify-center rounded-2xl bg-primary px-4 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-primary/90 sm:text-sm"
-            >
-              عرض
-            </Link>
+            {freshnessEl ? (
+              <div className="mt-0.5 flex pointer-events-none">{freshnessEl}</div>
+            ) : null}
           </div>
+          <div className="w-[6.5rem] shrink-0 text-end sm:w-32">{updated}</div>
+          <div className="hidden w-16 shrink-0 text-end text-[13px] text-foreground/90 sm:block sm:w-20 sm:text-sm">
+            {formatFileSize(card.fileSize)}
+          </div>
+        </div>
+        <div className="relative z-[2] shrink-0 pointer-events-auto">
+          <CatalogListKebab
+            href={viewHref}
+            title={card.title}
+            downloadHref={`/file/${card.id}/pdf?download`}
+          />
         </div>
       </article>
     );
   }
 
   return (
-    <article className={`${cardShell} flex-col`}>
-      <Link href={viewHref} className="relative block aspect-[4/3] w-full bg-surface">
-        {card.thumbnailUrl ? (
+    <Link href={viewHref} className={gridShell}>
+      <div className="relative aspect-square w-full shrink-0 overflow-hidden bg-surface">
+        {hasThumbnail(card) ? (
           <Image
             src={card.thumbnailUrl}
             alt=""
             fill
-            className="object-cover transition duration-300 [@media(hover:hover)]:group-hover/card:scale-[1.02]"
-            sizes="23vw"
+            className="object-contain transition duration-300 [@media(hover:hover)]:group-hover/card:scale-[1.02]"
+            sizes="(max-width: 359px) 92vw, (max-width: 768px) 30vw, 20vw"
             unoptimized
           />
         ) : (
-          <div className="flex h-full items-center justify-center text-4xl text-muted/35 sm:text-5xl">
-            📄
-          </div>
+          <PdfThumbnailPlaceholder />
         )}
-        <div className="absolute inset-x-0 top-0 flex flex-wrap items-start justify-between gap-1.5 p-2.5 sm:p-3">
-          <div className="flex flex-wrap gap-1">{freshnessEl}</div>
-          <span className="rounded-full bg-primary/95 px-2 py-0.5 text-[10px] font-bold text-white shadow-sm backdrop-blur-[2px] sm:text-xs">
-            PDF
-          </span>
-        </div>
-      </Link>
-      <div className="flex flex-1 flex-col gap-2 p-3 sm:gap-3 sm:p-4">
-        <span className="w-fit rounded-full bg-surface px-2.5 py-0.5 text-[10px] font-semibold text-muted ring-1 ring-border sm:text-xs">
-          {card.category?.trim() || "عام"}
-        </span>
-        <Link href={viewHref} className="min-w-0">
-          <h2 className="line-clamp-2 text-[13px] font-bold leading-snug text-foreground sm:text-lg sm:leading-snug">
-            {card.title}
-          </h2>
-        </Link>
-        {card.description ? (
-          <p className="hidden line-clamp-2 text-sm leading-relaxed text-muted sm:block">
-            {card.description}
-          </p>
-        ) : null}
-        {metaLine}
-        <Link
-          href={viewHref}
-          className="mt-auto inline-flex min-h-touch w-full items-center justify-center rounded-2xl bg-primary py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-primary/90 sm:py-3"
+        <div
+          className="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between gap-1 p-2"
+          dir="rtl"
         >
-          عرض
-        </Link>
+          <span className={badgePdf}>PDF</span>
+          <div className="flex flex-wrap justify-end gap-1">{freshnessEl}</div>
+        </div>
       </div>
-    </article>
+      <div className="flex flex-col gap-0.5 border-t border-border/70 px-2 py-2 sm:px-2.5 sm:py-2.5">
+        <h2 className="line-clamp-2 text-center text-[11px] font-semibold leading-snug text-foreground sm:text-xs">
+          {card.title}
+        </h2>
+        {(card.category?.trim() || card.updatedAt) && (
+          <p className="line-clamp-1 text-center text-[10px] text-muted sm:text-[11px]">
+            {card.category?.trim() ? (
+              <span>{card.category.trim()}</span>
+            ) : null}
+            {card.category?.trim() && card.updatedAt ? (
+              <span className="text-border" aria-hidden>
+                {" "}
+                ·{" "}
+              </span>
+            ) : null}
+            {card.updatedAt ? (
+              <time dateTime={card.updatedAt.toDate().toISOString()}>
+                {formatDisplayDate(card.updatedAt)}
+              </time>
+            ) : null}
+          </p>
+        )}
+      </div>
+    </Link>
   );
 }

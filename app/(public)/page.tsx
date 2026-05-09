@@ -1,12 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { CatalogHomeStickyHeader } from "@/components/public/CatalogHomeStickyHeader";
 import { useCatalogView } from "@/components/public/CatalogViewToggle";
-import { CatalogSearchBar } from "@/components/public/CatalogSearchBar";
-import { CategoryFilterChips } from "@/components/public/CategoryFilterChips";
 import { FolderedFileGrid } from "@/components/public/FolderedFileGrid";
 import { LoadingOverlay } from "@/components/public/LoadingOverlay";
-import { PortalHero } from "@/components/public/PortalHero";
 import { useFileCards } from "@/hooks/useFileCards";
 import type { SiteSettings } from "@/lib/types/models";
 import {
@@ -62,31 +60,21 @@ export default function HomePage() {
   return (
     <div className="flex min-h-dvh flex-col bg-surface touch-manipulation">
       <LoadingOverlay open={loading} />
-      <PortalHero
+      <CatalogHomeStickyHeader
         appName={s.appName}
         logoUrl={s.logoUrl}
         homeTitle={s.homeTitle}
-        homeSubtitle={s.homeSubtitle}
         primaryColor={s.primaryColor}
+        searchValue={q}
+        onSearchChange={setQ}
+        catalogView={catalogView}
+        onCatalogViewChange={setCatalogView}
+        categories={categories}
+        selectedCategory={category}
+        onSelectCategory={setCategory}
+        showCategoryChips={!loading && !error}
       />
-      <div className="sticky top-0 z-20 border-b border-border/50 bg-surface/90 backdrop-blur-md supports-[backdrop-filter]:bg-surface/75">
-        <div className="mx-auto w-full max-w-6xl space-y-3 px-4 py-3 sm:px-4 sm:py-4">
-          <CatalogSearchBar
-            searchValue={q}
-            onSearchChange={setQ}
-            catalogView={catalogView}
-            onCatalogViewChange={setCatalogView}
-          />
-          {!loading && !error ? (
-            <CategoryFilterChips
-              categories={categories}
-              selected={category}
-              onSelect={setCategory}
-            />
-          ) : null}
-        </div>
-      </div>
-      <main className="mt-2 flex min-h-0 flex-1 flex-col sm:mt-4">
+      <main className="mt-1 flex min-h-0 flex-1 flex-col sm:mt-2">
         {loading ? (
           <div className="min-h-[min(12rem,40dvh)] flex-1" aria-hidden />
         ) : error ? (

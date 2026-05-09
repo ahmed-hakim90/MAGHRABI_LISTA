@@ -80,8 +80,8 @@ export function FileForm({ mode, uid, initial }: Props) {
     try {
       const folderFields = resolveFolderFields();
       if (mode === "create") {
-        if (!pdf || !thumb) {
-          setError("PDF and thumbnail are required.");
+        if (!pdf) {
+          setError("PDF is required.");
           setSaving(false);
           setUploadProgress(null);
           return;
@@ -97,7 +97,7 @@ export function FileForm({ mode, uid, initial }: Props) {
             productCount,
             ...folderFields,
             pdfFile: pdf,
-            thumbnailFile: thumb,
+            thumbnailFile: thumb ?? undefined,
             uid,
           },
           { onProgress: (p) => setUploadProgress(p) },
@@ -243,11 +243,10 @@ export function FileForm({ mode, uid, initial }: Props) {
             required
           />
           <UploadField
-            label="Thumbnail"
+            label="Thumbnail (optional — PDF icon is used if empty)"
             accept="image/*"
             file={thumb}
             onFile={setThumb}
-            required
           />
         </>
       ) : null}

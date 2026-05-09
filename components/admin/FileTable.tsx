@@ -11,6 +11,7 @@ import {
   replaceFileCardThumbnail,
   setFileCardActive,
 } from "@/lib/services/fileCards";
+import { PdfThumbnailPlaceholder } from "@/components/public/PdfThumbnailPlaceholder";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { formatDisplayDate } from "@/lib/utils/dates";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
@@ -119,7 +120,7 @@ export function FileTable() {
             <tr key={card.id} className="border-b border-border/80">
               <td className="p-3">
                 <div className="relative h-12 w-16 overflow-hidden rounded-lg bg-surface">
-                  {card.thumbnailUrl ? (
+                  {card.thumbnailUrl?.trim() ? (
                     <Image
                       src={card.thumbnailUrl}
                       alt=""
@@ -127,7 +128,9 @@ export function FileTable() {
                       className="object-cover"
                       unoptimized
                     />
-                  ) : null}
+                  ) : (
+                    <PdfThumbnailPlaceholder />
+                  )}
                 </div>
               </td>
               <td className="max-w-[200px] p-3 font-medium text-foreground">

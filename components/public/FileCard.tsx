@@ -11,7 +11,7 @@ import {
   catalogListRowClass,
 } from "./CatalogFileListHeader";
 import type { CatalogViewMode } from "./CatalogViewToggle";
-import { PdfThumbnailPlaceholder } from "./PdfThumbnailPlaceholder";
+import { PdfFirstPagePreview } from "./PdfFirstPagePreview";
 
 type Props = { card: FileCardType; variant?: CatalogViewMode };
 
@@ -31,7 +31,8 @@ const badgePdf =
 
 export function FileCard({ card, variant = "grid" }: Props) {
   const isList = variant === "list";
-  const viewHref = `/file/${card.id}/view`;
+  /** Open in new tab: native browser PDF (full document on mobile). */
+  const openPdfHref = `/file/${card.id}/pdf`;
   const freshness = getFileCardFreshnessBadge(card);
 
   const freshnessEl =
@@ -57,17 +58,29 @@ export function FileCard({ card, variant = "grid" }: Props) {
     return (
       <article className={`${catalogListRowClass} min-w-0`} dir="rtl">
         <Link
-          href={viewHref}
+          href={openPdfHref}
+          target="_blank"
+          rel="noopener noreferrer"
           className="absolute inset-y-0 start-0 z-0 end-10 rounded-none"
           aria-label={`عرض ${card.title}`}
         />
         <div className="relative z-[1] flex min-w-0 flex-1 items-center gap-2 pointer-events-none sm:gap-3">
-          <span
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-[#dc2626] text-[9px] font-bold leading-none text-white sm:h-10 sm:w-10 sm:text-[10px]"
+          <div
+            className="relative h-9 w-9 shrink-0 overflow-hidden rounded-md border border-border/60 bg-surface sm:h-10 sm:w-10"
             aria-hidden
           >
-            PDF
-          </span>
+            {hasThumbnail(card) ? (
+              <Image
+                src={card.thumbnailUrl}
+                alt=""
+                fill
+                className="object-cover"
+                unoptimized
+              />
+            ) : (
+              <PdfFirstPagePreview cardId={card.id} />
+            )}
+          </div>
           <div className="min-w-0 flex-1 ps-0.5">
             <h2 className="truncate text-[13px] font-semibold text-foreground sm:text-sm">
               {card.title}
@@ -83,9 +96,10 @@ export function FileCard({ card, variant = "grid" }: Props) {
         </div>
         <div className="relative z-[2] shrink-0 pointer-events-auto">
           <CatalogListKebab
-            href={viewHref}
+            href={openPdfHref}
             title={card.title}
             downloadHref={`/file/${card.id}/pdf?download`}
+            openViewInNewTab
           />
         </div>
       </article>
@@ -93,22 +107,29 @@ export function FileCard({ card, variant = "grid" }: Props) {
   }
 
   return (
-    <Link href={viewHref} className={gridShell}>
-      <div className="relative aspect-square w-full shrink-0 overflow-hidden bg-surface">
-        {hasThumbnail(card) ? (
-          <Image
-            src={card.thumbnailUrl}
-            alt=""
-            fill
-            className="object-contain transition duration-300 [@media(hover:hover)]:group-hover/card:scale-[1.02]"
-            sizes="(max-width: 359px) 92vw, (max-width: 768px) 30vw, 20vw"
-            unoptimized
-          />
-        ) : (
-          <PdfThumbnailPlaceholder />
-        )}
+    <Link
+      href={openPdfHref}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={gridShell}
+    >
+      <div className="relative isolate aspect-square w-full shrink-0 overflow-hidden bg-surface">
+        <div className="relative z-0 h-full w-full min-h-0">
+          {hasThumbnail(card) ? (
+            <Image
+              src={card.thumbnailUrl}
+              alt=""
+              fill
+              className="object-contain transition duration-300 [@media(hover:hover)]:group-hover/card:scale-[1.02]"
+              sizes="(max-width: 359px) 92vw, (max-width: 768px) 30vw, 20vw"
+              unoptimized
+            />
+          ) : (
+            <PdfFirstPagePreview cardId={card.id} />
+          )}
+        </div>
         <div
-          className="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between gap-1 p-2"
+          className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-start justify-between gap-1 p-2"
           dir="rtl"
         >
           <span className={badgePdf}>PDF</span>

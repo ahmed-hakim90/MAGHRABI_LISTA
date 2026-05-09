@@ -7,12 +7,15 @@ export function CatalogListKebab({
   title,
   viewLabel = "عرض",
   downloadHref,
+  openViewInNewTab = false,
 }: {
   href: string;
   title: string;
   viewLabel?: string;
   /** When set, shows a «تحميل» item (e.g. PDF with `?download`). */
   downloadHref?: string;
+  /** When true, «عرض» opens in a new tab (e.g. full PDF in mobile browser). */
+  openViewInNewTab?: boolean;
 }) {
   return (
     <details
@@ -43,6 +46,9 @@ export function CatalogListKebab({
           href={href}
           role="menuitem"
           className="block px-3 py-2 text-sm text-foreground hover:bg-surface"
+          {...(openViewInNewTab
+            ? { target: "_blank", rel: "noopener noreferrer" }
+            : {})}
         >
           {viewLabel}
         </Link>
@@ -55,15 +61,17 @@ export function CatalogListKebab({
             تحميل
           </a>
         ) : null}
-        <a
-          href={href}
-          target="_blank"
-          rel="noopener noreferrer"
-          role="menuitem"
-          className="block px-3 py-2 text-sm text-foreground hover:bg-surface"
-        >
-          فتح في تاب جديد
-        </a>
+        {!openViewInNewTab ? (
+          <a
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            role="menuitem"
+            className="block px-3 py-2 text-sm text-foreground hover:bg-surface"
+          >
+            فتح في تاب جديد
+          </a>
+        ) : null}
       </div>
     </details>
   );

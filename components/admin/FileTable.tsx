@@ -11,6 +11,7 @@ import {
   replaceFileCardThumbnail,
   setFileCardActive,
 } from "@/lib/services/fileCards";
+import { PdfFirstPagePreview } from "@/components/public/PdfFirstPagePreview";
 import { PdfThumbnailPlaceholder } from "@/components/public/PdfThumbnailPlaceholder";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { formatDisplayDate } from "@/lib/utils/dates";
@@ -128,6 +129,8 @@ export function FileTable() {
                       className="object-cover"
                       unoptimized
                     />
+                  ) : card.isActive ? (
+                    <PdfFirstPagePreview cardId={card.id} />
                   ) : (
                     <PdfThumbnailPlaceholder />
                   )}

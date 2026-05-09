@@ -43,3 +43,35 @@ export function useFileCards() {
 
   return { cards, folders, loading, error, refetch };
 }
+
+/** Fetches active catalog cards only while `enabled` is true (e.g. when a modal opens). */
+export function useActiveFileCardsWhen(enabled: boolean) {
+  const [cards, setCards] = useState<FileCard[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!enabled) return;
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+    void listActiveFileCards()
+      .then((c) => {
+        if (!cancelled) setCards(c);
+      })
+      .catch((e) => {
+        if (!cancelled) {
+          setError(e instanceof Error ? e.message : "تعذر تحميل الملفات");
+          setCards([]);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [enabled]);
+
+  return { cards, loading, error };
+}

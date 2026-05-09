@@ -1,22 +1,24 @@
-import {
-  PUBLIC_WHATSAPP_ORDER_PREFILL,
-  PUBLIC_WHATSAPP_WA_ME_NUMBER,
-} from "@/lib/constants/publicWhatsApp";
+"use client";
 
-const whatsappHref = `https://wa.me/${PUBLIC_WHATSAPP_WA_ME_NUMBER}?text=${encodeURIComponent(PUBLIC_WHATSAPP_ORDER_PREFILL)}`;
+import { useState } from "react";
+import { WhatsAppOrderDialog } from "@/components/public/WhatsAppOrderDialog";
 
 export function WhatsAppFloatingButton() {
+  const [dialogOpen, setDialogOpen] = useState(false);
+
   return (
-    <a
-      href={whatsappHref}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="fixed bottom-[max(1.25rem,env(safe-area-inset-bottom))] end-[max(1.25rem,env(safe-area-inset-right))] z-[100] flex h-14 w-14 transform-gpu items-center justify-center rounded-full bg-[#25D366] text-white shadow-lg ring-1 ring-black/10 transition-transform duration-200 hover:scale-105 hover:shadow-xl active:scale-95 [backface-visibility:hidden]"
-      aria-label="التواصل عبر واتساب لتقديم طلب من موقع المغربي"
-      title="واتساب — طلب من الموقع"
-    >
-      <WhatsAppGlyph className="h-8 w-8" aria-hidden />
-    </a>
+    <>
+      <WhatsAppOrderDialog open={dialogOpen} onClose={() => setDialogOpen(false)} />
+      <button
+        type="button"
+        onClick={() => setDialogOpen(true)}
+        className="fixed bottom-[max(1.25rem,env(safe-area-inset-bottom))] end-[max(1.25rem,env(safe-area-inset-right))] z-[100] flex h-14 w-14 transform-gpu items-center justify-center rounded-full bg-[#25D366] text-white shadow-lg ring-1 ring-black/10 transition-transform duration-200 hover:scale-105 hover:shadow-xl active:scale-95 [backface-visibility:hidden]"
+        aria-label="التواصل عبر واتساب لتقديم طلب من موقع المغربي"
+        title="واتساب — اكتب رسالتك واختر الملف إن وجد"
+      >
+        <WhatsAppGlyph className="h-8 w-8" aria-hidden />
+      </button>
+    </>
   );
 }
 

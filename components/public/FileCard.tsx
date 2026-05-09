@@ -7,6 +7,7 @@ import { formatDisplayDate } from "@/lib/utils/dates";
 import { formatFileSize } from "@/lib/utils/formatFileSize";
 import { getFileCardFreshnessBadge } from "@/lib/utils/fileCardBadges";
 import { useCatalogChannel } from "@/components/public/CatalogChannelContext";
+import { useNarrowViewportForNewTab } from "@/hooks/useNarrowViewportForNewTab";
 import {
   CatalogListKebab,
   catalogListRowClass,
@@ -41,6 +42,10 @@ export function FileCard({
   imagePriority = false,
 }: Props) {
   const { basePath } = useCatalogChannel();
+  const openFileInNewTab = useNarrowViewportForNewTab();
+  const newTabLinkProps = openFileInNewTab
+    ? ({ target: "_blank", rel: "noopener noreferrer" } as const)
+    : {};
   const isList = variant === "list";
   const viewHref = `${basePath}/file/${card.id}/view`;
   const pdfHref = `${basePath}/file/${card.id}/pdf`;
@@ -72,6 +77,7 @@ export function FileCard({
           href={viewHref}
           className="absolute inset-y-0 start-0 z-0 end-10 rounded-none"
           aria-label={`عرض ${card.title}`}
+          {...newTabLinkProps}
         />
         <div className="relative z-[1] flex min-w-0 flex-1 items-center gap-2 pointer-events-none sm:gap-3">
           <div
@@ -117,7 +123,7 @@ export function FileCard({
   }
 
   return (
-    <Link href={viewHref} className={gridShell}>
+    <Link href={viewHref} className={gridShell} {...newTabLinkProps}>
       <div className="relative isolate aspect-square w-full shrink-0 overflow-hidden bg-surface">
         <div className="relative z-0 h-full w-full min-h-0">
           {hasThumbnail(card) ? (

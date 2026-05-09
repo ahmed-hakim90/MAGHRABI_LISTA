@@ -88,15 +88,14 @@ In **Settings** → **Environment Variables**, scope **Production**, set every v
 | `NEXT_PUBLIC_FIREBASE_STORAGE_FOLDER` | Must match Storage rules prefix (`magrabi-lista` in `storage.rules`) |
 | `FIREBASE_SERVICE_ACCOUNT_JSON` | Server: `/api/admin/register`, `/api/notifications/send`, catalog context for `/api/chat` |
 | `ADMIN_SETUP_TOKEN` | Min 24 chars; `/api/admin/register` only |
-| `OPENROUTER_API_KEY` | Server: `/api/chat` (required for the floating assistant) |
-| `OPENROUTER_MODEL` | Server: `/api/chat` (e.g. `openai/gpt-4o-mini`) |
-| `OPENROUTER_BASE_URL` | Optional; default `https://openrouter.ai/api/v1` |
 
-Missing client vars do **not** cause HTTP 403 from Vercel; they cause runtime Firebase errors in the browser. Missing `FIREBASE_SERVICE_ACCOUNT_JSON` yields **503** on those APIs, not 403 on `/`. Missing OpenRouter vars yield **503** JSON from `/api/chat` with `missing_llm_config`, not a generic HTML error page.
+The floating catalog assistant (`POST /api/chat`) uses rule-based replies and Firestore-backed catalog text; it does **not** require OpenRouter or other LLM API keys.
+
+Missing client vars do **not** cause HTTP 403 from Vercel; they cause runtime Firebase errors in the browser. Missing `FIREBASE_SERVICE_ACCOUNT_JSON` can break server APIs that read Firestore (including `/api/chat` catalog context).
 
 ### `/api/chat` returns HTML “This page couldn’t load” (500)
 
-If **Network → Response** for `POST /api/chat` is a Next.js HTML error document instead of JSON, the route module failed before the handler ran (for example a dependency could not load on the server). After deploying this repo’s fix, `pdf-parse` is loaded only when PDF text is actually needed, so the route should start and return JSON (including explicit 503 when LLM env is missing). If HTML 500 persists, open **Vercel → Functions → Logs** for that request timestamp.
+If **Network → Response** for `POST /api/chat` is a Next.js HTML error document instead of JSON, the route module failed before the handler ran (for example a dependency could not load on the server). The route should return JSON for normal requests. If HTML 500 persists, open **Vercel → Functions → Logs** for that request timestamp.
 
 **Security:** rotate `ADMIN_SETUP_TOKEN` and the Firebase service account key if they were ever exposed; store secrets only in Vercel (not in git).
 

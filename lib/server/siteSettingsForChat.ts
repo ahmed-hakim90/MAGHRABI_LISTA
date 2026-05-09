@@ -1,6 +1,7 @@
 import "server-only";
 
 import { getAdminFirestore } from "@/lib/firebase/admin";
+import type { WhatsAppContact } from "@/lib/types/models";
 import { parseWhatsappContactsRaw } from "@/lib/utils/siteWhatsappContacts";
 
 const SETTINGS_COLLECTION = "settings";
@@ -41,5 +42,18 @@ export async function buildSiteContactContextForChat(): Promise<string> {
     return lines.join("\n");
   } catch {
     return "";
+  }
+}
+
+/** Structured contacts for rule-based chat replies (no LLM). */
+export async function getSiteWhatsappContactsForChat(): Promise<WhatsAppContact[]> {
+  try {
+    const db = getAdminFirestore();
+    const snap = await db.collection(SETTINGS_COLLECTION).doc(SITE_DOC_ID).get();
+    if (!snap.exists) return [];
+    const data = snap.data() as Record<string, unknown>;
+    return parseWhatsappContactsRaw(data.whatsappContacts);
+  } catch {
+    return [];
   }
 }

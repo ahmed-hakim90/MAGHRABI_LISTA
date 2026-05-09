@@ -11,12 +11,17 @@ import { getAdminFirestore } from "@/lib/firebase/admin";
  * When the visitor is on /{wholesale|retail}/folder/{id} (not inside a file view),
  * inject visible file titles so the model can answer «أنهي كتالوج؟» without PDF text.
  */
-export async function buildFolderFilesContextForChat(
+export type FolderCatalogFileRow = { title: string; path: string };
+
+/**
+ * Active file cards in a folder (for chat / folder UI). Sorted by Firestore doc order.
+ */
+export async function listFolderCatalogFilesForChat(
   folderId: string,
   routeAudience: CatalogAudience,
-): Promise<string> {
+): Promise<FolderCatalogFileRow[]> {
   const id = folderId.trim();
-  if (!id) return "";
+  if (!id) return [];
 
   try {
     const db = getAdminFirestore();
@@ -26,8 +31,7 @@ export async function buildFolderFilesContextForChat(
       .limit(80)
       .get();
 
-    type Row = { title: string; path: string };
-    const rows: Row[] = [];
+    const rows: FolderCatalogFileRow[] = [];
     for (const doc of snap.docs) {
       const data = doc.data() as Record<string, unknown>;
       if (data.isActive === false || data.folderIsActive === false) continue;
@@ -40,20 +44,27 @@ export async function buildFolderFilesContextForChat(
         path: publicCatalogFileViewPath(routeAudience, doc.id),
       });
     }
-
-    if (rows.length === 0) return "";
-
-    const lines = [
-      "## Current folder — price list files (titles + open paths on this site)",
-      "The user is browsing this folder in the catalog. There may be no PDF text unless a file block is attached.",
-      "When suggesting a catalog, give **title + path** from the list below (copy the path exactly). Do not say only «open the catalog» without a path.",
-      "",
-      ...rows
-        .slice(0, 45)
-        .map((r) => `- **${r.title}** → \`${r.path}\``),
-    ];
-    return lines.join("\n");
+    return rows;
   } catch {
-    return "";
+    return [];
   }
+}
+
+export async function buildFolderFilesContextForChat(
+  folderId: string,
+  routeAudience: CatalogAudience,
+): Promise<string> {
+  const rows = await listFolderCatalogFilesForChat(folderId, routeAudience);
+  if (rows.length === 0) return "";
+
+  const lines = [
+    "## Current folder — price list files (titles + open paths on this site)",
+    "The user is browsing this folder in the catalog. There may be no PDF text unless a file block is attached.",
+    "When suggesting a catalog, give **title + path** from the list below (copy the path exactly). Do not say only «open the catalog» without a path.",
+    "",
+    ...rows
+      .slice(0, 45)
+      .map((r) => `- **${r.title}** → \`${r.path}\``),
+  ];
+  return lines.join("\n");
 }

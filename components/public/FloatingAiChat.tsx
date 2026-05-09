@@ -3,6 +3,11 @@
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ChatMessageContent } from "@/components/public/ChatMessageContent";
+import {
+  getChatQuickRepliesForContext,
+  presetCanonicalMessage,
+  type ChatPresetId,
+} from "@/lib/constants/chatPresets";
 
 export type FloatingAiChatAudience = "wholesale" | "retail";
 
@@ -17,8 +22,7 @@ const MAX_STORED_MESSAGES = 4;
 const MAX_INPUT = 300;
 
 /** نص مختصر لزر الفقاعة (title / aria) */
-const FAB_ASSISTANT_HINT_AR =
-  "مساعد ذكي للأسئلة عن الكتالوج وملفات الأسعار";
+const FAB_ASSISTANT_HINT_AR = "مساعد الكتالوج — أسعار وملفات وتواصل";
 
 const GREETING_SHOW_DELAY_MS = 550;
 
@@ -28,22 +32,22 @@ function fabGreetingBullets(
 ): string[] {
   if (activeCardId) {
     return [
-      "تلخيص أو أسئلة عن النص المستخرج من ملف الـ PDF المفتوح",
-      "البحث عن منتجات وملفات أسعار تانية في الكتالوج",
-      "مساعدتك في فهم المحتوى والتنقّل بين الملفات",
+      "أسئلة عن النص المستخرج من ملف الـ PDF المفتوح (مقتطف، مش الملف كامل)",
+      "اختصارات سريعة تحت مربع الكتابة (رابط القائمة، مقتطف، واتساب)",
+      "التنقّل: افتح معاينة الـ PDF في الصفحة للتفاصيل الكاملة",
     ];
   }
   if (activeFolderId) {
     return [
-      "ذكر عناوين قوائم الأسعار الظاهرة في المجلد الحالي",
-      "البحث في الكتالوج وملفات PDF حسب سؤالك",
-      "الإجابة عن أسئلة عامة عن المحتوى والتنقّل",
+      "قائمة بملفات المجلد من الاختصارات أو اكتب سؤالك",
+      "البحث في الكتالوج حسب سؤالك (مقتطفات من ملفات متعددة)",
+      "أسئلة التواصل والمساعدة السريعة",
     ];
   }
   return [
     "البحث عن منتج أو ملف أسعار داخل الكتالوج",
-    "قراءة مقتطفات من نصوص PDF تلقائياً حسب سؤالك",
-    "شرح التنقّل والإجابة عن أسئلة عن المحتوى",
+    "مقتطفات تلقائية من نصوص PDF حسب سؤالك",
+    "شرح التنقّل والتواصل عبر واتساب",
   ];
 }
 
@@ -155,76 +159,93 @@ export function FloatingAiChat({ audience }: { audience: FloatingAiChatAudience 
     setMessages((prev) => (prev.at(-1)?.role === "user" ? prev.slice(0, -1) : prev));
   }, []);
 
-  const send = useCallback(async () => {
-    const text = input.trim();
-    if (!text || loading) return;
-    if (text.length > MAX_INPUT) return;
+  const sendMessage = useCallback(
+    async (text: string, presetId?: ChatPresetId) => {
+      const trimmed = text.trim();
+      if (!trimmed || loading) return;
+      if (trimmed.length > MAX_INPUT) return;
 
-    setError(null);
-    setInput("");
-    const history = messages.slice(-MAX_STORED_MESSAGES);
-    setLoading(true);
-    setMessages((prev) =>
-      [...prev, { role: "user" as const, content: text }].slice(-MAX_STORED_MESSAGES),
-    );
-
-    try {
-      const res = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          message: text,
-          history,
-          audience,
-          ...(activeCardId ? { cardId: activeCardId } : {}),
-          ...(activeFolderId && !activeCardId ? { folderId: activeFolderId } : {}),
-        }),
-      });
-
-      let payload: { reply?: string; error?: string; code?: string; message?: string };
-      try {
-        payload = (await res.json()) as typeof payload;
-      } catch {
-        setError("حصل خطأ. حاول مرة تانية.");
-        popLastUser();
-        return;
-      }
-
-      if (!res.ok) {
-        const msg =
-          typeof payload.message === "string" && payload.message.trim()
-            ? payload.message
-            : res.status === 429
-              ? payload.error === "quota" || payload.code === "quota"
-                ? "الخدمة وصلت لحد الاستخدام. جرّب تاني لاحقاً."
-                : "وصلت للحد المسموح من الرسائل. جرّب بعد ساعة."
-              : res.status === 504
-                ? "الطلب استغرق وقت طويل. حاول مرة تانية."
-                : "حصل خطأ. حاول مرة تانية.";
-        setError(msg);
-        popLastUser();
-        return;
-      }
-
-      const reply = typeof payload.reply === "string" ? payload.reply.trim() : "";
-      if (!reply) {
-        setError("مفيش رد من المساعد. حاول تاني.");
-        popLastUser();
-        return;
-      }
-
+      setError(null);
+      setInput("");
+      const history = messages.slice(-MAX_STORED_MESSAGES);
+      setLoading(true);
       setMessages((prev) =>
-        [...prev, { role: "assistant" as const, content: reply }].slice(
-          -MAX_STORED_MESSAGES,
-        ),
+        [...prev, { role: "user" as const, content: trimmed }].slice(-MAX_STORED_MESSAGES),
       );
-    } catch {
-      setError("حصل خطأ في الاتصال. حاول مرة تانية.");
-      popLastUser();
-    } finally {
-      setLoading(false);
-    }
-  }, [activeCardId, activeFolderId, audience, input, loading, messages, popLastUser]);
+
+      try {
+        const res = await fetch("/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            message: trimmed,
+            ...(presetId ? { presetId } : {}),
+            history,
+            audience,
+            ...(activeCardId ? { cardId: activeCardId } : {}),
+            ...(activeFolderId && !activeCardId ? { folderId: activeFolderId } : {}),
+          }),
+        });
+
+        let payload: { reply?: string; error?: string; code?: string; message?: string };
+        try {
+          payload = (await res.json()) as typeof payload;
+        } catch {
+          setError("حصل خطأ. حاول مرة تانية.");
+          popLastUser();
+          return;
+        }
+
+        if (!res.ok) {
+          const msg =
+            typeof payload.message === "string" && payload.message.trim()
+              ? payload.message
+              : res.status === 429
+                ? payload.error === "quota" || payload.code === "quota"
+                  ? "الخدمة وصلت لحد الاستخدام. جرّب تاني لاحقاً."
+                  : "وصلت للحد المسموح من الرسائل. جرّب بعد ساعة."
+                : res.status === 504
+                  ? "الطلب استغرق وقت طويل. حاول مرة تانية."
+                  : "حصل خطأ. حاول مرة تانية.";
+          setError(msg);
+          popLastUser();
+          return;
+        }
+
+        const reply = typeof payload.reply === "string" ? payload.reply.trim() : "";
+        if (!reply) {
+          setError("مفيش رد من المساعد. حاول تاني.");
+          popLastUser();
+          return;
+        }
+
+        setMessages((prev) =>
+          [...prev, { role: "assistant" as const, content: reply }].slice(
+            -MAX_STORED_MESSAGES,
+          ),
+        );
+      } catch {
+        setError("حصل خطأ في الاتصال. حاول مرة تانية.");
+        popLastUser();
+      } finally {
+        setLoading(false);
+      }
+    },
+    [activeCardId, activeFolderId, audience, loading, messages, popLastUser],
+  );
+
+  const send = useCallback(async () => {
+    await sendMessage(input.trim());
+  }, [input, sendMessage]);
+
+  const quickReplies = useMemo(
+    () =>
+      getChatQuickRepliesForContext({
+        hasOpenFile: !!activeCardId,
+        hasOpenFolder: !!activeFolderId && !activeCardId,
+      }),
+    [activeCardId, activeFolderId],
+  );
 
   const fabBullets = useMemo(
     () => fabGreetingBullets(activeCardId, activeFolderId),
@@ -238,7 +259,7 @@ export function FloatingAiChat({ audience }: { audience: FloatingAiChatAudience 
         {activeCardId ? (
           <>
             {" "}
-            أنت جوّا <strong>ملف PDF</strong>؛ نقدر نلخّص من النص المستخرج (مش الملف كامل).
+            أنت جوّا <strong>ملف PDF</strong>؛ نقدر نطلع مقتطف من النص المستخرج (مش الملف كامل).
           </>
         ) : activeFolderId ? (
           <>
@@ -366,6 +387,23 @@ export function FloatingAiChat({ audience }: { audience: FloatingAiChatAudience 
           </div>
 
           <footer className="min-h-0 shrink-0 border-t border-border p-2">
+            {quickReplies.length > 0 ? (
+              <div className="mb-2 flex flex-wrap gap-1.5" dir="rtl">
+                {quickReplies.map((q) => (
+                  <button
+                    key={q.presetId}
+                    type="button"
+                    disabled={loading}
+                    onClick={() =>
+                      void sendMessage(presetCanonicalMessage(q.presetId), q.presetId)
+                    }
+                    className="rounded-full border border-border bg-surface px-2.5 py-1 text-[11px] font-medium text-foreground hover:bg-primary/10 disabled:opacity-40"
+                  >
+                    {q.label}
+                  </button>
+                ))}
+              </div>
+            ) : null}
             <div className="flex gap-2">
               <input
                 type="text"
@@ -377,7 +415,7 @@ export function FloatingAiChat({ audience }: { audience: FloatingAiChatAudience 
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.shiftKey) {
                     e.preventDefault();
-                    void send();
+                    void sendMessage(input.trim());
                   }
                 }}
                 placeholder="اكتب سؤالك…"

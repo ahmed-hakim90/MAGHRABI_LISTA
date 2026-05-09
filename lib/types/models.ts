@@ -45,6 +45,13 @@ export type FileFolder = {
   updatedBy: string;
 };
 
+/** Public site WhatsApp destinations; `phoneDigits` is wa.me format (digits only, no +). */
+export type WhatsAppContact = {
+  id: string;
+  displayName: string;
+  phoneDigits: string;
+};
+
 export type SiteSettings = {
   appName: string;
   logoUrl: string;
@@ -52,6 +59,7 @@ export type SiteSettings = {
   homeTitle: string;
   homeSubtitle: string;
   primaryColor: string;
+  whatsappContacts: WhatsAppContact[];
   updatedAt: Timestamp | null;
 };
 

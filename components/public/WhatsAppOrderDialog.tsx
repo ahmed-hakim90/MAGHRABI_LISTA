@@ -2,10 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useActiveFileCardsWhen } from "@/hooks/useFileCards";
-import {
-  PUBLIC_WHATSAPP_ORDER_PREFILL,
-  PUBLIC_WHATSAPP_WA_ME_NUMBER,
-} from "@/lib/constants/publicWhatsApp";
+import { usePublicSiteSettings } from "@/hooks/usePublicSiteSettings";
+import { PUBLIC_WHATSAPP_ORDER_PREFILL } from "@/lib/constants/publicWhatsApp";
 import type { FileCard } from "@/lib/types/models";
 import { matchesFileCardSearch } from "@/lib/utils/fileCardSearch";
 
@@ -25,18 +23,35 @@ function cardMatchesQuery(q: string, card: FileCard) {
 
 export function WhatsAppOrderDialog({ open, onClose }: Props) {
   const panelRef = useRef<HTMLDivElement>(null);
+  const site = usePublicSiteSettings();
+  const whatsappContacts = site.whatsappContacts;
   const [message, setMessage] = useState(PUBLIC_WHATSAPP_ORDER_PREFILL);
   const [selectedId, setSelectedId] = useState("");
+  const [selectedWhatsappId, setSelectedWhatsappId] = useState("");
   const [fileQuery, setFileQuery] = useState("");
+  const wasOpenRef = useRef(false);
 
   const { cards, loading, error } = useActiveFileCardsWhen(open);
 
   useEffect(() => {
-    if (!open) return;
-    setMessage(PUBLIC_WHATSAPP_ORDER_PREFILL);
-    setSelectedId("");
-    setFileQuery("");
-  }, [open]);
+    if (!open) {
+      wasOpenRef.current = false;
+      return;
+    }
+    const isNewOpen = !wasOpenRef.current;
+    wasOpenRef.current = true;
+    if (isNewOpen) {
+      setMessage(PUBLIC_WHATSAPP_ORDER_PREFILL);
+      setSelectedId("");
+      setFileQuery("");
+    }
+    setSelectedWhatsappId((cur) => {
+      if (whatsappContacts.length === 0) return "";
+      if (isNewOpen) return whatsappContacts[0]!.id;
+      if (cur && whatsappContacts.some((c) => c.id === cur)) return cur;
+      return whatsappContacts[0]!.id;
+    });
+  }, [open, whatsappContacts]);
 
   useEffect(() => {
     if (!open) return;
@@ -78,6 +93,11 @@ export function WhatsAppOrderDialog({ open, onClose }: Props) {
 
   const selected = selectedId ? cards.find((c) => c.id === selectedId) : undefined;
 
+  const selectedWhatsapp = useMemo(() => {
+    const byId = whatsappContacts.find((c) => c.id === selectedWhatsappId);
+    return byId ?? whatsappContacts[0];
+  }, [whatsappContacts, selectedWhatsappId]);
+
   const finalMessage = useMemo(() => {
     const base = message.trimEnd();
     if (!selected) return base;
@@ -86,8 +106,9 @@ export function WhatsAppOrderDialog({ open, onClose }: Props) {
   }, [message, selected]);
 
   const openWhatsApp = () => {
+    if (!selectedWhatsapp?.phoneDigits) return;
     const text = finalMessage.trim() || "—";
-    const url = `https://wa.me/${PUBLIC_WHATSAPP_WA_ME_NUMBER}?text=${encodeURIComponent(text)}`;
+    const url = `https://wa.me/${selectedWhatsapp.phoneDigits}?text=${encodeURIComponent(text)}`;
     window.open(url, "_blank", "noopener,noreferrer");
     onClose();
   };
@@ -124,6 +145,37 @@ export function WhatsAppOrderDialog({ open, onClose }: Props) {
         </div>
 
         <div className="max-h-[min(70dvh,32rem)] space-y-4 overflow-y-auto px-5 py-4">
+          {whatsappContacts.length > 1 ? (
+            <div className="space-y-1.5">
+              <label
+                htmlFor="whatsapp-dest"
+                className="text-sm font-medium text-[#2F3437]"
+              >
+                جهة التواصل
+              </label>
+              <select
+                id="whatsapp-dest"
+                value={
+                  selectedWhatsappId || whatsappContacts[0]?.id || ""
+                }
+                onChange={(e) => setSelectedWhatsappId(e.target.value)}
+                className="w-full rounded-xl border border-[#E5E2DA] bg-white px-3 py-2.5 text-sm text-[#2F3437] outline-none focus:border-[#2F3437]/40 focus:ring-2 focus:ring-[#2F3437]/20"
+                aria-label="اختر جهة واتساب"
+              >
+                {whatsappContacts.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.displayName}
+                  </option>
+                ))}
+              </select>
+            </div>
+          ) : selectedWhatsapp ? (
+            <p className="rounded-xl border border-[#E5E2DA] bg-white/80 px-3 py-2 text-sm text-[#6B6B6B]">
+              <span className="font-medium text-[#2F3437]">التواصل مع: </span>
+              {selectedWhatsapp.displayName}
+            </p>
+          ) : null}
+
           <div className="space-y-1.5">
             <label htmlFor="whatsapp-msg" className="text-sm font-medium text-[#2F3437]">
               نص الرسالة
@@ -192,7 +244,8 @@ export function WhatsAppOrderDialog({ open, onClose }: Props) {
           <button
             type="button"
             onClick={() => openWhatsApp()}
-            className="w-full rounded-xl bg-[#25D366] px-4 py-3.5 text-base font-semibold text-white transition hover:bg-[#20BD5A] active:scale-[0.99]"
+            disabled={!selectedWhatsapp?.phoneDigits}
+            className="w-full rounded-xl bg-[#25D366] px-4 py-3.5 text-base font-semibold text-white transition hover:bg-[#20BD5A] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50"
           >
             متابعة إلى واتساب
           </button>

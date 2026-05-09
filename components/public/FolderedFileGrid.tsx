@@ -5,7 +5,10 @@ import {
   CatalogFileListHeader,
   catalogListContainerClass,
 } from "./CatalogFileListHeader";
-import { CATALOG_GRID_CLASS } from "./catalogLayout";
+import {
+  CATALOG_GRID_CLASS,
+  CATALOG_GRID_PRIORITY_COUNT,
+} from "./catalogLayout";
 import type { CatalogViewMode } from "./CatalogViewToggle";
 import { FileCard } from "./FileCard";
 import { FileGrid } from "./FileGrid";
@@ -40,8 +43,13 @@ function CardGrid({
   }
   return (
     <div className={CATALOG_GRID_CLASS}>
-      {cards.map((c) => (
-        <FileCard key={c.id} card={c} variant="grid" />
+      {cards.map((c, index) => (
+        <FileCard
+          key={c.id}
+          card={c}
+          variant="grid"
+          imagePriority={index < CATALOG_GRID_PRIORITY_COUNT}
+        />
       ))}
     </div>
   );

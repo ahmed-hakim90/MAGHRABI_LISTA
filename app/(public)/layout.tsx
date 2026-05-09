@@ -1,4 +1,5 @@
 import { NotificationPromptModal } from "@/components/public/NotificationPromptModal";
+import { PublicSiteFooterGate } from "@/components/public/SiteFooter";
 import { PwaInstallModal } from "@/components/public/PwaInstallModal";
 import { WhatsAppFloatingButton } from "@/components/public/WhatsAppFloatingButton";
 
@@ -13,6 +14,7 @@ export default function PublicGroupLayout({
       <PwaInstallModal />
       <WhatsAppFloatingButton />
       {children}
+      <PublicSiteFooterGate />
     </div>
   );
 }

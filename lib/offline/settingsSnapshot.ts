@@ -2,6 +2,7 @@
 
 import { Timestamp } from "firebase/firestore";
 import type { SiteSettings } from "@/lib/types/models";
+import { resolvedWhatsappContactsForSite } from "@/lib/utils/siteWhatsappContacts";
 
 export const SETTINGS_SNAPSHOT_STORAGE_KEY = "maghrabi-settings-v1";
 
@@ -30,8 +31,12 @@ function toWire(s: SiteSettings): WireSettings {
 }
 
 function fromWire(w: WireSettings): SiteSettings {
-  const { updatedAtMs, ...rest } = w;
-  return { ...rest, updatedAt: msToTs(updatedAtMs) };
+  const { updatedAtMs, whatsappContacts, ...rest } = w;
+  return {
+    ...rest,
+    whatsappContacts: resolvedWhatsappContactsForSite(whatsappContacts),
+    updatedAt: msToTs(updatedAtMs),
+  };
 }
 
 export function readSettingsSnapshot(): SiteSettings | null {

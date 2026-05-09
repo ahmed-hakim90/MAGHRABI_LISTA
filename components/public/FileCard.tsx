@@ -13,7 +13,12 @@ import {
 import type { CatalogViewMode } from "./CatalogViewToggle";
 import { PdfFirstPagePreview } from "./PdfFirstPagePreview";
 
-type Props = { card: FileCardType; variant?: CatalogViewMode };
+type Props = {
+  card: FileCardType;
+  variant?: CatalogViewMode;
+  /** When true, thumbnail loads with high priority (first visible grid cells). */
+  imagePriority?: boolean;
+};
 
 function hasThumbnail(card: FileCardType): boolean {
   return Boolean(card.thumbnailUrl?.trim());
@@ -29,7 +34,11 @@ const badgeUpdated =
 const badgePdf =
   "rounded-md bg-[#dc2626] px-1.5 py-0.5 text-[9px] font-bold text-white shadow-sm sm:text-[10px]";
 
-export function FileCard({ card, variant = "grid" }: Props) {
+export function FileCard({
+  card,
+  variant = "grid",
+  imagePriority = false,
+}: Props) {
   const isList = variant === "list";
   /** Open in new tab: native browser PDF (full document on mobile). */
   const openPdfHref = `/file/${card.id}/pdf`;
@@ -76,6 +85,7 @@ export function FileCard({ card, variant = "grid" }: Props) {
                 fill
                 className="object-cover"
                 unoptimized
+                priority={imagePriority}
               />
             ) : (
               <PdfFirstPagePreview cardId={card.id} />
@@ -123,6 +133,7 @@ export function FileCard({ card, variant = "grid" }: Props) {
               className="object-contain transition duration-300 [@media(hover:hover)]:group-hover/card:scale-[1.02]"
               sizes="(max-width: 359px) 92vw, (max-width: 768px) 30vw, 20vw"
               unoptimized
+              priority={imagePriority}
             />
           ) : (
             <PdfFirstPagePreview cardId={card.id} />

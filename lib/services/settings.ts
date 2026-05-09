@@ -9,9 +9,13 @@ import {
   DEFAULT_SITE_HOME_TITLE,
   DEFAULT_SITE_PRIMARY_COLOR,
 } from "@/lib/constants/siteDefaults";
-import type { SiteSettings } from "@/lib/types/models";
+import type { SiteSettings, WhatsAppContact } from "@/lib/types/models";
 import { STORAGE_FOLDER } from "@/lib/utils/storagePaths";
 import { fileToWebpBlob } from "@/lib/utils/imageWebp";
+import {
+  normalizeWhatsappContactsForSave,
+  resolvedWhatsappContactsForSite,
+} from "@/lib/utils/siteWhatsappContacts";
 
 const SITE_DOC = "site";
 
@@ -19,6 +23,9 @@ function fromData(data: Record<string, unknown>): SiteSettings {
   const appName = String(data.appName ?? "").trim() || DEFAULT_SITE_APP_NAME;
   const homeTitle =
     String(data.homeTitle ?? "").trim() || DEFAULT_SITE_HOME_TITLE;
+  const whatsappContacts = resolvedWhatsappContactsForSite(
+    data.whatsappContacts,
+  );
   return {
     appName,
     logoUrl: String(data.logoUrl ?? ""),
@@ -26,6 +33,7 @@ function fromData(data: Record<string, unknown>): SiteSettings {
     homeTitle,
     homeSubtitle: String(data.homeSubtitle ?? ""),
     primaryColor: String(data.primaryColor ?? DEFAULT_SITE_PRIMARY_COLOR),
+    whatsappContacts,
     updatedAt: (data.updatedAt as SiteSettings["updatedAt"]) ?? null,
   };
 }
@@ -45,6 +53,7 @@ export async function updateSiteSettings(
     homeTitle: string;
     homeSubtitle: string;
     primaryColor: string;
+    whatsappContacts: WhatsAppContact[];
     logoFile?: File | null;
   },
   previous: SiteSettings,
@@ -56,6 +65,10 @@ export async function updateSiteSettings(
   let logoPath = previous.logoPath;
 
   // Persist text fields first so a logo Storage failure does not block saving copy/colors.
+  const whatsappContacts = normalizeWhatsappContactsForSave(
+    input.whatsappContacts,
+  );
+
   await setDoc(
     doc(db, "settings", SITE_DOC),
     {
@@ -63,6 +76,7 @@ export async function updateSiteSettings(
       homeTitle: input.homeTitle.trim(),
       homeSubtitle: input.homeSubtitle.trim(),
       primaryColor: input.primaryColor.trim(),
+      whatsappContacts,
       logoUrl,
       logoPath,
       updatedAt: serverTimestamp(),

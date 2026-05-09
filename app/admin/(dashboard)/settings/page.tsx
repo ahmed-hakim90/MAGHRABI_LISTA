@@ -7,7 +7,7 @@ import {
   updateSiteSettings,
 } from "@/lib/services/settings";
 import { ProgressBar } from "@/components/ui/ProgressBar";
-import type { SiteSettings } from "@/lib/types/models";
+import type { SiteSettings, WhatsAppContact } from "@/lib/types/models";
 import { DEFAULT_SITE_PRIMARY_COLOR } from "@/lib/constants/siteDefaults";
 
 export default function AdminSettingsPage() {
@@ -17,6 +17,7 @@ export default function AdminSettingsPage() {
   const [homeSubtitle, setHomeSubtitle] = useState("");
   const [primaryColor, setPrimaryColor] = useState(DEFAULT_SITE_PRIMARY_COLOR);
   const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [whatsappRows, setWhatsappRows] = useState<WhatsAppContact[]>([]);
   const [msg, setMsg] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
@@ -28,6 +29,7 @@ export default function AdminSettingsPage() {
       setHomeTitle(s.homeTitle);
       setHomeSubtitle(s.homeSubtitle);
       setPrimaryColor(s.primaryColor || DEFAULT_SITE_PRIMARY_COLOR);
+      setWhatsappRows(s.whatsappContacts);
     });
   }, []);
 
@@ -44,6 +46,7 @@ export default function AdminSettingsPage() {
           homeTitle,
           homeSubtitle,
           primaryColor,
+          whatsappContacts: whatsappRows,
           logoFile,
         },
         initial,
@@ -53,6 +56,7 @@ export default function AdminSettingsPage() {
       );
       const next = await getSiteSettings();
       setInitial(next);
+      setWhatsappRows(next.whatsappContacts);
       setLogoFile(null);
       setMsg("تم الحفظ.");
     } catch (err) {
@@ -68,7 +72,7 @@ export default function AdminSettingsPage() {
   }
 
   return (
-    <div className="mx-auto max-w-lg space-y-4">
+    <div className="mx-auto max-w-2xl space-y-4">
       <h1 className="text-xl font-semibold text-foreground">إعدادات الموقع</h1>
       <form
         onSubmit={(e) => void onSubmit(e)}
@@ -123,6 +127,91 @@ export default function AdminSettingsPage() {
             onChange={(e) => setPrimaryColor(e.target.value)}
           />
         </label>
+
+        <div className="space-y-3 rounded-xl border border-border bg-muted/30 p-4">
+          <div>
+            <span className="text-sm font-medium text-foreground">
+              أرقام واتساب
+            </span>
+            <p className="mt-1 text-xs text-muted">
+              اسم يظهر للزائر عند اختيار الجهة. الرقم بصيغة دولية بدون + (مثال مصر:
+              20 ثم الرقم كما في wa.me).
+            </p>
+          </div>
+          <ul className="space-y-3">
+            {whatsappRows.map((row, index) => (
+              <li
+                key={row.id}
+                className="flex flex-col gap-2 rounded-xl border border-border bg-card p-3 sm:flex-row sm:items-end"
+              >
+                <label className="block flex-1">
+                  <span className="text-xs font-medium text-muted">
+                    الاسم المعروض
+                  </span>
+                  <input
+                    className="mt-1 w-full rounded-lg border border-border px-3 py-2 text-sm"
+                    value={row.displayName}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      setWhatsappRows((prev) =>
+                        prev.map((r, i) =>
+                          i === index ? { ...r, displayName: v } : r,
+                        ),
+                      );
+                    }}
+                    placeholder="مثال: مبيعات القاهرة"
+                  />
+                </label>
+                <label className="block flex-1">
+                  <span className="text-xs font-medium text-muted">الرقم</span>
+                  <input
+                    className="mt-1 w-full rounded-lg border border-border px-3 py-2 text-sm"
+                    dir="ltr"
+                    value={row.phoneDigits}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      setWhatsappRows((prev) =>
+                        prev.map((r, i) =>
+                          i === index ? { ...r, phoneDigits: v } : r,
+                        ),
+                      );
+                    }}
+                    placeholder="2010xxxxxxxx"
+                  />
+                </label>
+                <button
+                  type="button"
+                  className="shrink-0 rounded-lg border border-border px-3 py-2 text-sm text-destructive hover:bg-destructive/10"
+                  onClick={() =>
+                    setWhatsappRows((prev) => prev.filter((_, i) => i !== index))
+                  }
+                >
+                  حذف
+                </button>
+              </li>
+            ))}
+          </ul>
+          <button
+            type="button"
+            className="rounded-lg border border-dashed border-border px-3 py-2 text-sm font-medium text-foreground hover:bg-muted/50"
+            onClick={() =>
+              setWhatsappRows((prev) => [
+                ...prev,
+                {
+                  id:
+                    typeof crypto !== "undefined" && crypto.randomUUID
+                      ? crypto.randomUUID()
+                      : `wa-${Date.now()}`,
+                  displayName: "",
+                  phoneDigits: "",
+                },
+              ])
+            }
+          >
+            + إضافة رقم
+          </button>
+        </div>
+
         <div>
           <span className="text-sm font-medium text-foreground">الشعار</span>
           {initial.logoUrl ? (

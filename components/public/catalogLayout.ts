@@ -4,3 +4,6 @@
  */
 export const CATALOG_GRID_CLASS =
   "grid w-full max-w-full grid-cols-3 gap-2 max-[359px]:grid-cols-1 md:grid-cols-4 md:gap-3 xl:grid-cols-5 xl:gap-4 [&>*]:min-w-0";
+
+/** First N grid tiles get `next/image` priority (LCP) — covers xl first row (5 cols) plus one. */
+export const CATALOG_GRID_PRIORITY_COUNT = 6;

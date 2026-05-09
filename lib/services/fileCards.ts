@@ -302,6 +302,32 @@ export async function replaceFileCardPdf(
   on?.(1);
 }
 
+/** Clears custom thumbnail; public catalog falls back to PDF preview / placeholder. */
+export async function removeFileCardThumbnail(
+  cardId: string,
+  uid: string,
+): Promise<void> {
+  const db = getClientFirestore();
+  const st = getClientStorage();
+  const snap = await getDoc(doc(db, "fileCards", cardId));
+  if (!snap.exists()) return;
+  const data = snap.data() as Record<string, unknown>;
+  const tp = String(data.thumbnailPath ?? "");
+  if (tp) {
+    try {
+      await deleteObject(ref(st, tp));
+    } catch {
+      /* ignore */
+    }
+  }
+  await updateDoc(doc(db, "fileCards", cardId), {
+    thumbnailUrl: "",
+    thumbnailPath: "",
+    updatedAt: serverTimestamp(),
+    updatedBy: uid,
+  });
+}
+
 export async function replaceFileCardThumbnail(
   cardId: string,
   thumbnailFile: File,

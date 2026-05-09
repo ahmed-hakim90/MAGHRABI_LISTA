@@ -3,8 +3,11 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import type { FileCard, FileFolder } from "@/lib/types/models";
+import Image from "next/image";
 import {
   createFileCard,
+  removeFileCardThumbnail,
+  replaceFileCardThumbnail,
   updateFileCardMeta,
 } from "@/lib/services/fileCards";
 import { listAllFileFoldersAdmin } from "@/lib/services/fileFolders";
@@ -32,6 +35,7 @@ export function FileForm({ mode, uid, initial }: Props) {
   const [folders, setFolders] = useState<FileFolder[]>([]);
   const [pdf, setPdf] = useState<File | null>(null);
   const [thumb, setThumb] = useState<File | null>(null);
+  const [removeThumb, setRemoveThumb] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
@@ -76,7 +80,11 @@ export function FileForm({ mode, uid, initial }: Props) {
       return;
     }
     setSaving(true);
-    setUploadProgress(mode === "create" ? 0 : null);
+    setUploadProgress(
+      mode === "create" || (mode === "edit" && thumb && !removeThumb)
+        ? 0
+        : null,
+    );
     try {
       const folderFields = resolveFolderFields();
       if (mode === "create") {
@@ -108,6 +116,13 @@ export function FileForm({ mode, uid, initial }: Props) {
         return;
       }
       if (!initial) return;
+      if (removeThumb) {
+        await removeFileCardThumbnail(initial.id, uid);
+      } else if (thumb) {
+        await replaceFileCardThumbnail(initial.id, thumb, uid, {
+          onProgress: (p) => setUploadProgress(p),
+        });
+      }
       await updateFileCardMeta(initial.id, {
         title,
         description,
@@ -144,7 +159,11 @@ export function FileForm({ mode, uid, initial }: Props) {
       ) : null}
       {uploadProgress !== null ? (
         <ProgressBar
-          label="جاري رفع الملفات…"
+          label={
+            mode === "create"
+              ? "جاري رفع الملفات…"
+              : "جاري رفع الصورة المصغّرة…"
+          }
           value={uploadProgress}
           className="pt-1"
         />
@@ -250,6 +269,71 @@ export function FileForm({ mode, uid, initial }: Props) {
             onFile={setThumb}
           />
         </>
+      ) : initial ? (
+        <div className="space-y-3 rounded-xl border border-border bg-surface/50 p-4">
+          <p className="text-sm font-medium text-foreground">
+            الصورة المصغّرة
+          </p>
+          {initial.thumbnailUrl?.trim() && !removeThumb ? (
+            <div className="relative h-24 w-32 overflow-hidden rounded-lg border border-border bg-card">
+              <Image
+                src={initial.thumbnailUrl}
+                alt=""
+                fill
+                className="object-cover"
+                unoptimized
+              />
+            </div>
+          ) : (
+            <p className="text-xs text-muted">
+              لا توجد صورة مخصّصة — يُعرض معاينة PDF أو أيقونة افتراضية.
+            </p>
+          )}
+          {removeThumb ? (
+            <p className="text-xs text-amber-800">
+              سيتم إزالة الصورة المخصّصة عند الحفظ.
+            </p>
+          ) : null}
+          <UploadField
+            label="تغيير الصورة المصغّرة"
+            accept="image/*"
+            file={thumb}
+            onFile={(f) => {
+              setThumb(f);
+              setRemoveThumb(false);
+            }}
+          />
+          {thumb ? (
+            <button
+              type="button"
+              onClick={() => setThumb(null)}
+              className="text-sm text-muted underline-offset-2 hover:text-foreground hover:underline"
+            >
+              إلغاء اختيار الصورة الجديدة
+            </button>
+          ) : null}
+          {initial.thumbnailUrl?.trim() && !removeThumb ? (
+            <button
+              type="button"
+              onClick={() => {
+                setThumb(null);
+                setRemoveThumb(true);
+              }}
+              className="text-sm text-red-700 underline-offset-2 hover:underline"
+            >
+              إزالة الصورة المصغّرة من التخزين
+            </button>
+          ) : null}
+          {removeThumb ? (
+            <button
+              type="button"
+              onClick={() => setRemoveThumb(false)}
+              className="text-sm text-primary underline-offset-2 hover:underline"
+            >
+              إلغاء الإزالة
+            </button>
+          ) : null}
+        </div>
       ) : null}
       <div className="flex gap-2 pt-2">
         <button

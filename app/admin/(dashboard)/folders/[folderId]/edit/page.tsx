@@ -14,12 +14,40 @@ export default function EditFolderPage({
   const { folderId } = use(params);
   const { user } = useAdminAuth();
   const [folder, setFolder] = useState<FileFolder | null | undefined>(undefined);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
-    void getFileFolder(folderId).then(setFolder);
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (cancelled) return;
+      setLoadError(null);
+      setFolder(undefined);
+      void getFileFolder(folderId)
+        .then((f) => {
+          if (!cancelled) setFolder(f);
+        })
+        .catch((e) => {
+          if (!cancelled) {
+            setLoadError(
+              e instanceof Error ? e.message : "تعذّر تحميل المجلد من Firestore.",
+            );
+            setFolder(null);
+          }
+        });
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [folderId]);
 
   if (!user) return null;
+  if (loadError) {
+    return (
+      <p className="text-red-800" role="alert">
+        {loadError}
+      </p>
+    );
+  }
   if (folder === undefined) {
     return <p className="text-muted">جاري التحميل…</p>;
   }

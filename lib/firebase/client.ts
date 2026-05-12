@@ -44,7 +44,7 @@ export async function syncAuthTokenForFirestore(): Promise<void> {
   const a = getClientAuth();
   await a.authStateReady();
   const u = a.currentUser;
-  if (u) await u.getIdToken();
+  if (u) await u.getIdToken(true);
 }
 
 export function getClientFirestore(): Firestore {

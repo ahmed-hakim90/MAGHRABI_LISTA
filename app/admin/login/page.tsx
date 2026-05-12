@@ -35,6 +35,36 @@ function AdminLoginForm() {
         setBusy(false);
         return;
       }
+
+      const idToken = await user.getIdToken();
+      try {
+        const res = await fetch("/api/admin/ensure-admin-claims", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${idToken}` },
+        });
+        if (res.status === 403) {
+          setError("ليس لديك صلاحية كمسؤول نشط.");
+          const { signOutAdmin } = await import("@/lib/firebase/auth");
+          await signOutAdmin();
+          setBusy(false);
+          return;
+        }
+      } catch {
+        /* إن فشل الطلب نُكمل ونتحقق من الـ claims بعد تحديث الرمز */
+      }
+
+      await user.getIdToken(true);
+      const tokenResult = await user.getIdTokenResult(true);
+      if (tokenResult.claims.admin !== true) {
+        setError(
+          "تعذّر تفعيل صلاحية المسؤول في الرمز. تحقق من إعداد الخادم (Firebase Admin) وقواعد Firestore المنشورة.",
+        );
+        const { signOutAdmin } = await import("@/lib/firebase/auth");
+        await signOutAdmin();
+        setBusy(false);
+        return;
+      }
+
       router.replace("/admin");
       router.refresh();
     } catch {

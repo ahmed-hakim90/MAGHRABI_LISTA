@@ -36,9 +36,11 @@ export default function AdminNotificationsPage() {
   const [cards, setCards] = useState<FileCard[]>([]);
   const [rows, setRows] = useState<(NotificationDoc & { id: string })[]>([]);
   const [msg, setMsg] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   const load = useCallback(async () => {
+    setLoadError(null);
     const [n, c] = await Promise.all([
       listNotifications(),
       listAllFileCardsAdmin(),
@@ -51,7 +53,18 @@ export default function AdminNotificationsPage() {
     let cancelled = false;
     (async () => {
       await Promise.resolve();
-      if (!cancelled) await load();
+      if (cancelled) return;
+      try {
+        await load();
+      } catch (e) {
+        if (!cancelled) {
+          setLoadError(
+            e instanceof Error ? e.message : "تعذّر تحميل البيانات من Firestore.",
+          );
+          setRows([]);
+          setCards([]);
+        }
+      }
     })();
     return () => {
       cancelled = true;
@@ -96,6 +109,11 @@ export default function AdminNotificationsPage() {
         <p className="mt-1 text-sm text-muted">
           إشعارات دفع لزوار تطبيق الويب المشتركين (FCM).
         </p>
+        {loadError ? (
+          <p className="mt-2 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-800" role="alert">
+            {loadError}
+          </p>
+        ) : null}
       </div>
 
       <form

@@ -31,7 +31,7 @@ export function FileForm({ mode, uid, initial, idTokenGetter }: Props) {
   const [description, setDescription] = useState(initial?.description ?? "");
   const [category, setCategory] = useState(initial?.category ?? "");
   const [tagsRaw, setTagsRaw] = useState((initial?.tags ?? []).join(", "));
-  const [order, setOrder] = useState(String(initial?.order ?? 0));
+  const [order, setOrder] = useState(String(initial?.order ?? 9999));
   const [productCountStr, setProductCountStr] = useState(
     initial?.productCount != null ? String(initial.productCount) : "",
   );
@@ -311,6 +311,7 @@ export function FileForm({ mode, uid, initial, idTokenGetter }: Props) {
           value={order}
           onChange={(e) => setOrder(e.target.value)}
         />
+        <p className="mt-1 text-xs text-muted">الرقم الأصغر يظهر أعلى الصفحة — مثلًا: ١ يظهر قبل ٢</p>
       </label>
       <label className="flex items-center gap-2">
         <input

@@ -18,7 +18,7 @@ export function FolderForm({ mode, uid, initial }: Props) {
   const router = useRouter();
   const [name, setName] = useState(initial?.name ?? "");
   const [description, setDescription] = useState(initial?.description ?? "");
-  const [order, setOrder] = useState(String(initial?.order ?? 0));
+  const [order, setOrder] = useState(String(initial?.order ?? 9999));
   const [isActive, setIsActive] = useState(initial?.isActive ?? true);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -97,6 +97,7 @@ export function FolderForm({ mode, uid, initial }: Props) {
           value={order}
           onChange={(e) => setOrder(e.target.value)}
         />
+        <p className="mt-1 text-xs text-muted">الرقم الأصغر يظهر أعلى الصفحة — مثلًا: ١ يظهر قبل ٢</p>
       </label>
       <label className="flex items-center gap-2">
         <input

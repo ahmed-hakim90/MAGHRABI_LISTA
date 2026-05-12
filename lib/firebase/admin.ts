@@ -34,9 +34,23 @@ function parseServiceAccount(): {
   return { projectId, clientEmail, privateKey };
 }
 
+let didWarnProjectMismatch = false;
+
+/** Warn once if client env and Admin SDK target different Firebase projects (common cause of permission-denied). */
+function warnIfFirebaseProjectMismatch(adminProjectId: string): void {
+  if (didWarnProjectMismatch) return;
+  didWarnProjectMismatch = true;
+  const pub = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID?.trim();
+  if (!pub || pub === adminProjectId) return;
+  console.warn(
+    `[firebase] NEXT_PUBLIC_FIREBASE_PROJECT_ID (${pub}) differs from Admin SDK project (${adminProjectId}). Use the same project for web config, rules deploy, and service account.`,
+  );
+}
+
 function getAdminApp(): App {
   if (getApps().length) return getApps()[0]!;
   const { projectId, clientEmail, privateKey } = parseServiceAccount();
+  warnIfFirebaseProjectMismatch(projectId);
   return initializeApp({
     credential: cert({ projectId, clientEmail, privateKey }),
   });

@@ -566,6 +566,22 @@ export async function setFileCardActive(
   });
 }
 
+export async function reorderFileCards(
+  items: { id: string; order: number }[],
+  uid: string,
+): Promise<void> {
+  const db = getClientFirestore();
+  const batch = writeBatch(db);
+  for (const { id, order } of items) {
+    batch.update(doc(db, "fileCards", id), {
+      order,
+      updatedAt: serverTimestamp(),
+      updatedBy: uid,
+    });
+  }
+  await batch.commit();
+}
+
 export async function deleteFileCard(cardId: string): Promise<void> {
   const db = getClientFirestore();
   const st = getClientStorage();

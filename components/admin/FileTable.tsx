@@ -2,11 +2,12 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { FileCard } from "@/lib/types/models";
 import {
   deleteFileCard,
   listAllFileCardsAdmin,
+  reorderFileCards,
   replaceFileCardPdf,
   replaceFileCardThumbnail,
   setFileCardActive,
@@ -27,6 +28,9 @@ export function FileTable() {
     label: string;
     progress: number;
   } | null>(null);
+  const [saving, setSaving] = useState(false);
+  const dragIndex = useRef<number | null>(null);
+  const dragOverIndex = useRef<number | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -100,6 +104,42 @@ export function FileTable() {
     await load();
   }
 
+  function onDragStart(index: number) {
+    dragIndex.current = index;
+  }
+
+  function onDragOver(e: React.DragEvent, index: number) {
+    e.preventDefault();
+    dragOverIndex.current = index;
+  }
+
+  async function onDrop() {
+    const from = dragIndex.current;
+    const to = dragOverIndex.current;
+    if (from === null || to === null || from === to) {
+      dragIndex.current = null;
+      dragOverIndex.current = null;
+      return;
+    }
+    const reordered = [...rows];
+    const [moved] = reordered.splice(from, 1);
+    reordered.splice(to, 0, moved);
+    const withOrder = reordered.map((c, i) => ({ ...c, order: i }));
+    setRows(withOrder);
+    dragIndex.current = null;
+    dragOverIndex.current = null;
+    if (!user) return;
+    setSaving(true);
+    try {
+      await reorderFileCards(
+        withOrder.map((c) => ({ id: c.id, order: c.order })),
+        user.uid,
+      );
+    } finally {
+      setSaving(false);
+    }
+  }
+
   if (loading) {
     return <p className="text-muted">جاري تحميل الملفات…</p>;
   }
@@ -111,10 +151,14 @@ export function FileTable() {
           <ProgressBar label={uploadJob.label} value={uploadJob.progress} />
         </div>
       ) : null}
+      {saving ? (
+        <p className="text-xs text-muted">جاري حفظ الترتيب…</p>
+      ) : null}
       <div className="overflow-x-auto rounded-2xl border border-border bg-card shadow-sm">
         <table className="w-full min-w-[720px] text-start text-sm">
         <thead>
           <tr className="border-b border-border text-muted">
+            <th className="w-8 p-3" />
             <th className="p-3 font-medium">مصغّر</th>
             <th className="p-3 font-medium">العنوان</th>
             <th className="p-3 font-medium">المجلد</th>
@@ -126,8 +170,32 @@ export function FileTable() {
           </tr>
         </thead>
         <tbody>
-          {rows.map((card) => (
-            <tr key={card.id} className="border-b border-border/80">
+          {rows.map((card, index) => (
+            <tr
+              key={card.id}
+              className="border-b border-border/80"
+              draggable
+              onDragStart={() => onDragStart(index)}
+              onDragOver={(e) => onDragOver(e, index)}
+              onDrop={() => void onDrop()}
+            >
+              <td className="cursor-grab p-3 text-center text-muted active:cursor-grabbing">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  className="mx-auto opacity-40"
+                >
+                  <circle cx="9" cy="5" r="1.5" />
+                  <circle cx="15" cy="5" r="1.5" />
+                  <circle cx="9" cy="12" r="1.5" />
+                  <circle cx="15" cy="12" r="1.5" />
+                  <circle cx="9" cy="19" r="1.5" />
+                  <circle cx="15" cy="19" r="1.5" />
+                </svg>
+              </td>
               <td className="p-3">
                 <div className="relative h-12 w-16 overflow-hidden rounded-lg bg-surface">
                   {card.thumbnailUrl?.trim() ? (

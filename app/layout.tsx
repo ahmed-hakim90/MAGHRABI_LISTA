@@ -5,8 +5,16 @@ import { ServiceWorkerNavigateListener } from "@/components/ServiceWorkerNavigat
 import { SplashScreen } from "@/components/SplashScreen";
 import { DEFAULT_SITE_HOME_TITLE } from "@/lib/constants/siteDefaults";
 import "./globals.css";
+import { Cairo } from "next/font/google";
 
 const ibmPlexSansArabic = IBM_Plex_Sans_Arabic({
+  subsets: ["arabic", "latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-arabic",
+  display: "swap",
+});
+
+const cairoFont = Cairo({
   subsets: ["arabic", "latin"],
   weight: ["400", "500", "600", "700"],
   variable: "--font-arabic",

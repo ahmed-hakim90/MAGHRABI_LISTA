@@ -20,7 +20,11 @@ import { publicCatalogFilePdfPath } from "@/lib/constants/catalogChannels";
 import { formatDisplayDate } from "@/lib/utils/dates";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 
-export function FileTable() {
+type FileTableProps = {
+  audience?: "wholesale" | "retail" | "no_prices" | null;
+};
+
+export function FileTable({ audience }: FileTableProps) {
   const { user } = useAdminAuth();
   const [rows, setRows] = useState<FileCard[]>([]);
   const [loading, setLoading] = useState(true);
@@ -170,7 +174,11 @@ export function FileTable() {
           </tr>
         </thead>
         <tbody>
-          {rows.map((card, index) => (
+          {rows
+            .filter((card) =>
+              audience ? card.audience === audience : true
+            )
+            .map((card, index) => (
             <tr
               key={card.id}
               className="border-b border-border/80"
@@ -306,7 +314,9 @@ export function FileTable() {
           ))}
         </tbody>
         </table>
-        {rows.length === 0 ? (
+        {rows.filter((card) =>
+          audience ? card.audience === audience : true
+        ).length === 0 ? (
           <p className="p-6 text-center text-muted">لا توجد ملفات بعد.</p>
         ) : null}
       </div>

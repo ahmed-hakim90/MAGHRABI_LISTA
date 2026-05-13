@@ -170,12 +170,13 @@ export function FileCard({
           <div className="flex flex-wrap justify-end gap-1">{freshnessEl}</div>
         </div>
       </div>
-      <div className="flex flex-col gap-0.5 border-t border-border/70 px-2 py-2 sm:px-2.5 sm:py-2.5">
-        <h2 className="line-clamp-2 text-center text-[11px] font-semibold leading-snug text-foreground sm:text-xs">
+      {/* // دا كارت الفايل في وضع الشبكة، بيعرض صورة مصغرة لو متوفرة، اسم الملف، وتاريخ التحديث. كمان بيوري إذا كان الملف جديد أو محدث. */}
+      <div className="flex flex-col gap-0.5 border-t border-border/70 px-2 py-2 sm:px-2.5 sm:py-2.5 bg-blue-500">
+        <h2 className="line-clamp-2 text-center text-[18px] text-white font-semibold leading-snug text-foreground sm:text-lg">
           {card.title}
         </h2>
         {(card.category?.trim() || card.updatedAt) && (
-          <p className="line-clamp-1 text-center text-[10px] text-muted sm:text-[11px]">
+          <p className="line-clamp-1 text-center text-[10px] text-white sm:text-[11px]">
             {card.category?.trim() ? (
               <span>{card.category.trim()}</span>
             ) : null}

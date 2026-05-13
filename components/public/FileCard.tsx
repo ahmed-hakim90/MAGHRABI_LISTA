@@ -117,7 +117,7 @@ export function FileCard({
             )}
           </div>
           <div className="min-w-0 flex-1 ps-0.5">
-            <h2 className="truncate text-[13px] font-semibold text-foreground sm:text-sm">
+            <h2 className="truncate text-[11px] font-semibold text-foreground sm:text-[12px]">
               {card.title}
             </h2>
             {freshnessEl ? (
@@ -172,7 +172,7 @@ export function FileCard({
       </div>
       {/* // دا كارت الفايل في وضع الشبكة، بيعرض صورة مصغرة لو متوفرة، اسم الملف، وتاريخ التحديث. كمان بيوري إذا كان الملف جديد أو محدث. */}
       <div className="flex flex-col gap-0.5 border-t border-border/70 px-2 py-2 sm:px-2.5 sm:py-2.5 bg-blue-500">
-        <h2 className="line-clamp-2 text-center text-base text-white font-semibold leading-snug text-foreground sm:text-sm">
+        <h2 className="line-clamp-2 text-center text-xs text-white font-semibold leading-snug text-foreground sm:text-[11px]">
           {card.title}
         </h2>
         {(card.category?.trim() || card.updatedAt) && (

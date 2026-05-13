@@ -134,4 +134,7 @@ export const catalogListContainerClass =
 
 /** Shared list row shell for file and folder rows (Drive-style). */
 export const catalogListRowClass =
-  "relative flex min-h-[3.25rem] items-center gap-2 border-b border-border px-2 py-1.5 transition-colors last:border-b-0 sm:gap-3 sm:px-3 [@media(hover:hover)]:hover:bg-surface/80";
+  "relative flex min-h-[3.25rem] items-center gap-2 border-b border-border bg-blue-500/10 px-2 py-1.5 transition-colors last:border-b-0 sm:gap-3 sm:px-3 [@media(hover:hover)]:hover:bg-surface/80";
+
+const gridShell =
+  "group/card flex min-w-0 touch-manipulation  flex-col overflow-hidden rounded-xl border border-border/90 bg-blue-500 shadow-sm ...";

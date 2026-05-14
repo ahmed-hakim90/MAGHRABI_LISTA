@@ -2,7 +2,6 @@ import "server-only";
 
 import { FieldValue } from "firebase-admin/firestore";
 import type { Firestore } from "firebase-admin/firestore";
-import type { CatalogAudience } from "@/lib/constants/catalogChannels";
 import { normalizeAudienceFromDoc } from "@/lib/constants/catalogChannels";
 import { getAdminBucket, getAdminFirestore } from "@/lib/firebase/admin";
 import {
@@ -17,7 +16,12 @@ import {
 import { getChatIndexTextPathForAudience } from "@/lib/utils/storagePaths";
 
 const INDEX_CACHE_MS = 15 * 60 * 1000;
+const FULL_PDF_TEXT_CACHE_MS = 15 * 60 * 1000;
 const indexTextCache = new Map<
+  string,
+  { expires: number; text: string | null }
+>();
+const fullPdfTextCache = new Map<
   string,
   { expires: number; text: string | null }
 >();
@@ -43,8 +47,24 @@ export async function downloadCatalogIndexText(
   return text;
 }
 
+async function getFullPdfTextForUrl(fileUrl: string): Promise<string | null> {
+  const key = fileUrl.trim();
+  if (!key) return null;
+  const now = Date.now();
+  const hit = fullPdfTextCache.get(key);
+  if (hit && hit.expires > now) return hit.text;
+
+  let text: string | null = null;
+  const buf = await fetchPdfBufferFromUrl(key);
+  if (buf) {
+    text = await extractFullPdfTextFromBuffer(buf);
+  }
+  fullPdfTextCache.set(key, { expires: now + FULL_PDF_TEXT_CACHE_MS, text });
+  return text;
+}
+
 /**
- * Prefer Firestore `catalogTextPath` (full extract); else parse first pages from PDF URL (legacy).
+ * Prefer Firestore `catalogTextPath` (full extract); else parse the full PDF on demand.
  */
 export async function getCatalogPlainTextForChat(
   fileUrl: string,
@@ -56,10 +76,12 @@ export async function getCatalogPlainTextForChat(
     const full = await downloadCatalogIndexText(p);
     if (full) return full;
   }
+  const fullFromPdf = await getFullPdfTextForUrl(fileUrl);
+  if (fullFromPdf) return fullFromPdf;
   return fallbackPartialText();
 }
 
-/** Full indexed text when available; otherwise first-pages PDF excerpt (existing behavior). */
+/** Full indexed text when available; otherwise full-PDF extraction, then first-pages fallback. */
 export async function getCatalogTextForChatFromBundle(
   bundle: CatalogCardChatBundle,
 ): Promise<string | null> {

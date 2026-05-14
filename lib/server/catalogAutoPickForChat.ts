@@ -16,6 +16,8 @@ const MAX_FINAL_FILES = 6;
 const MAX_PDF_PROBE = 18;
 /** If the best metadata score reaches this, only those top files are fetched (save work). */
 const META_STRONG = 5;
+const TAG_EXACT_SCORE = 10;
+const TAG_PARTIAL_SCORE = 5;
 
 type CandidateRow = {
   cardId: string;
@@ -35,6 +37,32 @@ function scoreHaystack(haystack: string, tokens: string[]): number {
     else if (tl.length >= 3 && h.includes(tl.slice(0, 3))) s += 2;
   }
   return s;
+}
+
+function scoreTags(tags: string[], tokens: string[]): number {
+  if (tags.length === 0 || tokens.length === 0) return 0;
+  const normalizedTokens = [...new Set(tokens.map((t) => t.toLowerCase()))].filter(
+    (t) => t.length >= 2,
+  );
+  if (normalizedTokens.length === 0) return 0;
+
+  let score = 0;
+  for (const tag of tags) {
+    const tagText = tag.toLowerCase().trim();
+    if (!tagText) continue;
+    const tagWords =
+      tagText.match(/[\p{L}\p{M}0-9][\p{L}\p{M}0-9._-]*/gu) ?? [];
+    const tagWordSet = new Set(tagWords);
+
+    for (const token of normalizedTokens) {
+      if (tagText === token || tagWordSet.has(token)) {
+        score += TAG_EXACT_SCORE;
+      } else if (tagText.includes(token)) {
+        score += TAG_PARTIAL_SCORE;
+      }
+    }
+  }
+  return score;
 }
 
 function metadataHaystack(row: CandidateRow): string {
@@ -107,7 +135,7 @@ export async function loadAutoPickedCardsForChat(
 
   const metaScored = candidates.map((row) => ({
     row,
-    meta: scoreHaystack(metadataHaystack(row), tokens),
+    meta: scoreHaystack(metadataHaystack(row), tokens) + scoreTags(row.bundle.tags, tokens),
   }));
   metaScored.sort((a, b) => b.meta - a.meta || a.row.order - b.row.order);
 

@@ -11,7 +11,16 @@ import { getAdminFirestore } from "@/lib/firebase/admin";
  * When the visitor is on /{wholesale|retail}/folder/{id} (not inside a file view),
  * inject visible file titles so the model can answer «أنهي كتالوج؟» without PDF text.
  */
-export type FolderCatalogFileRow = { title: string; path: string };
+export type FolderCatalogFileRow = { title: string; path: string; tags: string[] };
+
+function tagsFromFirestore(raw: unknown): string[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .filter((tag): tag is string => typeof tag === "string")
+    .map((tag) => tag.replace(/[\r\n]+/g, " ").trim())
+    .filter(Boolean)
+    .slice(0, 8);
+}
 
 /**
  * Active file cards in a folder (for chat / folder UI). Sorted by Firestore doc order.
@@ -42,6 +51,7 @@ export async function listFolderCatalogFilesForChat(
       rows.push({
         title,
         path: publicCatalogFileViewPath(routeAudience, doc.id),
+        tags: tagsFromFirestore(data.tags),
       });
     }
     return rows;
@@ -64,7 +74,10 @@ export async function buildFolderFilesContextForChat(
     "",
     ...rows
       .slice(0, 45)
-      .map((r) => `- **${r.title}** → \`${r.path}\``),
+      .map((r) => {
+        const tags = r.tags.length > 0 ? ` — tags: ${r.tags.join(", ")}` : "";
+        return `- **${r.title}** → \`${r.path}\`${tags}`;
+      }),
   ];
   return lines.join("\n");
 }

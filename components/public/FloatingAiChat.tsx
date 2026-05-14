@@ -33,20 +33,20 @@ function fabGreetingBullets(
   if (activeCardId) {
     return [
       "أسئلة عن النص المستخرج من ملف الـ PDF المفتوح (مقتطف، مش الملف كامل)",
-      "اختصارات سريعة تحت مربع الكتابة (رابط القائمة، مقتطف، واتساب)",
+      "التاجات المرتبطة بالقائمة تساعد في فهم نوع الملف بسرعة",
       "التنقّل: افتح معاينة الـ PDF في الصفحة للتفاصيل الكاملة",
     ];
   }
   if (activeFolderId) {
     return [
       "قائمة بملفات المجلد من الاختصارات أو اكتب سؤالك",
-      "البحث في الكتالوج حسب سؤالك (مقتطفات من ملفات متعددة)",
+      "البحث يستخدم عناوين الملفات وتاجاتها لاختيار أقرب نتائج",
       "أسئلة التواصل والمساعدة السريعة",
     ];
   }
   return [
     "البحث عن منتج أو ملف أسعار داخل الكتالوج",
-    "مقتطفات تلقائية من نصوص PDF حسب سؤالك",
+    "التاجات تساعد المساعد يربط سؤالك بأقرب قائمة أسعار",
     "شرح التنقّل والتواصل عبر واتساب",
   ];
 }
@@ -101,21 +101,23 @@ export function FloatingAiChat({ audience }: { audience: FloatingAiChatAudience 
 
   useEffect(() => {
     if (open || greetingDismissed) {
-      if (open) setGreetingVisible(false);
-      return;
+      if (!open) return;
+      const t = window.setTimeout(() => setGreetingVisible(false), 0);
+      return () => window.clearTimeout(t);
     }
     const t = window.setTimeout(() => setGreetingVisible(true), GREETING_SHOW_DELAY_MS);
     return () => window.clearTimeout(t);
   }, [open, greetingDismissed]);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
+    const t = window.setTimeout(() => {
       setGreetingDismissed(
         localStorage.getItem(greetingDismissedStorageKey(audience)) === "1",
       );
-    }
-    setMessages(parseStored(typeof window !== "undefined" ? localStorage.getItem(storageKey) : null));
-    setHydrated(true);
+      setMessages(parseStored(localStorage.getItem(storageKey)));
+      setHydrated(true);
+    }, 0);
+    return () => window.clearTimeout(t);
   }, [audience, storageKey]);
 
   const dismissFabGreeting = useCallback(() => {

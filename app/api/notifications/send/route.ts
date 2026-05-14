@@ -134,7 +134,7 @@ export async function POST(request: Request) {
 
   const webPushLink = `${origin}${relativeUrl}`;
 
-  const notifRef = await db.collection("notifications").add({
+  const notifRef = await db.collection("file_notifications").add({
     title,
     body: text,
     targetCardId,

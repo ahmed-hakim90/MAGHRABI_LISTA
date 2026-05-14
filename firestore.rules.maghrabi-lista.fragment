@@ -1,0 +1,44 @@
+// MAGHRABI_LISTA (files catalog) — merge this block inside your central
+// `match /databases/{database}/documents { ... }` (no rules_version/service here).
+
+function maghrabiLista_filesAuthUidPresent() {
+  return request.auth != null;
+}
+
+function maghrabiLista_filesHasAdminClaim() {
+  return maghrabiLista_filesAuthUidPresent() && request.auth.token.admin == true;
+}
+
+match /fileCards/{cardId} {
+  // Cards under a deactivated folder are hidden from the public.
+  // Cards without a folder default to folderIsActive == true.
+  allow read: if (
+    resource.data.isActive == true &&
+    resource.data.get('folderIsActive', true) == true
+  ) || maghrabiLista_filesHasAdminClaim();
+  allow create, update, delete: if maghrabiLista_filesHasAdminClaim();
+}
+
+match /fileFolders/{folderId} {
+  allow read: if resource.data.isActive == true || maghrabiLista_filesHasAdminClaim();
+  allow create, update, delete: if maghrabiLista_filesHasAdminClaim();
+}
+
+match /file_settings/{docId} {
+  allow read: if true;
+  allow write: if maghrabiLista_filesHasAdminClaim();
+}
+
+match /adminUsers/{uid} {
+  allow read: if maghrabiLista_filesAuthUidPresent() && request.auth.uid == uid;
+  allow write: if maghrabiLista_filesHasAdminClaim();
+}
+
+match /fcmTokens/{tokenId} {
+  allow create, update: if true;
+  allow read, delete: if maghrabiLista_filesHasAdminClaim();
+}
+
+match /file_notifications/{id} {
+  allow read, write: if maghrabiLista_filesHasAdminClaim();
+}

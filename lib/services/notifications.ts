@@ -31,7 +31,7 @@ export async function listNotifications(): Promise<
   await syncAuthTokenForFirestore();
   const db = getClientFirestore();
   const q = query(
-    collection(db, "notifications"),
+    collection(db, "file_notifications"),
     orderBy("createdAt", "desc"),
   );
   const snap = await getDocs(q);

@@ -4,7 +4,7 @@ import { getAdminFirestore } from "@/lib/firebase/admin";
 import type { WhatsAppContact } from "@/lib/types/models";
 import { parseWhatsappContactsRaw } from "@/lib/utils/siteWhatsappContacts";
 
-const SETTINGS_COLLECTION = "settings";
+const SETTINGS_COLLECTION = "file_settings";
 const SITE_DOC_ID = "site";
 
 /**

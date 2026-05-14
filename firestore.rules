@@ -53,7 +53,7 @@ service cloud.firestore {
       allow create, update, delete: if isAdmin();
     }
 
-    match /settings/{docId} {
+    match /file_settings/{docId} {
       allow read: if true;
       allow write: if isAdmin();
     }
@@ -68,7 +68,7 @@ service cloud.firestore {
       allow read, delete: if isAdmin();
     }
 
-    match /notifications/{id} {
+    match /file_notifications/{id} {
       allow read, write: if isAdmin();
     }
 

@@ -38,7 +38,7 @@ function fromData(data: Record<string, unknown>): SiteSettings {
 
 export async function getSiteSettings(): Promise<SiteSettings> {
   const db = getClientFirestore();
-  const d = await getDoc(doc(db, "settings", SITE_DOC));
+  const d = await getDoc(doc(db, "file_settings", SITE_DOC));
   if (!d.exists()) {
     return fromData({});
   }
@@ -68,7 +68,7 @@ export async function updateSiteSettings(
   );
 
   await setDoc(
-    doc(db, "settings", SITE_DOC),
+    doc(db, "file_settings", SITE_DOC),
     {
       appName: input.appName.trim(),
       homeTitle: input.homeTitle.trim(),
@@ -102,7 +102,7 @@ export async function updateSiteSettings(
       }
     }
     await setDoc(
-      doc(db, "settings", SITE_DOC),
+      doc(db, "file_settings", SITE_DOC),
       {
         logoUrl,
         logoPath,
@@ -112,6 +112,6 @@ export async function updateSiteSettings(
     );
   }
 
-  const merged = await getDoc(doc(db, "settings", SITE_DOC));
+  const merged = await getDoc(doc(db, "file_settings", SITE_DOC));
   return fromData((merged.data() ?? {}) as Record<string, unknown>);
 }

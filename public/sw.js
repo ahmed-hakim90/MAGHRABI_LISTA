@@ -215,6 +215,10 @@ self.addEventListener('notificationclick', function (event) {
     return;
   }
   var absolute = new URL(rel, self.location.origin).href;
+  if (data.type === 'file_card') {
+    event.waitUntil(clients.openWindow(absolute));
+    return;
+  }
   event.waitUntil(
     clients
       .matchAll({ type: 'window', includeUncontrolled: true })

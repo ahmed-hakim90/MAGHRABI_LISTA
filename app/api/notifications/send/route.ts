@@ -112,7 +112,7 @@ export async function POST(request: Request) {
     const aud = normalizeAudienceFromDoc(c.audience);
     notifyFilter = aud;
     const ch = AUDIENCE_TO_CHANNEL[aud];
-    relativeUrl = `/${ch}/file/${targetCardId}/view`;
+    relativeUrl = `/${ch}/file/${targetCardId}/pdf`;
     data = {
       type: "file_card",
       cardId: targetCardId,

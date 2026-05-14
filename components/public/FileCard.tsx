@@ -117,7 +117,7 @@ export function FileCard({
             )}
           </div>
           <div className="min-w-0 flex-1 ps-0.5">
-            <h2 className="truncate text-[11px] font-semibold text-foreground sm:text-[12px]">
+            <h2 className="truncate text-[10px] font-semibold text-foreground sm:text-[11px]">
               {card.title}
             </h2>
             {freshnessEl ? (
@@ -125,7 +125,7 @@ export function FileCard({
             ) : null}
           </div>
           <div className="w-[6.5rem] shrink-0 text-end sm:w-32">{updated}</div>
-          <div className="hidden w-16 shrink-0 text-end text-[13px] text-foreground/90 sm:block sm:w-20 sm:text-sm">
+          <div className="hidden w-16 shrink-0 text-end text-[12px] text-foreground/90 sm:block sm:w-20 sm:text-sm">
             {formatFileSize(card.fileSize)}
           </div>
         </div>
@@ -176,7 +176,7 @@ export function FileCard({
           {card.title}
         </h2>
         {(card.category?.trim() || card.updatedAt) && (
-          <p className="line-clamp-1 text-center text-[10px] text-white sm:text-[11px]">
+          <p className="line-clamp-1 text-center text-[9px] text-white sm:text-[10px]">
             {card.category?.trim() ? (
               <span>{card.category.trim()}</span>
             ) : null}
@@ -187,7 +187,7 @@ export function FileCard({
               </span>
             ) : null}
             {card.updatedAt ? (
-              <time dateTime={card.updatedAt.toDate().toISOString()}>
+              <time dateTime={card.updatedAt.toDate().toISOString()} className="text-[9px]">
                 {formatDisplayDate(card.updatedAt)}
               </time>
             ) : null}

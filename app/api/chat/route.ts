@@ -13,6 +13,7 @@ import { loadAutoPickedCardsForChat } from "@/lib/server/catalogAutoPickForChat"
 import { listFolderCatalogFilesForChat } from "@/lib/server/folderCatalogChatContext";
 import { getCatalogTextForChatFromBundle } from "@/lib/server/catalogTextIndex";
 import { buildRuleBasedChatReply } from "@/lib/server/ruleBasedChatReply";
+import { isCatalogChatEnabled } from "@/lib/constants/catalogChatEnabled";
 
 export const runtime = "nodejs";
 /** Auto-pick may fetch several PDFs in parallel on cold cache. */
@@ -111,6 +112,17 @@ export async function POST(request: Request) {
 }
 
 async function handleChatPost(request: Request): Promise<NextResponse> {
+  if (!isCatalogChatEnabled()) {
+    return NextResponse.json(
+      {
+        error: "chat_disabled",
+        code: "chat_disabled",
+        message: "الشات غير متاح حالياً.",
+      },
+      { status: 503 },
+    );
+  }
+
   let body: Body;
   try {
     body = (await request.json()) as Body;

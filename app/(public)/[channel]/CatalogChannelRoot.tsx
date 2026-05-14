@@ -9,6 +9,7 @@ import {
   CHANNEL_TO_AUDIENCE,
   type CatalogChannelSegment,
 } from "@/lib/constants/catalogChannels";
+import { isCatalogChatEnabled } from "@/lib/constants/catalogChatEnabled";
 
 export function CatalogChannelRoot({
   channel,
@@ -24,7 +25,8 @@ export function CatalogChannelRoot({
       <NotificationPromptModal />
       <PwaInstallModal />
       <WhatsAppFloatingButton />
-      {channel === "wholesale" || channel === "retail" ? (
+      {isCatalogChatEnabled() &&
+      (channel === "wholesale" || channel === "retail") ? (
         <FloatingAiChat audience={channel} />
       ) : null}
       {children}

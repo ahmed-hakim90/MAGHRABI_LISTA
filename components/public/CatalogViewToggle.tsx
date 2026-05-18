@@ -10,8 +10,12 @@ const listeners = new Set<() => void>();
 
 export function readStoredCatalogView(): CatalogViewMode {
   if (typeof window === "undefined") return "grid";
-  const v = window.localStorage.getItem(STORAGE_KEY);
-  return v === "list" ? "list" : "grid";
+  try {
+    const v = window.localStorage.getItem(STORAGE_KEY);
+    return v === "list" ? "list" : "grid";
+  } catch {
+    return "grid";
+  }
 }
 
 function notifyCatalogViewListeners() {

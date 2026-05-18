@@ -14,7 +14,7 @@ function networkFirstCache(request, cacheName) {
         if (response && response.status === 200) {
           try {
             cache.put(request, response.clone());
-          } catch {}
+          } catch (e) {}
         }
         return response;
       })
@@ -35,7 +35,7 @@ function catalogHomeFallback(requestUrl) {
     if (p.indexOf('/lists') === 0) return o + '/lists';
     if (p.indexOf('/wholesale') === 0) return o + '/wholesale';
     return o + '/wholesale';
-  } catch {
+  } catch (e) {
     return self.location.origin + '/wholesale';
   }
 }
@@ -57,7 +57,7 @@ function navigateUrlVariants(requestUrl) {
     }
     add(o + '/' + qs);
     return variants;
-  } catch {
+  } catch (e) {
     return [requestUrl];
   }
 }
@@ -81,7 +81,7 @@ function navigateWithOfflineFallback(request) {
         caches.open(CACHE_PAGES).then(function (cache) {
           try {
             cache.put(request, response.clone());
-          } catch {}
+          } catch (e) {}
         });
       }
       return response;
@@ -148,7 +148,7 @@ self.addEventListener('fetch', function (event) {
   var url;
   try {
     url = new URL(req.url);
-  } catch {
+  } catch (e) {
     event.respondWith(fetch(req));
     return;
   }
@@ -184,7 +184,7 @@ importScripts('https://www.gstatic.com/firebasejs/12.13.0/firebase-messaging-com
 
 firebase.initializeApp({"apiKey":"AIzaSyDiZGI4-axzB8Bgkcnmtai-1LymKgUyugA","authDomain":"sokany-production.firebaseapp.com","projectId":"sokany-production","storageBucket":"sokany-production.firebasestorage.app","messagingSenderId":"641654336000","appId":"1:641654336000:web:699aa28d234d0a3629c6e5"});
 
-const messaging = firebase.messaging();
+var messaging = firebase.messaging();
 
 messaging.onBackgroundMessage(function (payload) {
   var title =

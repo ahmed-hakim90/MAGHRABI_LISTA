@@ -30,6 +30,10 @@ export function PdfFirstPagePreview({
   useEffect(() => {
     const el = wrapRef.current;
     if (!el) return;
+    if (typeof IntersectionObserver === "undefined") {
+      const id = window.setTimeout(() => setShouldLoad(true), 0);
+      return () => window.clearTimeout(id);
+    }
     const io = new IntersectionObserver(
       ([e]) => {
         if (e?.isIntersecting) setShouldLoad(true);

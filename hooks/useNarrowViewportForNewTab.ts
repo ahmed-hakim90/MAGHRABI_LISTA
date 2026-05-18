@@ -17,8 +17,12 @@ export function useNarrowViewportForNewTab(): boolean {
     const mq = window.matchMedia(QUERY);
     const update = () => setNarrow(mq.matches);
     update();
-    mq.addEventListener("change", update);
-    return () => mq.removeEventListener("change", update);
+    if (typeof mq.addEventListener === "function") {
+      mq.addEventListener("change", update);
+      return () => mq.removeEventListener("change", update);
+    }
+    mq.addListener(update);
+    return () => mq.removeListener(update);
   }, []);
 
   return narrow;

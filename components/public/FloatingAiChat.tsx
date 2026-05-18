@@ -158,7 +158,9 @@ export function FloatingAiChat({ audience }: { audience: FloatingAiChatAudience 
   }, [storageKey]);
 
   const popLastUser = useCallback(() => {
-    setMessages((prev) => (prev.at(-1)?.role === "user" ? prev.slice(0, -1) : prev));
+    setMessages((prev) =>
+      prev[prev.length - 1]?.role === "user" ? prev.slice(0, -1) : prev,
+    );
   }, []);
 
   const sendMessage = useCallback(

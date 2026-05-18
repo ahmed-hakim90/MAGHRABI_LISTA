@@ -106,7 +106,7 @@ function networkFirstCache(request, cacheName) {
         if (response && response.status === 200) {
           try {
             cache.put(request, response.clone());
-          } catch {}
+          } catch (e) {}
         }
         return response;
       })
@@ -127,7 +127,7 @@ function catalogHomeFallback(requestUrl) {
     if (p.indexOf('/lists') === 0) return o + '/lists';
     if (p.indexOf('/wholesale') === 0) return o + '/wholesale';
     return o + '/wholesale';
-  } catch {
+  } catch (e) {
     return self.location.origin + '/wholesale';
   }
 }
@@ -149,7 +149,7 @@ function navigateUrlVariants(requestUrl) {
     }
     add(o + '/' + qs);
     return variants;
-  } catch {
+  } catch (e) {
     return [requestUrl];
   }
 }
@@ -173,7 +173,7 @@ function navigateWithOfflineFallback(request) {
         caches.open(CACHE_PAGES).then(function (cache) {
           try {
             cache.put(request, response.clone());
-          } catch {}
+          } catch (e) {}
         });
       }
       return response;
@@ -240,7 +240,7 @@ self.addEventListener('fetch', function (event) {
   var url;
   try {
     url = new URL(req.url);
-  } catch {
+  } catch (e) {
     event.respondWith(fetch(req));
     return;
   }
@@ -276,7 +276,7 @@ importScripts('https://www.gstatic.com/firebasejs/${FB_VERSION}/firebase-messagi
 
 firebase.initializeApp(${JSON.stringify(config)});
 
-const messaging = firebase.messaging();
+var messaging = firebase.messaging();
 
 messaging.onBackgroundMessage(function (payload) {
   var title =

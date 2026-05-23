@@ -7,7 +7,7 @@ const PORTFOLIO_URL = "https://portfolio-flame-tau-19.vercel.app/";
 const FILE_VIEW_PATH =
   /^\/(wholesale|retail|lists)\/file\/[^/]+\/view$/;
 
-const REELS_FEED_PATH = /^\/(wholesale|retail|lists)\/reels\/feed$/;
+import { shouldHideFloatingCatalogButtons } from "@/lib/utils/catalogChrome";
 
 function HeartIcon({ className }: { className?: string }) {
   return (
@@ -45,6 +45,8 @@ export function SiteFooter() {
 
 export function PublicSiteFooterGate() {
   const pathname = usePathname();
-  if (FILE_VIEW_PATH.test(pathname) || REELS_FEED_PATH.test(pathname)) return null;
+  if (FILE_VIEW_PATH.test(pathname) || shouldHideFloatingCatalogButtons(pathname)) {
+    return null;
+  }
   return <SiteFooter />;
 }

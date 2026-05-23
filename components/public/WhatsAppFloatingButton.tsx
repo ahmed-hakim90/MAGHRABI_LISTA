@@ -4,15 +4,17 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { WhatsAppOrderDialog } from "@/components/public/WhatsAppOrderDialog";
 import { usePublicSiteSettings } from "@/hooks/usePublicSiteSettings";
-
-const REELS_FEED_PATH = /^\/(wholesale|retail|lists)\/reels\/feed$/;
+import { shouldHideFloatingCatalogButtons } from "@/lib/utils/catalogChrome";
 
 export function WhatsAppFloatingButton() {
   const pathname = usePathname();
   const [dialogOpen, setDialogOpen] = useState(false);
   const site = usePublicSiteSettings();
 
-  if (REELS_FEED_PATH.test(pathname) || site.whatsappContacts.length === 0) {
+  if (
+    shouldHideFloatingCatalogButtons(pathname) ||
+    site.whatsappContacts.length === 0
+  ) {
     return null;
   }
 

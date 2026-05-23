@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
+import { ToastProvider } from "@/components/ui/Toast";
 import { AdminSidebar } from "./AdminSidebar";
 
 export function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -24,6 +25,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
   }
 
   return (
+    <ToastProvider>
     <div className="flex min-h-screen flex-col bg-surface lg:flex-row">
       <div className="flex flex-col lg:min-h-screen">
         <AdminSidebar />
@@ -48,5 +50,6 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
         </button>
       </div>
     </div>
+    </ToastProvider>
   );
 }

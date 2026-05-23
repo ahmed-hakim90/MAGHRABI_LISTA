@@ -7,6 +7,8 @@ const links = [
   { href: "/admin", label: "لوحة التحكم" },
   { href: "/admin/folders", label: "المجلدات" },
   { href: "/admin/files", label: "الملفات" },
+  { href: "/admin/price-lists", label: "قوائم الأسعار" },
+  { href: "/admin/reels", label: "فيديوهات وريلز" },
   { href: "/admin/notifications", label: "الإشعارات" },
   { href: "/admin/settings", label: "إعدادات الموقع" },
 ];

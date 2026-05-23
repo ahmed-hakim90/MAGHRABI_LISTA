@@ -226,6 +226,50 @@ html.splash-launch body {
   }
 }
 
+/* Price list — fallback when user uses Ctrl+P on the page */
+@media print {
+  body {
+    background: #fff !important;
+  }
+
+  body * {
+    visibility: hidden;
+  }
+
+  .price-list-print-root,
+  .price-list-print-root * {
+    visibility: visible;
+  }
+
+  .price-list-print-root {
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 100%;
+    padding: 0 !important;
+    padding-bottom: 0 !important;
+  }
+
+  .price-list-no-print {
+    display: none !important;
+  }
+
+  .price-list-table-wrap {
+    overflow: visible !important;
+  }
+
+  .price-list-table thead th {
+    position: static !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .price-list-table td,
+  .price-list-table tr {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .splash-overlay,
   .splash-overlay[data-phase="in"],

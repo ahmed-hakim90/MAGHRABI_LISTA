@@ -9,6 +9,10 @@ import {
   useState,
 } from "react";
 import {
+  CatalogHomeSectionTabs,
+  type CatalogHomeSection,
+} from "@/components/public/CatalogHomeSection";
+import {
   CatalogViewToggle,
   type CatalogViewMode,
 } from "@/components/public/CatalogViewToggle";
@@ -22,6 +26,8 @@ type Props = {
   logoUrl?: string;
   homeTitle: string;
   primaryColor?: string;
+  basePath: string;
+  homeSection: CatalogHomeSection;
   searchValue: string;
   onSearchChange: (v: string) => void;
   searchPlaceholder?: string;
@@ -31,6 +37,7 @@ type Props = {
   selectedCategory: string | null;
   onSelectCategory: (category: string | null) => void;
   showCategoryChips: boolean;
+  showCatalogViewToggle?: boolean;
 };
 
 /** First visit: show an inline hint next to the install control. */
@@ -67,6 +74,8 @@ export function CatalogHomeStickyHeader({
   logoUrl,
   homeTitle,
   primaryColor = "#1D4ED8",
+  basePath,
+  homeSection,
   searchValue,
   onSearchChange,
   searchPlaceholder,
@@ -76,6 +85,7 @@ export function CatalogHomeStickyHeader({
   categories,
   selectedCategory,
   showCategoryChips,
+  showCatalogViewToggle = true,
 }: Props) {
   const { hideAsInstalled, busy, runInstall } = usePwaInstall();
   const [searchOpen, setSearchOpen] = useState(false);
@@ -268,6 +278,8 @@ export function CatalogHomeStickyHeader({
             </button>
           </div>
 
+          <CatalogHomeSectionTabs basePath={basePath} active={homeSection} />
+
           {showSearchField ? (
             <div id="catalog-home-search-panel">
               <SearchBox
@@ -279,6 +291,7 @@ export function CatalogHomeStickyHeader({
             </div>
           ) : null}
 
+          {showCatalogViewToggle ? (
           <div className="flex items-center gap-2" dir="rtl">
             {showCategoryChips && categories.length > 0 ? (
               <>
@@ -305,6 +318,7 @@ export function CatalogHomeStickyHeader({
               </div>
             )}
           </div>
+          ) : null}
         </div>
       </header>
       <div

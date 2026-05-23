@@ -32,6 +32,7 @@ function fromData(data: Record<string, unknown>): SiteSettings {
     homeSubtitle: String(data.homeSubtitle ?? ""),
     primaryColor: String(data.primaryColor ?? DEFAULT_SITE_PRIMARY_COLOR),
     whatsappContacts,
+    priceListOrderIncludePrices: Boolean(data.priceListOrderIncludePrices ?? false),
     updatedAt: (data.updatedAt as SiteSettings["updatedAt"]) ?? null,
   };
 }
@@ -52,6 +53,7 @@ export async function updateSiteSettings(
     homeSubtitle: string;
     primaryColor: string;
     whatsappContacts: WhatsAppContact[];
+    priceListOrderIncludePrices: boolean;
     logoFile?: File | null;
   },
   previous: SiteSettings,
@@ -75,6 +77,7 @@ export async function updateSiteSettings(
       homeSubtitle: input.homeSubtitle.trim(),
       primaryColor: input.primaryColor.trim(),
       whatsappContacts,
+      priceListOrderIncludePrices: Boolean(input.priceListOrderIncludePrices),
       logoUrl,
       logoPath,
       updatedAt: serverTimestamp(),

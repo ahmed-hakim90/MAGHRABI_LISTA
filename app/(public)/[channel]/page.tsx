@@ -13,7 +13,7 @@ import { usePublicSiteSettings } from "@/hooks/usePublicSiteSettings";
 import { matchesFileCardSearch } from "@/lib/utils/fileCardSearch";
 
 export default function CatalogChannelHomePage() {
-  const { audience } = useCatalogChannel();
+  const { audience, basePath } = useCatalogChannel();
   const { cards, folders, loading, error, stale } = useFileCards(audience);
   const online = useNavigatorOnline();
   const s = usePublicSiteSettings();
@@ -51,6 +51,8 @@ export default function CatalogChannelHomePage() {
         logoUrl={s.logoUrl}
         homeTitle={s.homeTitle}
         primaryColor={s.primaryColor}
+        basePath={basePath}
+        homeSection="catalog"
         searchValue={q}
         onSearchChange={setQ}
         catalogView={catalogView}
@@ -66,11 +68,13 @@ export default function CatalogChannelHomePage() {
         ) : error && !hasCatalogData ? (
           <p className="flex-1 py-16 text-center text-red-800">{error}</p>
         ) : (
-          <FolderedFileGrid
-            cards={filtered}
-            folders={folders}
-            view={catalogView}
-          />
+          <div className="px-3 pb-6 sm:px-4">
+            <FolderedFileGrid
+              cards={filtered}
+              folders={folders}
+              view={catalogView}
+            />
+          </div>
         )}
       </main>
     </div>

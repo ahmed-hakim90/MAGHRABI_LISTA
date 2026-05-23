@@ -20,6 +20,7 @@ const defaults: SiteSettings = {
   homeSubtitle: "",
   primaryColor: DEFAULT_SITE_PRIMARY_COLOR,
   whatsappContacts: [],
+  priceListOrderIncludePrices: false,
   updatedAt: null,
 };
 

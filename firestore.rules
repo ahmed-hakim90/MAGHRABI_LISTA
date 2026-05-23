@@ -26,16 +26,9 @@ service cloud.firestore {
       allow create, update, delete: if isAdmin();
     }
 
-    match /{document=**} {
-      allow read, write: if false;
-    }
 //دا للملفات 
     function isSignedIn() {
       return request.auth != null;
-    }
-
-    function isAdmin() {
-      return isSignedIn() && request.auth.token.admin == true;
     }
 
     match /fileCards/{cardId} {
@@ -72,7 +65,26 @@ service cloud.firestore {
       allow read, write: if isAdmin();
     }
 
+    // قوائم الأسعار التفاعلية — قراءة/كتابة مفتوحة؛ التصفية (isActive) في التطبيق
+    match /price_lists/{listId} {
+      allow read, write: if true;
+    }
 
+    match /price_list_items/{itemId} {
+      allow read, write: if true;
+    }
+
+    match /catalog_reels/{reelId} {
+      allow read, write: if true;
+    }
+
+    match /catalog_reel_likes/{likeId} {
+      allow read, write: if true;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
 
     // هذه قواعد خاصة بريبو تاني علي نفس الفاير بيز متعدلهاش 
 

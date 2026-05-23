@@ -63,6 +63,8 @@ export type SiteSettings = {
   homeSubtitle: string;
   primaryColor: string;
   whatsappContacts: WhatsAppContact[];
+  /** When true, WhatsApp orders from price lists include line prices. */
+  priceListOrderIncludePrices: boolean;
   updatedAt: Timestamp | null;
 };
 

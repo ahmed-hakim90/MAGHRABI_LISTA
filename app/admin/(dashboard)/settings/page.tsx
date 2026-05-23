@@ -18,6 +18,8 @@ export default function AdminSettingsPage() {
   const [primaryColor, setPrimaryColor] = useState(DEFAULT_SITE_PRIMARY_COLOR);
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [whatsappRows, setWhatsappRows] = useState<WhatsAppContact[]>([]);
+  const [priceListOrderIncludePrices, setPriceListOrderIncludePrices] =
+    useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
@@ -30,6 +32,7 @@ export default function AdminSettingsPage() {
       setHomeSubtitle(s.homeSubtitle);
       setPrimaryColor(s.primaryColor || DEFAULT_SITE_PRIMARY_COLOR);
       setWhatsappRows(s.whatsappContacts);
+      setPriceListOrderIncludePrices(s.priceListOrderIncludePrices);
     });
   }, []);
 
@@ -47,6 +50,7 @@ export default function AdminSettingsPage() {
           homeSubtitle,
           primaryColor,
           whatsappContacts: whatsappRows,
+          priceListOrderIncludePrices,
           logoFile,
         },
         initial,
@@ -126,6 +130,23 @@ export default function AdminSettingsPage() {
             value={primaryColor}
             onChange={(e) => setPrimaryColor(e.target.value)}
           />
+        </label>
+
+        <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-border bg-muted/30 p-4">
+          <input
+            type="checkbox"
+            className="mt-1 h-4 w-4 rounded border-border"
+            checked={priceListOrderIncludePrices}
+            onChange={(e) => setPriceListOrderIncludePrices(e.target.checked)}
+          />
+          <span className="text-sm">
+            <span className="font-medium text-foreground">
+              إظهار الأسعار في طلبات قوائم الأسعار (واتساب)
+            </span>
+            <span className="mt-1 block text-xs text-muted">
+              افتراضيًا تُرسل الطلبات بدون أسعار — الاسم والكمية بالكرتونة فقط.
+            </span>
+          </span>
         </label>
 
         <div className="space-y-3 rounded-xl border border-border bg-muted/30 p-4">

@@ -75,8 +75,12 @@ function parseStored(raw: string | null): ChatMessage[] {
   }
 }
 
+const REELS_FEED_PATH = /^\/(wholesale|retail|lists)\/reels\/feed$/;
+
 export function FloatingAiChat({ audience }: { audience: FloatingAiChatAudience }) {
   const pathname = usePathname() ?? "";
+  if (REELS_FEED_PATH.test(pathname)) return null;
+
   const filePathMatch = pathname.match(/^\/(wholesale|retail)\/file\/([^/]+)/);
   const folderPathMatch = pathname.match(/^\/(wholesale|retail)\/folder\/([^/]+)/);
   const pathChannel = filePathMatch?.[1] as FloatingAiChatAudience | undefined;

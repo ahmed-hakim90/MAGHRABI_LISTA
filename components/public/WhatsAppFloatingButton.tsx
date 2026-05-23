@@ -1,14 +1,18 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { WhatsAppOrderDialog } from "@/components/public/WhatsAppOrderDialog";
 import { usePublicSiteSettings } from "@/hooks/usePublicSiteSettings";
 
+const REELS_FEED_PATH = /^\/(wholesale|retail|lists)\/reels\/feed$/;
+
 export function WhatsAppFloatingButton() {
+  const pathname = usePathname();
   const [dialogOpen, setDialogOpen] = useState(false);
   const site = usePublicSiteSettings();
 
-  if (site.whatsappContacts.length === 0) {
+  if (REELS_FEED_PATH.test(pathname) || site.whatsappContacts.length === 0) {
     return null;
   }
 

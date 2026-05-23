@@ -65,6 +65,27 @@ export function publicCatalogFilePdfPath(
   return `/${AUDIENCE_TO_CHANNEL[audience]}/file/${cardId}/pdf`;
 }
 
+export function publicPriceListsIndexPath(
+  audience: CatalogAudience,
+): string {
+  return `/${AUDIENCE_TO_CHANNEL[audience]}/price-lists`;
+}
+
+export function publicPriceListPath(
+  audience: CatalogAudience,
+  slug: string,
+): string {
+  return `/${AUDIENCE_TO_CHANNEL[audience]}/price-lists/${slug}`;
+}
+
+export function publicReelsPath(audience: CatalogAudience): string {
+  return `/${AUDIENCE_TO_CHANNEL[audience]}/reels`;
+}
+
+export function publicReelsFeedPath(audience: CatalogAudience): string {
+  return `${publicReelsPath(audience)}/feed`;
+}
+
 export function manifestPathForChannelSegment(
   ch: CatalogChannelSegment,
 ): string {

@@ -7,7 +7,7 @@ export function formatPriceListError(err: unknown, fallback: string): string {
     lower.includes("permission-denied") ||
     lower.includes("missing or insufficient permissions")
   ) {
-    return "صلاحيات Firestore مرفوضة. تأكد من تسجيل دخول الأدمن ونشر القواعد: npm run firebase:deploy:rules";
+    return "صلاحيات مرفوضة. تأكد من تسجيل دخول الأدمن.";
   }
   if (lower.includes("firebase admin") || lower.includes("غير مكتملة")) {
     return "إعدادات Firebase Admin غير مكتملة على الخادم (.env).";

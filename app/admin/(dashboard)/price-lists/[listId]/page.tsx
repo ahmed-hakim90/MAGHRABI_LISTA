@@ -23,19 +23,11 @@ export default function AdminPriceListDetailPage({ params }: Props) {
 
   function load() {
     setLoading(true);
-    void getPriceList(listId)
-      .then(setList)
-      .catch((err) =>
-        toast(formatPriceListError(err, "فشل التحميل"), "error"),
-      )
-      .finally(() => setLoading(false));
-  }
-
-  useEffect(() => {
-    (async () => {
-      setLoading(true);
+    void (async () => {
       try {
-        const data = await getPriceList(listId);
+        const token = await getToken();
+        if (!token) throw new Error("غير مصرّح");
+        const data = await getPriceList(listId, token);
         setList(data);
       } catch (err) {
         toast(formatPriceListError(err, "فشل التحميل"), "error");
@@ -43,7 +35,23 @@ export default function AdminPriceListDetailPage({ params }: Props) {
         setLoading(false);
       }
     })();
-  }, [listId, toast]);
+  }
+
+  useEffect(() => {
+    void (async () => {
+      setLoading(true);
+      try {
+        const token = await getToken();
+        if (!token) throw new Error("غير مصرّح");
+        const data = await getPriceList(listId, token);
+        setList(data);
+      } catch (err) {
+        toast(formatPriceListError(err, "فشل التحميل"), "error");
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [getToken, listId, toast]);
 
   if (loading) return <p className="text-muted">جاري التحميل…</p>;
   if (!list) return <p className="text-red-800">القائمة غير موجودة</p>;

@@ -14,6 +14,7 @@ import {
 } from "./CatalogFileListHeader";
 import type { CatalogViewMode } from "./CatalogViewToggle";
 import { PdfFirstPagePreview } from "./PdfFirstPagePreview";
+import { PdfThumbnailPlaceholder } from "./PdfThumbnailPlaceholder";
 
 type Props = {
   card: FileCardType;
@@ -51,6 +52,7 @@ export function FileCard({
 }: Props) {
   const { basePath } = useCatalogChannel();
   const openFileInNewTab = useNarrowViewportForNewTab();
+  const enablePdfPreview = !openFileInNewTab;
   const newTabAttrs = openFileInNewTab
     ? ({ target: "_blank" as const, rel: "noopener noreferrer" })
     : {};
@@ -112,8 +114,10 @@ export function FileCard({
                 unoptimized
                 priority={imagePriority}
               />
-            ) : (
+            ) : enablePdfPreview ? (
               <PdfFirstPagePreview cardId={card.id} pdfUrl={pdfHref} />
+            ) : (
+              <PdfThumbnailPlaceholder />
             )}
           </div>
           <div className="min-w-0 flex-1 ps-0.5">
@@ -158,8 +162,10 @@ export function FileCard({
               unoptimized
               priority={imagePriority}
             />
-          ) : (
+          ) : enablePdfPreview ? (
             <PdfFirstPagePreview cardId={card.id} pdfUrl={pdfHref} />
+          ) : (
+            <PdfThumbnailPlaceholder />
           )}
         </div>
         <div

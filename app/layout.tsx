@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { IBM_Plex_Sans_Arabic } from "next/font/google";
+import { ChunkLoadRecovery } from "@/components/ChunkLoadRecovery";
+import { PwaCacheReset } from "@/components/PwaCacheReset";
 import { PwaUpdatePull } from "@/components/PwaUpdatePull";
 import { ServiceWorkerNavigateListener } from "@/components/ServiceWorkerNavigateListener";
 import { SplashScreen } from "@/components/SplashScreen";
@@ -58,6 +60,8 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full antialiased">
+        <PwaCacheReset />
+        <ChunkLoadRecovery />
         <PwaUpdatePull />
         <ServiceWorkerNavigateListener />
         {children}

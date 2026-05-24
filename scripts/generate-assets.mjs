@@ -118,87 +118,24 @@ function networkFirstCache(request, cacheName) {
   });
 }
 
-function catalogHomeFallback(requestUrl) {
-  try {
-    var u = new URL(requestUrl);
-    var o = u.origin;
-    var p = u.pathname;
-    if (p.indexOf('/retail') === 0) return o + '/retail';
-    if (p.indexOf('/lists') === 0) return o + '/lists';
-    if (p.indexOf('/wholesale') === 0) return o + '/wholesale';
-    return o + '/wholesale';
-  } catch (e) {
-    return self.location.origin + '/wholesale';
-  }
-}
-
-function navigateUrlVariants(requestUrl) {
-  try {
-    var u = new URL(requestUrl);
-    var o = u.origin;
-    var p = u.pathname;
-    var qs = u.search || '';
-    var variants = [];
-    function add(s) {
-      if (variants.indexOf(s) === -1) variants.push(s);
-    }
-    add(o + p + qs);
-    if (p !== '/' && !p.endsWith('/')) add(o + p + '/' + qs);
-    if (p.length > 1 && p.endsWith('/')) {
-      add(o + p.replace(/\\/+$/, '') + qs);
-    }
-    add(o + '/' + qs);
-    return variants;
-  } catch (e) {
-    return [requestUrl];
-  }
-}
-
-function cacheMatchAny(urls) {
-  var i = 0;
-  function step() {
-    if (i >= urls.length) return Promise.resolve(undefined);
-    var u = urls[i++];
-    return caches.match(u).then(function (h) {
-      return h || step();
-    });
-  }
-  return step();
-}
-
-function navigateWithOfflineFallback(request) {
-  return fetch(request)
-    .then(function (response) {
-      if (response && response.ok) {
-        caches.open(CACHE_PAGES).then(function (cache) {
-          try {
-            cache.put(request, response.clone());
-          } catch (e) {}
-        });
-      }
-      return response;
-    })
-    .catch(function () {
-      var urls = navigateUrlVariants(request.url);
-      return cacheMatchAny(urls).then(function (hit) {
-        if (hit) return hit;
-        return caches
-          .match(catalogHomeFallback(request.url))
-          .then(function (h2) {
-            if (h2) return h2;
-            return new Response('Offline', { status: 503, statusText: 'Offline' });
-          });
-      });
-    });
+/** Never cache Next.js bundles, RSC payloads, or HTML navigations (stale chunks). */
+function shouldBypassServiceWorkerCache(request, url) {
+  var path = url.pathname;
+  if (path.indexOf('/_next/static/') === 0) return true;
+  if (path.indexOf('/_next/data/') === 0) return true;
+  if (path.indexOf('/_next/') === 0) return true;
+  if (/\\.(js|mjs)(\\?|$)/i.test(path)) return true;
+  if (request.mode === 'navigate') return true;
+  if (request.headers.get('RSC') === '1') return true;
+  if (request.headers.get('Next-Router-Prefetch')) return true;
+  if (request.headers.get('Next-Router-State-Tree')) return true;
+  return false;
 }
 
 self.addEventListener('install', function (event) {
   event.waitUntil(
-    caches.open(CACHE_PAGES).then(function (cache) {
-      var o = self.location.origin;
-      return cache
-        .addAll([o + '/wholesale', o + '/retail', o + '/lists'])
-        .catch(function () {});
+    Promise.resolve().then(function () {
+      if (self.skipWaiting) self.skipWaiting();
     }),
   );
 });
@@ -248,24 +185,17 @@ self.addEventListener('fetch', function (event) {
     event.respondWith(fetch(req));
     return;
   }
+  if (shouldBypassServiceWorkerCache(req, url)) {
+    event.respondWith(fetch(req));
+    return;
+  }
   var path = url.pathname;
-  if (
-    path.indexOf('/_next/static/') === 0 ||
-    path.indexOf('/icons/') === 0 ||
-    path === '/manifest.webmanifest' ||
-    path === '/manifest-wholesale.webmanifest' ||
-    path === '/manifest-retail.webmanifest' ||
-    path === '/manifest-lists.webmanifest'
-  ) {
+  if (path.indexOf('/icons/') === 0) {
     event.respondWith(networkFirstCache(req, CACHE_STATIC));
     return;
   }
   if (/^\\/(wholesale|retail|lists)\\/file\\/[^/]+\\/pdf\\/?$/.test(path)) {
     event.respondWith(networkFirstCache(req, CACHE_PAGES));
-    return;
-  }
-  if (req.mode === 'navigate') {
-    event.respondWith(navigateWithOfflineFallback(req));
     return;
   }
   event.respondWith(fetch(req));

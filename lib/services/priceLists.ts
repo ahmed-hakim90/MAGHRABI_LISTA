@@ -1,46 +1,13 @@
 "use client";
 
-import {
-  collection,
-  doc,
-  getDoc,
-  getDocs,
-  orderBy,
-  query,
-  serverTimestamp,
-  setDoc,
-  updateDoc,
-  where,
-} from "firebase/firestore";
-import {
-  getClientFirestore,
-  syncAuthTokenForFirestore,
-} from "@/lib/firebase/client";
 import type { CatalogAudience } from "@/lib/constants/catalogChannels";
 import { normalizeAudienceFromDoc } from "@/lib/constants/catalogChannels";
 import type {
   PriceList,
   PriceListLastImportReport,
+  PriceListPublic,
 } from "@/lib/types/priceList";
 import { normalizeSlug } from "@/lib/utils/slug";
-
-const COLLECTION = "price_lists";
-
-function fromDoc(id: string, data: Record<string, unknown>): PriceList {
-  return {
-    id,
-    audience: normalizeAudienceFromDoc(data.audience),
-    name: String(data.name ?? ""),
-    slug: String(data.slug ?? ""),
-    pdfUrl: String(data.pdfUrl ?? ""),
-    coverImage: String(data.coverImage ?? ""),
-    linkedFileCardId: String(data.linkedFileCardId ?? ""),
-    isActive: Boolean(data.isActive),
-    lastImportReport: parseLastImportReport(data.lastImportReport),
-    createdAt: (data.createdAt as PriceList["createdAt"]) ?? null,
-    updatedAt: (data.updatedAt as PriceList["updatedAt"]) ?? null,
-  };
-}
 
 function parseLastImportReport(
   raw: unknown,
@@ -61,6 +28,38 @@ function parseLastImportReport(
   };
 }
 
+function fromApiRecord(id: string, data: Record<string, unknown>): PriceList {
+  return {
+    id,
+    audience: normalizeAudienceFromDoc(data.audience),
+    name: String(data.name ?? ""),
+    slug: String(data.slug ?? ""),
+    pdfUrl: String(data.pdfUrl ?? ""),
+    coverImage: String(data.coverImage ?? ""),
+    linkedFileCardId: String(data.linkedFileCardId ?? ""),
+    isActive: Boolean(data.isActive),
+    lastImportReport: parseLastImportReport(data.lastImportReport),
+    createdAt: null,
+    updatedAt: null,
+  };
+}
+
+function fromPublicRecord(p: PriceListPublic): PriceList {
+  return {
+    id: p.id,
+    audience: p.audience,
+    name: p.name,
+    slug: p.slug,
+    pdfUrl: p.pdfUrl,
+    coverImage: p.coverImage,
+    linkedFileCardId: p.linkedFileCardId ?? "",
+    isActive: true,
+    lastImportReport: null,
+    createdAt: null,
+    updatedAt: null,
+  };
+}
+
 export type PriceListWriteInput = {
   name: string;
   audience: CatalogAudience;
@@ -70,74 +69,40 @@ export type PriceListWriteInput = {
   linkedFileCardId?: string;
 };
 
-export async function listPriceListsAdmin(): Promise<PriceList[]> {
-  await syncAuthTokenForFirestore();
-  const db = getClientFirestore();
-  const q = query(collection(db, COLLECTION), orderBy("name"));
-  const snap = await getDocs(q);
-  return snap.docs.map((d) => fromDoc(d.id, d.data() as Record<string, unknown>));
-}
-
-export async function getPriceList(id: string): Promise<PriceList | null> {
-  await syncAuthTokenForFirestore();
-  const db = getClientFirestore();
-  const snap = await getDoc(doc(db, COLLECTION, id));
-  if (!snap.exists()) return null;
-  return fromDoc(snap.id, snap.data() as Record<string, unknown>);
-}
-
-export async function createPriceListClient(
-  input: PriceListWriteInput,
-): Promise<string> {
-  await syncAuthTokenForFirestore();
-  const db = getClientFirestore();
-  const ref = doc(collection(db, COLLECTION));
-  const slug = normalizeSlug(input.slug || input.name) || `list-${Date.now()}`;
-  await setDoc(ref, {
-    name: input.name.trim(),
-    audience: input.audience,
-    slug,
-    pdfUrl: input.pdfUrl?.trim() ?? "",
-    coverImage: input.coverImage?.trim() ?? "",
-    linkedFileCardId: input.linkedFileCardId?.trim() ?? "",
-    isActive: true,
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
+/** يقرأ عبر Admin SDK — لا يعتمد على قواعد Firestore على المتصفح */
+export async function listPriceListsAdmin(token: string): Promise<PriceList[]> {
+  const res = await fetch("/api/admin/price-lists", {
+    headers: { Authorization: `Bearer ${token}` },
   });
-  return ref.id;
+  const data = (await res.json()) as {
+    lists?: Record<string, unknown>[];
+    error?: string;
+  };
+  if (!res.ok) throw new Error(data.error ?? "فشل تحميل القوائم");
+  const rows = Array.isArray(data.lists) ? data.lists : [];
+  return rows.map((row) =>
+    fromApiRecord(String(row.id ?? ""), row as Record<string, unknown>),
+  );
 }
 
-export async function updatePriceListClient(
+/** يقرأ عبر Admin SDK — لا يعتمد على قواعد Firestore على المتصفح */
+export async function getPriceList(
   id: string,
-  patch: Partial<
-    Pick<
-      PriceList,
-      | "name"
-      | "slug"
-      | "pdfUrl"
-      | "coverImage"
-      | "linkedFileCardId"
-      | "isActive"
-      | "audience"
-    >
-  >,
-): Promise<void> {
-  await syncAuthTokenForFirestore();
-  const db = getClientFirestore();
-  const data: Record<string, unknown> = { updatedAt: serverTimestamp() };
-  if (patch.name != null) data.name = patch.name.trim();
-  if (patch.slug != null) data.slug = normalizeSlug(patch.slug);
-  if (patch.pdfUrl != null) data.pdfUrl = patch.pdfUrl.trim();
-  if (patch.coverImage != null) data.coverImage = patch.coverImage.trim();
-  if (patch.linkedFileCardId != null) {
-    data.linkedFileCardId = patch.linkedFileCardId.trim();
-  }
-  if (patch.isActive != null) data.isActive = patch.isActive;
-  if (patch.audience != null) data.audience = patch.audience;
-  await updateDoc(doc(db, COLLECTION, id), data);
+  token: string,
+): Promise<PriceList | null> {
+  const res = await fetch(`/api/admin/price-lists/${id}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  const data = (await res.json()) as {
+    list?: Record<string, unknown>;
+    error?: string;
+  };
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(data.error ?? "فشل التحميل");
+  if (!data.list) return null;
+  return fromApiRecord(id, data.list);
 }
 
-/** POST via Admin SDK API — reliable create when Firestore rules/token race. */
 export async function createPriceListViaApi(
   input: PriceListWriteInput,
   token: string,
@@ -182,33 +147,18 @@ export async function patchPriceListViaApi(
   if (!res.ok) throw new Error(data.error ?? "فشل التحديث");
 }
 
+/** يقرأ عبر Admin SDK — لا يعتمد على قواعد Firestore على المتصفح */
 export async function listActivePriceListsForAudience(
   audience: CatalogAudience,
 ): Promise<PriceList[]> {
-  const db = getClientFirestore();
-  const q = query(
-    collection(db, COLLECTION),
-    where("isActive", "==", true),
-    where("audience", "==", audience),
-    orderBy("name"),
+  const res = await fetch(
+    `/api/price-lists?audience=${encodeURIComponent(audience)}`,
   );
-  const snap = await getDocs(q);
-  return snap.docs.map((d) => fromDoc(d.id, d.data() as Record<string, unknown>));
-}
-
-export async function getPriceListBySlug(
-  slug: string,
-  audience: CatalogAudience,
-): Promise<PriceList | null> {
-  const db = getClientFirestore();
-  const q = query(
-    collection(db, COLLECTION),
-    where("slug", "==", slug),
-    where("audience", "==", audience),
-    where("isActive", "==", true),
-  );
-  const snap = await getDocs(q);
-  if (snap.empty) return null;
-  const d = snap.docs[0];
-  return fromDoc(d.id, d.data() as Record<string, unknown>);
+  const data = (await res.json()) as {
+    lists?: PriceListPublic[];
+    error?: string;
+  };
+  if (!res.ok) throw new Error(data.error ?? "تعذّر تحميل قوائم الأسعار");
+  const rows = Array.isArray(data.lists) ? data.lists : [];
+  return rows.map(fromPublicRecord);
 }

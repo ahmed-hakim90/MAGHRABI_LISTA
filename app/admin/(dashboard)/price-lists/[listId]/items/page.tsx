@@ -5,9 +5,10 @@ import { use, useEffect, useMemo, useState } from "react";
 import { getPriceList } from "@/lib/services/priceLists";
 import {
   listItemsForListAdmin,
-  updatePriceListItemClient,
+  updatePriceListItemViaApi,
 } from "@/lib/services/priceListItems";
 import type { PriceList, PriceListItem } from "@/lib/types/priceList";
+import { useAdminApiToken } from "@/hooks/useAdminApiToken";
 import { useToast } from "@/components/ui/Toast";
 
 type Props = { params: Promise<{ listId: string }> };
@@ -20,31 +21,41 @@ export default function AdminPriceListItemsPage({ params }: Props) {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const { toast } = useToast();
+  const { getToken } = useAdminApiToken();
 
   function load() {
     setLoading(true);
     setLoadError(null);
-    void Promise.all([getPriceList(listId), listItemsForListAdmin(listId)])
-      .then(([l, its]) => {
+    void (async () => {
+      try {
+        const token = await getToken();
+        if (!token) throw new Error("غير مصرّح");
+        const [l, its] = await Promise.all([
+          getPriceList(listId, token),
+          listItemsForListAdmin(listId, token),
+        ]);
         setList(l);
         setItems(its);
-      })
-      .catch((err) => {
+      } catch (err) {
         const msg =
           err instanceof Error ? err.message : "فشل تحميل الأصناف";
         setLoadError(msg);
         toast(msg, "error");
-      })
-      .finally(() => setLoading(false));
+      } finally {
+        setLoading(false);
+      }
+    })();
   }
 
   useEffect(() => {
-    (async () => {
+    void (async () => {
       setLoading(true);
       try {
+        const token = await getToken();
+        if (!token) throw new Error("غير مصرّح");
         const [l, its] = await Promise.all([
-          getPriceList(listId),
-          listItemsForListAdmin(listId),
+          getPriceList(listId, token),
+          listItemsForListAdmin(listId, token),
         ]);
         setList(l);
         setItems(its);
@@ -58,7 +69,7 @@ export default function AdminPriceListItemsPage({ params }: Props) {
         setLoading(false);
       }
     })();
-  }, [listId, toast]);
+  }, [getToken, listId, toast]);
 
   const filtered = useMemo(() => {
     const n = q.trim().toLowerCase();
@@ -74,7 +85,9 @@ export default function AdminPriceListItemsPage({ params }: Props) {
     patch: { price?: number; isActive?: boolean },
   ) {
     try {
-      await updatePriceListItemClient(listId, item.sku, patch);
+      const token = await getToken();
+      if (!token) throw new Error("غير مصرّح");
+      await updatePriceListItemViaApi(listId, item.sku, patch, token);
       toast("تم التحديث", "success");
       load();
     } catch {

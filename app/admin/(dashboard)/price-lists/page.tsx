@@ -32,19 +32,11 @@ export default function AdminPriceListsPage() {
 
   function load() {
     setLoading(true);
-    void listPriceListsAdmin()
-      .then(setLists)
-      .catch((err) =>
-        toast(formatPriceListError(err, "فشل تحميل القوائم"), "error"),
-      )
-      .finally(() => setLoading(false));
-  }
-
-  useEffect(() => {
-    (async () => {
-      setLoading(true);
+    void (async () => {
       try {
-        const data = await listPriceListsAdmin();
+        const token = await getToken();
+        if (!token) throw new Error("غير مصرّح");
+        const data = await listPriceListsAdmin(token);
         setLists(data);
       } catch (err) {
         toast(formatPriceListError(err, "فشل تحميل القوائم"), "error");
@@ -52,7 +44,23 @@ export default function AdminPriceListsPage() {
         setLoading(false);
       }
     })();
-  }, [toast]);
+  }
+
+  useEffect(() => {
+    void (async () => {
+      setLoading(true);
+      try {
+        const token = await getToken();
+        if (!token) throw new Error("غير مصرّح");
+        const data = await listPriceListsAdmin(token);
+        setLists(data);
+      } catch (err) {
+        toast(formatPriceListError(err, "فشل تحميل القوائم"), "error");
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [getToken, toast]);
 
   const filtered = useMemo(() => {
     if (tab === "all") return lists;

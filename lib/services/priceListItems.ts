@@ -1,24 +1,8 @@
 "use client";
 
-import {
-  collection,
-  doc,
-  getDocs,
-  query,
-  serverTimestamp,
-  updateDoc,
-  where,
-} from "firebase/firestore";
-import {
-  getClientFirestore,
-  syncAuthTokenForFirestore,
-} from "@/lib/firebase/client";
 import type { PriceListItem } from "@/lib/types/priceList";
-import { priceListItemDocId } from "@/lib/utils/slug";
 
-const COLLECTION = "price_list_items";
-
-function fromDoc(id: string, data: Record<string, unknown>): PriceListItem {
+function fromApiRecord(id: string, data: Record<string, unknown>): PriceListItem {
   return {
     id,
     listId: String(data.listId ?? ""),
@@ -31,74 +15,52 @@ function fromDoc(id: string, data: Record<string, unknown>): PriceListItem {
     sortOrder: Number(data.sortOrder ?? 0),
     isActive: Boolean(data.isActive),
     listIsActive: Boolean(data.listIsActive ?? true),
-    createdAt: (data.createdAt as PriceListItem["createdAt"]) ?? null,
-    updatedAt: (data.updatedAt as PriceListItem["updatedAt"]) ?? null,
-    lastImportedAt: (data.lastImportedAt as PriceListItem["lastImportedAt"]) ?? null,
+    createdAt: null,
+    updatedAt: null,
+    lastImportedAt: null,
   };
 }
 
 function sortBySortOrder(items: PriceListItem[]): PriceListItem[] {
-  return [...items].sort((a, b) => a.sortOrder - b.sortOrder || a.sku.localeCompare(b.sku));
+  return [...items].sort(
+    (a, b) => a.sortOrder - b.sortOrder || a.sku.localeCompare(b.sku),
+  );
 }
 
+/** يقرأ عبر Admin SDK — لا يعتمد على قواعد Firestore على المتصفح */
 export async function listItemsForListAdmin(
   listId: string,
+  token: string,
 ): Promise<PriceListItem[]> {
-  await syncAuthTokenForFirestore();
-  const db = getClientFirestore();
-  const snap = await getDocs(
-    query(collection(db, COLLECTION), where("listId", "==", listId)),
-  );
-  const items = snap.docs.map((d) =>
-    fromDoc(d.id, d.data() as Record<string, unknown>),
+  const res = await fetch(`/api/admin/price-lists/${listId}/items`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  const data = (await res.json()) as {
+    items?: Record<string, unknown>[];
+    error?: string;
+  };
+  if (!res.ok) throw new Error(data.error ?? "فشل تحميل الأصناف");
+  const rows = Array.isArray(data.items) ? data.items : [];
+  const items = rows.map((row) =>
+    fromApiRecord(String(row.id ?? ""), row as Record<string, unknown>),
   );
   return sortBySortOrder(items);
 }
 
-export async function listActiveItemsForList(
-  listId: string,
-): Promise<PriceListItem[]> {
-  await syncAuthTokenForFirestore();
-  const db = getClientFirestore();
-  const snap = await getDocs(
-    query(
-      collection(db, COLLECTION),
-      where("listId", "==", listId),
-      where("listIsActive", "==", true),
-      where("isActive", "==", true),
-    ),
-  );
-  const items = snap.docs.map((d) =>
-    fromDoc(d.id, d.data() as Record<string, unknown>),
-  );
-  return sortBySortOrder(items);
-}
-
-export async function updatePriceListItemClient(
+export async function updatePriceListItemViaApi(
   listId: string,
   sku: string,
   patch: Partial<Pick<PriceListItem, "price" | "imageUrl" | "isActive" | "name">>,
-): Promise<void> {
-  const db = getClientFirestore();
-  const id = priceListItemDocId(listId, sku);
-  const data: Record<string, unknown> = { updatedAt: serverTimestamp() };
-  if (patch.price != null) data.price = patch.price;
-  if (patch.imageUrl != null) data.imageUrl = patch.imageUrl.trim();
-  if (patch.isActive != null) data.isActive = patch.isActive;
-  if (patch.name != null) data.name = patch.name.trim();
-  await updateDoc(doc(db, COLLECTION, id), data);
-}
-
-export async function adminApiFetch(
-  path: string,
   token: string,
-  init?: RequestInit,
-): Promise<Response> {
-  return fetch(path, {
-    ...init,
+): Promise<void> {
+  const res = await fetch(`/api/admin/price-lists/${listId}/items`, {
+    method: "PATCH",
     headers: {
-      ...(init?.headers ?? {}),
       Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
     },
+    body: JSON.stringify({ sku, ...patch }),
   });
+  const data = (await res.json()) as { error?: string };
+  if (!res.ok) throw new Error(data.error ?? "فشل التحديث");
 }

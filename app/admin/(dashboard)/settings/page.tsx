@@ -20,6 +20,8 @@ export default function AdminSettingsPage() {
   const [whatsappRows, setWhatsappRows] = useState<WhatsAppContact[]>([]);
   const [priceListOrderIncludePrices, setPriceListOrderIncludePrices] =
     useState(false);
+  const [showPriceLists, setShowPriceLists] = useState(true);
+  const [showReels, setShowReels] = useState(true);
   const [msg, setMsg] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
@@ -33,6 +35,8 @@ export default function AdminSettingsPage() {
       setPrimaryColor(s.primaryColor || DEFAULT_SITE_PRIMARY_COLOR);
       setWhatsappRows(s.whatsappContacts);
       setPriceListOrderIncludePrices(s.priceListOrderIncludePrices);
+      setShowPriceLists(s.showPriceLists);
+      setShowReels(s.showReels);
     });
   }, []);
 
@@ -51,6 +55,8 @@ export default function AdminSettingsPage() {
           primaryColor,
           whatsappContacts: whatsappRows,
           priceListOrderIncludePrices,
+          showPriceLists,
+          showReels,
           logoFile,
         },
         initial,
@@ -60,7 +66,14 @@ export default function AdminSettingsPage() {
       );
       const next = await getSiteSettings();
       setInitial(next);
+      setAppName(next.appName);
+      setHomeTitle(next.homeTitle);
+      setHomeSubtitle(next.homeSubtitle);
+      setPrimaryColor(next.primaryColor || DEFAULT_SITE_PRIMARY_COLOR);
       setWhatsappRows(next.whatsappContacts);
+      setPriceListOrderIncludePrices(next.priceListOrderIncludePrices);
+      setShowPriceLists(next.showPriceLists);
+      setShowReels(next.showReels);
       setLogoFile(null);
       setMsg("تم الحفظ.");
     } catch (err) {
@@ -145,6 +158,36 @@ export default function AdminSettingsPage() {
             </span>
             <span className="mt-1 block text-xs text-muted">
               افتراضيًا تُرسل الطلبات بدون أسعار — الاسم والكمية بالكرتونة فقط.
+            </span>
+          </span>
+        </label>
+        <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-border bg-muted/30 p-4">
+          <input
+            type="checkbox"
+            className="mt-1 h-4 w-4 rounded border-border"
+            checked={showPriceLists}
+            onChange={(e) => setShowPriceLists(e.target.checked)}
+          />
+          <span className="text-sm">
+            <span className="font-medium text-foreground">
+              إظهار تبويب القوائم التفاعلية
+            </span>
+            <span className="mt-1 block text-xs text-muted">
+              عند إيقافه، لن يظهر التبويب للزوار وسيتم توجيه أي رابط مباشر للكتالوج.
+            </span>
+          </span>
+        </label>
+        <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-border bg-muted/30 p-4">
+          <input
+            type="checkbox"
+            className="mt-1 h-4 w-4 rounded border-border"
+            checked={showReels}
+            onChange={(e) => setShowReels(e.target.checked)}
+          />
+          <span className="text-sm">
+            <span className="font-medium text-foreground">إظهار تبويب الفيديوهات</span>
+            <span className="mt-1 block text-xs text-muted">
+              عند إيقافه، لن يظهر تبويب الفيديوهات للزوار وسيتم منع فتح الصفحة مباشرة.
             </span>
           </span>
         </label>

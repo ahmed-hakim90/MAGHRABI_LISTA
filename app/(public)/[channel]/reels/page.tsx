@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useCatalogChannel } from "@/components/public/CatalogChannelContext";
 import { CatalogHomeStickyHeader } from "@/components/public/CatalogHomeStickyHeader";
 import { LoadingOverlay } from "@/components/public/LoadingOverlay";
@@ -13,6 +14,7 @@ import { publicReelsFeedPath } from "@/lib/constants/catalogChannels";
 
 export default function ChannelReelsPage() {
   const { audience, basePath } = useCatalogChannel();
+  const router = useRouter();
   const { reels, loading, error } = useReels(audience);
   const online = useNavigatorOnline();
   const s = usePublicSiteSettings();
@@ -26,6 +28,14 @@ export default function ChannelReelsPage() {
 
   const hasData = reels.length > 0;
   const feedHref = publicReelsFeedPath(audience);
+
+  useEffect(() => {
+    if (!s.showReels) router.replace(basePath);
+  }, [s.showReels, router, basePath]);
+
+  if (!s.showReels) {
+    return null;
+  }
 
   return (
     <div className="flex min-h-dvh flex-col bg-surface touch-manipulation">
@@ -48,6 +58,8 @@ export default function ChannelReelsPage() {
         onSelectCategory={() => {}}
         showCategoryChips={false}
         showCatalogViewToggle={false}
+        showPriceListsTab={s.showPriceLists}
+        showReelsTab={s.showReels}
       />
       <main className="mt-1 flex min-h-0 flex-1 flex-col sm:mt-2">
         {loading ? (

@@ -21,6 +21,8 @@ const defaults: SiteSettings = {
   primaryColor: DEFAULT_SITE_PRIMARY_COLOR,
   whatsappContacts: [],
   priceListOrderIncludePrices: false,
+  showPriceLists: true,
+  showReels: true,
   updatedAt: null,
 };
 

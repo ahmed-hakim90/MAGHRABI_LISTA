@@ -7,6 +7,8 @@ export type CatalogHomeSection = "catalog" | "price-lists" | "reels";
 type Props = {
   basePath: string;
   active: CatalogHomeSection;
+  showPriceLists?: boolean;
+  showReels?: boolean;
 };
 
 const tabs: {
@@ -23,7 +25,18 @@ const tabs: {
   { id: "reels", label: "فيديوهات", href: (base) => `${base}/reels` },
 ];
 
-export function CatalogHomeSectionTabs({ basePath, active }: Props) {
+export function CatalogHomeSectionTabs({
+  basePath,
+  active,
+  showPriceLists = true,
+  showReels = true,
+}: Props) {
+  const visibleTabs = tabs.filter((tab) => {
+    if (tab.id === "price-lists") return showPriceLists;
+    if (tab.id === "reels") return showReels;
+    return true;
+  });
+
   return (
     <nav
       className="flex w-full rounded-xl border border-border bg-card p-0.5 shadow-[var(--shadow-card)] sm:rounded-2xl"
@@ -31,7 +44,7 @@ export function CatalogHomeSectionTabs({ basePath, active }: Props) {
       role="tablist"
       aria-label="أقسام الكتالوج"
     >
-      {tabs.map((tab) => {
+      {visibleTabs.map((tab) => {
         const isActive = tab.id === active;
         return (
           <Link

@@ -65,6 +65,10 @@ export type SiteSettings = {
   whatsappContacts: WhatsAppContact[];
   /** When true, WhatsApp orders from price lists include line prices. */
   priceListOrderIncludePrices: boolean;
+  /** Controls whether the interactive price lists tab/page is visible publicly. */
+  showPriceLists: boolean;
+  /** Controls whether the reels/videos tab/page is visible publicly. */
+  showReels: boolean;
   updatedAt: Timestamp | null;
 };
 

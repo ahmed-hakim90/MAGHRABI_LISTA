@@ -38,6 +38,8 @@ type Props = {
   onSelectCategory: (category: string | null) => void;
   showCategoryChips: boolean;
   showCatalogViewToggle?: boolean;
+  showPriceListsTab?: boolean;
+  showReelsTab?: boolean;
 };
 
 /** First visit: show an inline hint next to the install control. */
@@ -86,6 +88,8 @@ export function CatalogHomeStickyHeader({
   selectedCategory,
   showCategoryChips,
   showCatalogViewToggle = true,
+  showPriceListsTab = true,
+  showReelsTab = true,
 }: Props) {
   const { hideAsInstalled, busy, runInstall } = usePwaInstall();
   const [searchOpen, setSearchOpen] = useState(false);
@@ -278,7 +282,12 @@ export function CatalogHomeStickyHeader({
             </button>
           </div>
 
-          <CatalogHomeSectionTabs basePath={basePath} active={homeSection} />
+          <CatalogHomeSectionTabs
+            basePath={basePath}
+            active={homeSection}
+            showPriceLists={showPriceListsTab}
+            showReels={showReelsTab}
+          />
 
           {showSearchField ? (
             <div id="catalog-home-search-panel">

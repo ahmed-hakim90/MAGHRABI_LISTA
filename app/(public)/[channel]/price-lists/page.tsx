@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useCatalogChannel } from "@/components/public/CatalogChannelContext";
 import { CatalogHomeStickyHeader } from "@/components/public/CatalogHomeStickyHeader";
 import { useCatalogView } from "@/components/public/CatalogViewToggle";
@@ -13,6 +14,7 @@ import { usePublicSiteSettings } from "@/hooks/usePublicSiteSettings";
 
 export default function ChannelPriceListsPage() {
   const { audience, basePath } = useCatalogChannel();
+  const router = useRouter();
   const { lists, loading, error } = usePriceLists(audience);
   const online = useNavigatorOnline();
   const s = usePublicSiteSettings();
@@ -26,6 +28,14 @@ export default function ChannelPriceListsPage() {
   }, [lists, q]);
 
   const hasData = lists.length > 0;
+
+  useEffect(() => {
+    if (!s.showPriceLists) router.replace(basePath);
+  }, [s.showPriceLists, router, basePath]);
+
+  if (!s.showPriceLists) {
+    return null;
+  }
 
   return (
     <div className="flex min-h-dvh flex-col bg-surface touch-manipulation">
@@ -47,6 +57,8 @@ export default function ChannelPriceListsPage() {
         selectedCategory={null}
         onSelectCategory={() => {}}
         showCategoryChips={false}
+        showPriceListsTab={s.showPriceLists}
+        showReelsTab={s.showReels}
       />
       <main className="mt-1 flex min-h-0 flex-1 flex-col sm:mt-2">
         {loading ? (

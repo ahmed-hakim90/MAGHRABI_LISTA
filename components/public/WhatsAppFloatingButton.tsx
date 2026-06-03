@@ -3,13 +3,13 @@
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { WhatsAppOrderDialog } from "@/components/public/WhatsAppOrderDialog";
-import { usePublicSiteSettings } from "@/hooks/usePublicSiteSettings";
+import { useSiteSettings } from "@/components/public/PublicSiteSettingsProvider";
 import { shouldHideFloatingCatalogButtons } from "@/lib/utils/catalogChrome";
 
 export function WhatsAppFloatingButton() {
   const pathname = usePathname();
   const [dialogOpen, setDialogOpen] = useState(false);
-  const site = usePublicSiteSettings();
+  const site = useSiteSettings();
 
   if (
     shouldHideFloatingCatalogButtons(pathname) ||

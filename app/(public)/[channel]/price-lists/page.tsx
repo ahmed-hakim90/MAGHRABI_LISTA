@@ -10,14 +10,14 @@ import { OfflineCatalogBanner } from "@/components/public/OfflineCatalogBanner";
 import { PriceListGrid } from "@/components/public/PriceListCard";
 import { useNavigatorOnline } from "@/hooks/useNavigatorOnline";
 import { usePriceLists } from "@/hooks/usePriceLists";
-import { usePublicSiteSettings } from "@/hooks/usePublicSiteSettings";
+import { useSiteSettings } from "@/components/public/PublicSiteSettingsProvider";
 
 export default function ChannelPriceListsPage() {
   const { audience, basePath } = useCatalogChannel();
   const router = useRouter();
   const { lists, loading, error } = usePriceLists(audience);
   const online = useNavigatorOnline();
-  const s = usePublicSiteSettings();
+  const s = useSiteSettings();
   const [q, setQ] = useState("");
   const [catalogView, setCatalogView] = useCatalogView();
 

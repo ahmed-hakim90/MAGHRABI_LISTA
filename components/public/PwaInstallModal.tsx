@@ -9,8 +9,6 @@ import {
 } from "@/hooks/usePwaInstall";
 
 const DISMISSED_KEY = "maghrabi_lista_pwa_install_dismissed";
-const IOS_SESSION_KEY = "maghrabi_lista_pwa_ios_prompt_shown_session";
-const IOS_DELAY_MS = 10_000;
 
 const PWA_INSTALL_OPEN_EVENT = "maghrabi-lista-open-pwa-install";
 
@@ -42,50 +40,26 @@ export function PwaInstallModal() {
   const [open, setOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
 
-  const eligible = isEligiblePath(pathname);
-
-  useEffect(() => {
-    if (!eligible || hideAsInstalled) return;
-    if (!deferred) return;
-    if (readDismissed()) return;
-    setOpen(true);
-  }, [eligible, deferred, hideAsInstalled]);
-
-  useEffect(() => {
-    if (!eligible || hideAsInstalled) return;
-    if (readDismissed()) return;
-    if (!isLikelyIOS()) return;
-    if (deferred) return;
-    try {
-      if (sessionStorage.getItem(IOS_SESSION_KEY) === "1") return;
-    } catch {
-      /* ignore */
-    }
-
-    const t = window.setTimeout(() => {
-      if (readDismissed() || isStandaloneDisplay()) return;
-      try {
-        if (sessionStorage.getItem(IOS_SESSION_KEY) === "1") return;
-        sessionStorage.setItem(IOS_SESSION_KEY, "1");
-      } catch {
-        /* ignore */
-      }
-      setOpen(true);
-    }, IOS_DELAY_MS);
-    return () => window.clearTimeout(t);
-  }, [eligible, hideAsInstalled, deferred]);
-
   useEffect(() => {
     const onOpen = () => {
+      if (!isEligiblePath(pathname)) return;
+      if (readDismissed()) return;
       if (hideAsInstalled || isStandaloneDisplay()) return;
       setOpen(true);
     };
     window.addEventListener(PWA_INSTALL_OPEN_EVENT, onOpen);
     return () => window.removeEventListener(PWA_INSTALL_OPEN_EVENT, onOpen);
-  }, [hideAsInstalled]);
+  }, [hideAsInstalled, pathname]);
 
   useEffect(() => {
-    if (hideAsInstalled) setOpen(false);
+    if (!hideAsInstalled) return;
+    let cancelled = false;
+    window.queueMicrotask(() => {
+      if (!cancelled) setOpen(false);
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [hideAsInstalled]);
 
   const closeModal = useCallback(() => setOpen(false), []);

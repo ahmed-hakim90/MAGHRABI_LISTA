@@ -3,11 +3,11 @@
 import { useEffect, useState } from "react";
 
 export function useNavigatorOnline(): boolean {
-  const [online, setOnline] = useState(
-    typeof navigator !== "undefined" ? navigator.onLine : true,
-  );
+  // Keep SSR and the first client render aligned; sync real status after mount.
+  const [online, setOnline] = useState(true);
 
   useEffect(() => {
+    setOnline(navigator.onLine);
     const on = () => setOnline(true);
     const off = () => setOnline(false);
     window.addEventListener("online", on);

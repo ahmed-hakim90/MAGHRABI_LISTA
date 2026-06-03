@@ -9,7 +9,7 @@ import {
 } from "@/lib/constants/catalogChannels";
 import type { PriceListItemPublic, PriceListPublic } from "@/lib/types/priceList";
 import { usePriceListCart } from "@/hooks/usePriceListCart";
-import { usePublicSiteSettings } from "@/hooks/usePublicSiteSettings";
+import { useSiteSettings } from "@/components/public/PublicSiteSettingsProvider";
 import { ToastProvider, useToast } from "@/components/ui/Toast";
 import { PriceListTable } from "./PriceListTable";
 import { PriceListToolbar } from "./PriceListToolbar";
@@ -25,7 +25,7 @@ function PriceListViewInner({ list, items }: Props) {
   const channel = useCatalogChannelOptional();
   const { cart, setSelected, setQty, lines, selectedCount } =
     usePriceListCart(items);
-  const site = usePublicSiteSettings();
+  const site = useSiteSettings();
   const { toast } = useToast();
   const channelBase =
     channel?.basePath ?? `/${AUDIENCE_TO_CHANNEL[list.audience]}`;

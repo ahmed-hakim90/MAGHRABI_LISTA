@@ -7,6 +7,7 @@ import {
   pwaAppleWebAppTitleForChannelSegment,
   type CatalogChannelSegment,
 } from "@/lib/constants/catalogChannels";
+import { getCachedPublicSiteSettings } from "@/lib/server/publicCatalogData";
 
 type Props = {
   children: React.ReactNode;
@@ -34,5 +35,10 @@ export default async function CatalogChannelLayout({
   const { channel: raw } = await params;
   if (!isCatalogChannelSegment(raw)) notFound();
   const channel = raw as CatalogChannelSegment;
-  return <CatalogChannelRoot channel={channel}>{children}</CatalogChannelRoot>;
+  const initialSettings = await getCachedPublicSiteSettings();
+  return (
+    <CatalogChannelRoot channel={channel} initialSettings={initialSettings}>
+      {children}
+    </CatalogChannelRoot>
+  );
 }

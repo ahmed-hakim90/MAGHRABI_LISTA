@@ -4,7 +4,6 @@ import Image from "next/image";
 import {
   useCallback,
   useEffect,
-  useLayoutEffect,
   useRef,
   useState,
 } from "react";
@@ -99,6 +98,8 @@ export function CatalogHomeStickyHeader({
   const [shellHeight, setShellHeight] = useState(0);
   const title = homeTitle.trim() || DEFAULT_SITE_HOME_TITLE;
   const showSearchField = searchOpen || searchValue.length > 0;
+  const spacerHeight =
+    shellHeight > 0 ? `${shellHeight}px` : "min(7.5rem, 22dvh)";
 
   const dismissInstallTip = useCallback(() => {
     setInstallTipOpen(false);
@@ -154,7 +155,7 @@ export function CatalogHomeStickyHeader({
     if (searchOpen) focusSearchInput();
   }, [searchOpen, focusSearchInput]);
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     const el = shellRef.current;
     if (!el || typeof ResizeObserver === "undefined") return;
     const sync = () => setShellHeight(el.offsetHeight);
@@ -188,7 +189,7 @@ export function CatalogHomeStickyHeader({
                   fill
                   className="object-cover object-center scale-[1.2]"
                   sizes="40px"
-                  unoptimized
+                  priority
                 />
               </div>
             ) : (
@@ -333,9 +334,8 @@ export function CatalogHomeStickyHeader({
       <div
         aria-hidden
         className="shrink-0"
-        style={{
-          height: shellHeight > 0 ? shellHeight : "min(7.5rem, 22dvh)",
-        }}
+        style={{ height: spacerHeight }}
+        suppressHydrationWarning
       />
     </>
   );

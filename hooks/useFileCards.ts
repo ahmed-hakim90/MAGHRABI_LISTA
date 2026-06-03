@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { CatalogAudience } from "@/lib/constants/catalogChannels";
 import type { FileCard, FileFolder } from "@/lib/types/models";
 import {
@@ -14,27 +14,32 @@ function hasCatalogData(cards: FileCard[], folders: FileFolder[]) {
   return cards.length > 0 || folders.length > 0;
 }
 
-export function useFileCards(audience: CatalogAudience) {
-  const [cards, setCards] = useState<FileCard[]>([]);
-  const [folders, setFolders] = useState<FileFolder[]>([]);
-  const [loading, setLoading] = useState(true);
+export function useFileCards(
+  audience: CatalogAudience,
+  initial?: { cards: FileCard[]; folders: FileFolder[] },
+) {
+  const [snapshot] = useState(() => initial ?? readCatalogSnapshot(audience));
+  const [cards, setCards] = useState<FileCard[]>(() => snapshot?.cards ?? []);
+  const [folders, setFolders] = useState<FileFolder[]>(
+    () => snapshot?.folders ?? [],
+  );
+  const [loading, setLoading] = useState(
+    () => !snapshot || !hasCatalogData(snapshot.cards, snapshot.folders),
+  );
   const [error, setError] = useState<string | null>(null);
   const [stale, setStale] = useState(false);
 
   const cardsRef = useRef(cards);
   const foldersRef = useRef(folders);
-  cardsRef.current = cards;
-  foldersRef.current = folders;
 
-  useLayoutEffect(() => {
-    const snap = readCatalogSnapshot(audience);
-    if (!snap) return;
-    setCards(snap.cards);
-    setFolders(snap.folders);
-  }, [audience]);
+  useEffect(() => {
+    cardsRef.current = cards;
+    foldersRef.current = folders;
+  }, [cards, folders]);
 
   const refetch = useCallback(async () => {
-    setLoading(true);
+    const hasExisting = hasCatalogData(cardsRef.current, foldersRef.current);
+    setLoading(!hasExisting);
     setError(null);
     try {
       const [c, f] = await Promise.all([
@@ -97,21 +102,24 @@ export function useActiveFileCardsWhen(
   useEffect(() => {
     if (!enabled) return;
     let cancelled = false;
-    setLoading(true);
-    setError(null);
-    void listActiveFileCards(audience)
-      .then((c) => {
-        if (!cancelled) setCards(c);
-      })
-      .catch((e) => {
-        if (!cancelled) {
-          setError(e instanceof Error ? e.message : "تعذر تحميل الملفات");
-          setCards([]);
-        }
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
+    window.queueMicrotask(() => {
+      if (cancelled) return;
+      setLoading(true);
+      setError(null);
+      void listActiveFileCards(audience)
+        .then((c) => {
+          if (!cancelled) setCards(c);
+        })
+        .catch((e) => {
+          if (!cancelled) {
+            setError(e instanceof Error ? e.message : "تعذر تحميل الملفات");
+            setCards([]);
+          }
+        })
+        .finally(() => {
+          if (!cancelled) setLoading(false);
+        });
+    });
     return () => {
       cancelled = true;
     };

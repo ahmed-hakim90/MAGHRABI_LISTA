@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useCatalogChannel } from "@/components/public/CatalogChannelContext";
 import { useFcmToken } from "@/hooks/useFcmToken";
 
-const AUTO_DELAY_MS = 4800;
+const AUTO_DELAY_MS = 60_000;
 
 function isEligiblePath(pathname: string | null): boolean {
   if (!pathname) return false;

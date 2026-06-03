@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   readSettingsSnapshot,
   writeSettingsSnapshot,
@@ -26,22 +26,27 @@ const defaults: SiteSettings = {
   updatedAt: null,
 };
 
-export function usePublicSiteSettings(): SiteSettings {
-  const [settings, setSettings] = useState<SiteSettings>(defaults);
-
-  useLayoutEffect(() => {
-    const local = readSettingsSnapshot();
-    if (local) setSettings(local);
-  }, []);
+export function usePublicSiteSettings(initial?: SiteSettings): SiteSettings {
+  const [settings, setSettings] = useState<SiteSettings>(
+    () => initial ?? readSettingsSnapshot() ?? defaults,
+  );
 
   useEffect(() => {
-    void getSiteSettings()
-      .then((s) => {
-        setSettings(s);
-        writeSettingsSnapshot(s);
-      })
-      .catch(() => {});
-  }, []);
+    let cancelled = false;
+    window.queueMicrotask(() => {
+      if (cancelled) return;
+      void getSiteSettings()
+        .then((s) => {
+          if (cancelled) return;
+          setSettings(s);
+          writeSettingsSnapshot(s);
+        })
+        .catch(() => {});
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [initial]);
 
   return settings;
 }

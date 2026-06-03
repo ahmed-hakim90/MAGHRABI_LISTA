@@ -8,7 +8,7 @@ import { LoadingOverlay } from "@/components/public/LoadingOverlay";
 import { OfflineCatalogBanner } from "@/components/public/OfflineCatalogBanner";
 import { ReelsGrid } from "@/components/reels/ReelsGrid";
 import { useNavigatorOnline } from "@/hooks/useNavigatorOnline";
-import { usePublicSiteSettings } from "@/hooks/usePublicSiteSettings";
+import { useSiteSettings } from "@/components/public/PublicSiteSettingsProvider";
 import { useReels } from "@/hooks/useReels";
 import { publicReelsFeedPath } from "@/lib/constants/catalogChannels";
 
@@ -17,7 +17,7 @@ export default function ChannelReelsPage() {
   const router = useRouter();
   const { reels, loading, error } = useReels(audience);
   const online = useNavigatorOnline();
-  const s = usePublicSiteSettings();
+  const s = useSiteSettings();
   const [q, setQ] = useState("");
 
   const filtered = useMemo(() => {

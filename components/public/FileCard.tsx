@@ -118,7 +118,7 @@ export function FileCard({
                 alt=""
                 fill
                 className="object-cover"
-                unoptimized
+                sizes="40px"
                 priority={imagePriority}
               />
             ) : (
@@ -164,7 +164,6 @@ export function FileCard({
               fill
               className="object-contain transition duration-300 [@media(hover:hover)]:group-hover/card:scale-[1.02]"
               sizes="(max-width: 359px) 92vw, (max-width: 768px) 30vw, 20vw"
-              unoptimized
               priority={imagePriority}
             />
           ) : (

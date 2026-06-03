@@ -11,7 +11,7 @@ import { LogoHeader } from "@/components/public/LogoHeader";
 import { OfflineCatalogBanner } from "@/components/public/OfflineCatalogBanner";
 import { useFileCards } from "@/hooks/useFileCards";
 import { useNavigatorOnline } from "@/hooks/useNavigatorOnline";
-import { usePublicSiteSettings } from "@/hooks/usePublicSiteSettings";
+import { useSiteSettings } from "@/components/public/PublicSiteSettingsProvider";
 import { matchesFileCardSearch } from "@/lib/utils/fileCardSearch";
 
 export default function ChannelFolderPage({
@@ -23,7 +23,7 @@ export default function ChannelFolderPage({
   const { basePath, audience } = useCatalogChannel();
   const { cards, folders, loading, error, stale } = useFileCards(audience);
   const online = useNavigatorOnline();
-  const s = usePublicSiteSettings();
+  const s = useSiteSettings();
   const [q, setQ] = useState("");
   const [catalogView, setCatalogView] = useCatalogView();
 

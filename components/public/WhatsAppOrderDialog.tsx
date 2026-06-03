@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useCatalogChannel } from "@/components/public/CatalogChannelContext";
 import { useActiveFileCardsWhen } from "@/hooks/useFileCards";
-import { usePublicSiteSettings } from "@/hooks/usePublicSiteSettings";
+import { useSiteSettings } from "@/components/public/PublicSiteSettingsProvider";
 import { publicCatalogFileViewPath } from "@/lib/constants/catalogChannels";
 import { PUBLIC_WHATSAPP_ORDER_PREFILL } from "@/lib/constants/publicWhatsApp";
 import type { FileCard } from "@/lib/types/models";
@@ -26,7 +26,7 @@ function cardMatchesQuery(q: string, card: FileCard) {
 export function WhatsAppOrderDialog({ open, onClose }: Props) {
   const { audience } = useCatalogChannel();
   const panelRef = useRef<HTMLDivElement>(null);
-  const site = usePublicSiteSettings();
+  const site = useSiteSettings();
   const whatsappContacts = site.whatsappContacts;
   const [message, setMessage] = useState(PUBLIC_WHATSAPP_ORDER_PREFILL);
   const [selectedId, setSelectedId] = useState("");
@@ -43,17 +43,24 @@ export function WhatsAppOrderDialog({ open, onClose }: Props) {
     }
     const isNewOpen = !wasOpenRef.current;
     wasOpenRef.current = true;
-    if (isNewOpen) {
-      setMessage(PUBLIC_WHATSAPP_ORDER_PREFILL);
-      setSelectedId("");
-      setFileQuery("");
-      setSelectedWhatsappId("");
-    }
-    setSelectedWhatsappId((cur) => {
-      if (whatsappContacts.length === 0) return "";
-      if (cur && whatsappContacts.some((c) => c.id === cur)) return cur;
-      return "";
+    let cancelled = false;
+    window.queueMicrotask(() => {
+      if (cancelled) return;
+      if (isNewOpen) {
+        setMessage(PUBLIC_WHATSAPP_ORDER_PREFILL);
+        setSelectedId("");
+        setFileQuery("");
+        setSelectedWhatsappId("");
+      }
+      setSelectedWhatsappId((cur) => {
+        if (whatsappContacts.length === 0) return "";
+        if (cur && whatsappContacts.some((c) => c.id === cur)) return cur;
+        return "";
+      });
     });
+    return () => {
+      cancelled = true;
+    };
   }, [open, whatsappContacts]);
 
   useEffect(() => {

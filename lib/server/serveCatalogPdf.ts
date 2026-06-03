@@ -11,6 +11,8 @@ const FORWARD_FROM_UPSTREAM = [
   "last-modified",
 ] as const;
 
+const PDF_CACHE_CONTROL = "no-store, max-age=0, must-revalidate";
+
 function applyUpstreamPdfHeaders(upstream: Response, target: Headers): void {
   for (const name of FORWARD_FROM_UPSTREAM) {
     const v = upstream.headers.get(name);
@@ -44,12 +46,14 @@ export async function serveCatalogPdfFromGate(
     if (upstream.status === 304) {
       const h = new Headers();
       applyUpstreamPdfHeaders(upstream, h);
+      h.set("Cache-Control", PDF_CACHE_CONTROL);
       h.set("X-Content-Type-Options", "nosniff");
       return new Response(null, { status: 304, headers: h });
     }
     if (upstream.status === 416 && upstream.body) {
       const h = new Headers();
       applyUpstreamPdfHeaders(upstream, h);
+      h.set("Cache-Control", PDF_CACHE_CONTROL);
       h.set("X-Content-Type-Options", "nosniff");
       return new Response(upstream.body, { status: 416, headers: h });
     }
@@ -76,7 +80,7 @@ export async function serveCatalogPdfFromGate(
   );
   out.set(
     "Cache-Control",
-    "public, max-age=300, s-maxage=86400, stale-while-revalidate=86400",
+    PDF_CACHE_CONTROL,
   );
   out.set("X-Content-Type-Options", "nosniff");
 

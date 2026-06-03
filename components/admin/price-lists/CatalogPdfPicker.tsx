@@ -34,7 +34,7 @@ function cardMatchesAudience(card: FileCard, audience: CatalogAudience): boolean
 export function catalogPdfSelectionFromCard(card: FileCard): CatalogPdfSelection {
   return {
     cardId: card.id,
-    pdfUrl: publicCatalogFilePdfPath(card.audience, card.id),
+    pdfUrl: publicCatalogFilePdfPath(card.audience, card.id, card.version),
     coverImage: card.thumbnailUrl?.trim() ?? "",
     title: card.title || card.fileName,
   };
@@ -134,7 +134,11 @@ export function CatalogPdfPicker({ audience, value, onChange }: Props) {
                     ) : (
                       <PdfFirstPagePreview
                         cardId={card.id}
-                        pdfUrl={publicCatalogFilePdfPath(card.audience, card.id)}
+                        pdfUrl={publicCatalogFilePdfPath(
+                          card.audience,
+                          card.id,
+                          card.version,
+                        )}
                         className="h-full w-full"
                       />
                     )}
@@ -176,6 +180,7 @@ export function CatalogPdfPicker({ audience, value, onChange }: Props) {
                 pdfUrl={publicCatalogFilePdfPath(
                   selected.audience,
                   selected.id,
+                  selected.version,
                 )}
                 className="h-full w-full"
               />
@@ -184,7 +189,12 @@ export function CatalogPdfPicker({ audience, value, onChange }: Props) {
           <div className="min-w-0 text-xs text-muted">
             <p className="font-medium text-foreground">{selected.title}</p>
             <p className="mt-1 truncate" dir="ltr">
-              PDF: {publicCatalogFilePdfPath(selected.audience, selected.id)}
+              PDF:{" "}
+              {publicCatalogFilePdfPath(
+                selected.audience,
+                selected.id,
+                selected.version,
+              )}
             </p>
           </div>
         </div>

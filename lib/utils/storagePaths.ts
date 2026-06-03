@@ -13,6 +13,16 @@ export function getPdfPathForAudience(
   return `${STORAGE_FOLDER}/${seg}/files/${cardId}/document.pdf`;
 }
 
+/** Unique PDF path for replacements so old cached URLs never point at new bytes. */
+export function getReplacementPdfPathForAudience(
+  audience: CatalogAudience,
+  cardId: string,
+): string {
+  const seg = storagePrefixForAudience(audience);
+  const suffix = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+  return `${STORAGE_FOLDER}/${seg}/files/${cardId}/document-${suffix}.pdf`;
+}
+
 /** Thumbnail path for new uploads (audience-specific prefix). */
 export function getThumbnailPathForAudience(
   audience: CatalogAudience,

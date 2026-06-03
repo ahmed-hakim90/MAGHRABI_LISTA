@@ -10,6 +10,7 @@ export type CatalogCardGateOk = {
   ok: true;
   title: string;
   fileUrl: string;
+  version: number | null;
 };
 
 export type CatalogCardGateResult = CatalogCardGateOk | { ok: false };
@@ -29,5 +30,10 @@ export async function getActiveCardForCatalogAudience(
   if (!fileUrl) return { ok: false };
   const title =
     String(data.title ?? cardId).replace(/[\r\n]+/g, " ").trim() || cardId;
-  return { ok: true, title, fileUrl };
+  const rawVersion = Number(data.version);
+  const version =
+    Number.isFinite(rawVersion) && rawVersion > 0
+      ? Math.floor(rawVersion)
+      : null;
+  return { ok: true, title, fileUrl, version };
 }

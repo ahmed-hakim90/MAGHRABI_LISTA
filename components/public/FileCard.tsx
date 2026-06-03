@@ -8,6 +8,7 @@ import { formatFileSize } from "@/lib/utils/formatFileSize";
 import { getFileCardFreshnessBadge } from "@/lib/utils/fileCardBadges";
 import { useCatalogChannel } from "@/components/public/CatalogChannelContext";
 import { useNarrowViewportForNewTab } from "@/hooks/useNarrowViewportForNewTab";
+import { publicCatalogFilePdfPath } from "@/lib/constants/catalogChannels";
 import {
   CatalogListKebab,
   catalogListRowClass,
@@ -35,6 +36,10 @@ function pingCatalogView(cardId: string) {
   }).catch(() => {});
 }
 
+function withDownloadParam(href: string): string {
+  return `${href}${href.includes("?") ? "&" : "?"}download`;
+}
+
 const gridShell =
   "group/card flex min-w-0 touch-manipulation  flex-col overflow-hidden rounded-xl border border-border/90 bg-blue-500 shadow-sm transition duration-200 ease-out motion-reduce:transition-none [@media(hover:hover)]:hover:border-border [@media(hover:hover)]:hover:shadow-md active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2";
 
@@ -58,7 +63,11 @@ export function FileCard({
     : {};
   const isList = variant === "list";
   const viewHref = `${basePath}/file/${card.id}/view`;
-  const pdfHref = `${basePath}/file/${card.id}/pdf`;
+  const pdfHref = publicCatalogFilePdfPath(
+    card.audience,
+    card.id,
+    card.version,
+  );
   /** On narrow / touch layouts: open the PDF stream in a new tab (native viewer, no site chrome). */
   const primaryOpenHref = openFileInNewTab ? pdfHref : viewHref;
   const freshness = getFileCardFreshnessBadge(card);
@@ -137,7 +146,7 @@ export function FileCard({
           <CatalogListKebab
             href={primaryOpenHref}
             title={card.title}
-            downloadHref={`${pdfHref}?download`}
+            downloadHref={withDownloadParam(pdfHref)}
             openViewInNewTab
             onPrimaryClick={
               openFileInNewTab ? () => pingCatalogView(card.id) : undefined

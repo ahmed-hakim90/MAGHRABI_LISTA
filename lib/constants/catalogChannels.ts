@@ -61,8 +61,13 @@ export function publicCatalogFileViewPath(
 export function publicCatalogFilePdfPath(
   audience: CatalogAudience,
   cardId: string,
+  version?: number | null,
 ): string {
-  return `/${AUDIENCE_TO_CHANNEL[audience]}/file/${cardId}/pdf`;
+  const path = `/${AUDIENCE_TO_CHANNEL[audience]}/file/${cardId}/pdf`;
+  if (version == null || !Number.isFinite(version) || version <= 0) {
+    return path;
+  }
+  return `${path}?v=${encodeURIComponent(String(Math.floor(version)))}`;
 }
 
 export function publicPriceListsIndexPath(

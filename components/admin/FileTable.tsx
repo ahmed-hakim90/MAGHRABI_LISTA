@@ -217,7 +217,11 @@ export function FileTable({ audience }: FileTableProps) {
                   ) : card.isActive ? (
                     <PdfFirstPagePreview
                       cardId={card.id}
-                      pdfUrl={publicCatalogFilePdfPath(card.audience, card.id)}
+                      pdfUrl={publicCatalogFilePdfPath(
+                        card.audience,
+                        card.id,
+                        card.version,
+                      )}
                     />
                   ) : (
                     <PdfThumbnailPlaceholder />

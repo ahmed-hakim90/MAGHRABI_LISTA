@@ -7,9 +7,14 @@ import { useCatalogChannel } from "@/components/public/CatalogChannelContext";
 type Props = {
   cardId: string;
   title: string;
+  version?: number | null;
 };
 
-export function CatalogPdfViewer({ cardId, title }: Props) {
+function withDownloadParam(href: string): string {
+  return `${href}${href.includes("?") ? "&" : "?"}download`;
+}
+
+export function CatalogPdfViewer({ cardId, title, version }: Props) {
   const router = useRouter();
   const { basePath } = useCatalogChannel();
   const [entered, setEntered] = useState(false);
@@ -27,7 +32,12 @@ export function CatalogPdfViewer({ cardId, title }: Props) {
     }).catch(() => {});
   }, [cardId]);
 
-  const pdfSrc = `${basePath}/file/${cardId}/pdf`;
+  const pdfSrc =
+    version != null && Number.isFinite(version) && version > 0
+      ? `${basePath}/file/${cardId}/pdf?v=${encodeURIComponent(
+          String(Math.floor(version)),
+        )}`
+      : `${basePath}/file/${cardId}/pdf`;
 
   return (
     <div
@@ -67,7 +77,7 @@ export function CatalogPdfViewer({ cardId, title }: Props) {
           {title}
         </h1>
         <a
-          href={`${pdfSrc}?download`}
+          href={withDownloadParam(pdfSrc)}
           className="inline-flex min-h-touch min-w-touch shrink-0 items-center justify-center rounded-xl text-white/90 transition hover:bg-white/10"
           aria-label="تحميل PDF"
           download

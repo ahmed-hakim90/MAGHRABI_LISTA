@@ -20,5 +20,11 @@ export default async function ChannelFileViewPage({ params }: Props) {
   const routeAudience = CHANNEL_TO_AUDIENCE[channel];
   const gate = await getActiveCardForCatalogAudience(cardId, routeAudience);
   if (!gate.ok) notFound();
-  return <CatalogPdfViewer cardId={cardId} title={gate.title} />;
+  return (
+    <CatalogPdfViewer
+      cardId={cardId}
+      title={gate.title}
+      version={gate.version}
+    />
+  );
 }

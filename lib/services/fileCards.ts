@@ -33,6 +33,7 @@ import { normalizeAudienceFromDoc } from "@/lib/constants/catalogChannels";
 import type { FileCard } from "@/lib/types/models";
 import {
   getPdfPathForAudience,
+  getReplacementPdfPathForAudience,
   getThumbnailPathForAudience,
   STORAGE_FOLDER,
 } from "@/lib/utils/storagePaths";
@@ -468,27 +469,42 @@ export async function replaceFileCardPdf(
   const data = snap.data() as Record<string, unknown>;
   const audience = normalizeAudienceFromDoc(data.audience);
   const existingPath = String(data.filePath ?? "").trim();
-  const pdfPath =
-    existingPath ||
-    getPdfPathForAudience(audience, cardId);
+  const pdfPath = getReplacementPdfPathForAudience(audience, cardId);
   const pdfRef = ref(st, pdfPath);
-  await runResumableUpload(
-    pdfRef,
-    pdfFile,
-    { contentType: "application/pdf" },
-    (r) => on?.(r * 0.92),
-  );
-  on?.(0.94);
-  const fileUrl = await getDownloadURL(pdfRef);
-  await updateDoc(doc(db, "fileCards", cardId), {
-    fileUrl,
-    filePath: pdfPath,
-    fileName: pdfFile.name,
-    fileSize: pdfFile.size,
-    updatedAt: serverTimestamp(),
-    updatedBy: uid,
-    version: increment(1),
-  });
+  try {
+    await runResumableUpload(
+      pdfRef,
+      pdfFile,
+      { contentType: "application/pdf" },
+      (r) => on?.(r * 0.9),
+    );
+    on?.(0.92);
+    const fileUrl = await getDownloadURL(pdfRef);
+    await updateDoc(doc(db, "fileCards", cardId), {
+      fileUrl,
+      filePath: pdfPath,
+      fileName: pdfFile.name,
+      fileSize: pdfFile.size,
+      updatedAt: serverTimestamp(),
+      updatedBy: uid,
+      version: increment(1),
+    });
+    on?.(0.98);
+  } catch (e) {
+    try {
+      await deleteObject(pdfRef);
+    } catch {
+      /* ignore cleanup failure */
+    }
+    throw e;
+  }
+  if (existingPath && existingPath !== pdfPath) {
+    try {
+      await deleteObject(ref(st, existingPath));
+    } catch {
+      /* old file cleanup is best-effort after the new file is live */
+    }
+  }
   on?.(1);
 }
 

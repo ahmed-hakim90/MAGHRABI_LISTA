@@ -303,7 +303,7 @@ export function CatalogHomeStickyHeader({
 
           {showCatalogViewToggle ? (
           <div className="flex items-center gap-2" dir="rtl">
-            {showCategoryChips && categories.length > 0 ? (
+            {showCategoryChips && categories.length > 1 ? (
               <>
                 <div className="min-w-0 flex-1">
                   <CategoryFilterChips

@@ -37,6 +37,8 @@ export function CatalogHomeSectionTabs({
     return true;
   });
 
+  if (visibleTabs.length <= 1) return null;
+
   return (
     <nav
       className="flex w-full rounded-xl border border-border bg-card p-0.5 shadow-[var(--shadow-card)] sm:rounded-2xl"

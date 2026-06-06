@@ -11,7 +11,7 @@ export function CategoryFilterChips({
   selected,
   onSelect,
 }: Props) {
-  if (categories.length === 0) return null;
+  if (categories.length <= 1) return null;
 
   return (
     <div

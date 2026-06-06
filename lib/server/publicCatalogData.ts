@@ -12,6 +12,7 @@ import {
 import type { FileCard, FileFolder, SiteSettings } from "@/lib/types/models";
 import { STORAGE_FOLDER } from "@/lib/utils/storagePaths";
 import { parseWhatsappContactsRaw } from "@/lib/utils/siteWhatsappContacts";
+import { hotlineFromFirestore } from "@/lib/utils/hotlineNumber";
 
 export const PUBLIC_CATALOG_REVALIDATE_SECONDS = 300;
 
@@ -125,6 +126,10 @@ export function settingsFromData(
     homeSubtitle: String(data.homeSubtitle ?? ""),
     primaryColor: String(data.primaryColor ?? DEFAULT_SITE_PRIMARY_COLOR),
     whatsappContacts: parseWhatsappContactsRaw(data.whatsappContacts),
+    hotlineNumber: hotlineFromFirestore(
+      data.hotlineNumber,
+      "hotlineNumber" in data,
+    ),
     priceListOrderIncludePrices: Boolean(
       data.priceListOrderIncludePrices ?? false,
     ),

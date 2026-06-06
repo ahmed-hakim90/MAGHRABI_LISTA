@@ -8,6 +8,7 @@ import {
 import {
   DEFAULT_SITE_APP_NAME,
   DEFAULT_SITE_HOME_TITLE,
+  DEFAULT_SITE_HOTLINE_NUMBER,
   DEFAULT_SITE_PRIMARY_COLOR,
 } from "@/lib/constants/siteDefaults";
 import { getSiteSettings } from "@/lib/services/settings";
@@ -20,6 +21,7 @@ const defaults: SiteSettings = {
   homeSubtitle: "",
   primaryColor: DEFAULT_SITE_PRIMARY_COLOR,
   whatsappContacts: [],
+  hotlineNumber: DEFAULT_SITE_HOTLINE_NUMBER,
   priceListOrderIncludePrices: false,
   showPriceLists: true,
   showReels: true,

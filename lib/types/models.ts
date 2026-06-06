@@ -63,6 +63,8 @@ export type SiteSettings = {
   homeSubtitle: string;
   primaryColor: string;
   whatsappContacts: WhatsAppContact[];
+  /** Short code or digits for the public floating call button (`tel:` link). */
+  hotlineNumber: string;
   /** When true, WhatsApp orders from price lists include line prices. */
   priceListOrderIncludePrices: boolean;
   /** Controls whether the interactive price lists tab/page is visible publicly. */

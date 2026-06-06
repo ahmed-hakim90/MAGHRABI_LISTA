@@ -18,6 +18,7 @@ export default function AdminSettingsPage() {
   const [primaryColor, setPrimaryColor] = useState(DEFAULT_SITE_PRIMARY_COLOR);
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [whatsappRows, setWhatsappRows] = useState<WhatsAppContact[]>([]);
+  const [hotlineNumber, setHotlineNumber] = useState("");
   const [priceListOrderIncludePrices, setPriceListOrderIncludePrices] =
     useState(false);
   const [showPriceLists, setShowPriceLists] = useState(true);
@@ -34,6 +35,7 @@ export default function AdminSettingsPage() {
       setHomeSubtitle(s.homeSubtitle);
       setPrimaryColor(s.primaryColor || DEFAULT_SITE_PRIMARY_COLOR);
       setWhatsappRows(s.whatsappContacts);
+      setHotlineNumber(s.hotlineNumber);
       setPriceListOrderIncludePrices(s.priceListOrderIncludePrices);
       setShowPriceLists(s.showPriceLists);
       setShowReels(s.showReels);
@@ -54,6 +56,7 @@ export default function AdminSettingsPage() {
           homeSubtitle,
           primaryColor,
           whatsappContacts: whatsappRows,
+          hotlineNumber,
           priceListOrderIncludePrices,
           showPriceLists,
           showReels,
@@ -71,6 +74,7 @@ export default function AdminSettingsPage() {
       setHomeSubtitle(next.homeSubtitle);
       setPrimaryColor(next.primaryColor || DEFAULT_SITE_PRIMARY_COLOR);
       setWhatsappRows(next.whatsappContacts);
+      setHotlineNumber(next.hotlineNumber);
       setPriceListOrderIncludePrices(next.priceListOrderIncludePrices);
       setShowPriceLists(next.showPriceLists);
       setShowReels(next.showReels);
@@ -190,6 +194,21 @@ export default function AdminSettingsPage() {
               عند إيقافه، لن يظهر تبويب الفيديوهات للزوار وسيتم منع فتح الصفحة مباشرة.
             </span>
           </span>
+        </label>
+
+        <label className="block">
+          <span className="text-sm font-medium text-foreground">الخط الساخن</span>
+          <p className="mt-1 text-xs text-muted">
+            يظهر زر عائم بأيقونة الهاتف — الضغط يفتح الاتصال مباشرة. اتركه فارغًا
+            لإخفاء الزر.
+          </p>
+          <input
+            className="mt-2 w-full rounded-xl border border-border px-3 py-2"
+            dir="ltr"
+            value={hotlineNumber}
+            onChange={(e) => setHotlineNumber(e.target.value)}
+            placeholder="17355"
+          />
         </label>
 
         <div className="space-y-3 rounded-xl border border-border bg-muted/30 p-4">

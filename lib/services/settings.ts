@@ -16,6 +16,10 @@ import {
   normalizeWhatsappContactsForSave,
   parseWhatsappContactsRaw,
 } from "@/lib/utils/siteWhatsappContacts";
+import {
+  hotlineFromFirestore,
+  parseHotlineNumber,
+} from "@/lib/utils/hotlineNumber";
 
 const SITE_DOC = "site";
 
@@ -32,6 +36,10 @@ function fromData(data: Record<string, unknown>): SiteSettings {
     homeSubtitle: String(data.homeSubtitle ?? ""),
     primaryColor: String(data.primaryColor ?? DEFAULT_SITE_PRIMARY_COLOR),
     whatsappContacts,
+    hotlineNumber: hotlineFromFirestore(
+      data.hotlineNumber,
+      "hotlineNumber" in data,
+    ),
     priceListOrderIncludePrices: Boolean(data.priceListOrderIncludePrices ?? false),
     showPriceLists: Boolean(data.showPriceLists ?? true),
     showReels: Boolean(data.showReels ?? true),
@@ -55,6 +63,7 @@ export async function updateSiteSettings(
     homeSubtitle: string;
     primaryColor: string;
     whatsappContacts: WhatsAppContact[];
+    hotlineNumber: string;
     priceListOrderIncludePrices: boolean;
     showPriceLists: boolean;
     showReels: boolean;
@@ -72,6 +81,7 @@ export async function updateSiteSettings(
   const whatsappContacts = normalizeWhatsappContactsForSave(
     input.whatsappContacts,
   );
+  const hotlineNumber = parseHotlineNumber(input.hotlineNumber);
 
   await setDoc(
     doc(db, "file_settings", SITE_DOC),
@@ -81,6 +91,7 @@ export async function updateSiteSettings(
       homeSubtitle: input.homeSubtitle.trim(),
       primaryColor: input.primaryColor.trim(),
       whatsappContacts,
+      hotlineNumber,
       priceListOrderIncludePrices: Boolean(input.priceListOrderIncludePrices),
       showPriceLists: Boolean(input.showPriceLists),
       showReels: Boolean(input.showReels),

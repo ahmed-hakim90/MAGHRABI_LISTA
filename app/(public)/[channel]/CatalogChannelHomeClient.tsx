@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Timestamp } from "firebase/firestore";
 import { CatalogHomeStickyHeader } from "@/components/public/CatalogHomeStickyHeader";
 import { useCatalogChannel } from "@/components/public/CatalogChannelContext";
 import { useCatalogView } from "@/components/public/CatalogViewToggle";
@@ -17,12 +16,13 @@ import type {
   SerializableTimestamp,
 } from "@/lib/server/publicCatalogData";
 import type { FileCard, FileFolder } from "@/lib/types/models";
+import { timestampFromMillis } from "@/lib/utils/clientTimestamp";
 import { matchesFileCardSearch } from "@/lib/utils/fileCardSearch";
 
 const CATALOG_VISIBLE_BATCH = 40;
 
 function reviveTimestamp(value: SerializableTimestamp) {
-  return value ? Timestamp.fromMillis(value.ms) : null;
+  return value ? timestampFromMillis(value.ms) : null;
 }
 
 function reviveCard(card: SerializableFileCard): FileCard {

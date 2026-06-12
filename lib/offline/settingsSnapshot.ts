@@ -1,9 +1,10 @@
 "use client";
 
-import { Timestamp } from "firebase/firestore";
+import type { Timestamp } from "firebase/firestore";
 import type { SiteSettings } from "@/lib/types/models";
 import { parseWhatsappContactsRaw } from "@/lib/utils/siteWhatsappContacts";
 import { resolveSiteHotlineNumber } from "@/lib/utils/hotlineNumber";
+import { timestampFromMillis } from "@/lib/utils/clientTimestamp";
 
 export const SETTINGS_SNAPSHOT_STORAGE_KEY = "maghrabi-settings-v1";
 
@@ -23,7 +24,7 @@ function tsToMs(t: SiteSettings["updatedAt"]): number | null {
 
 function msToTs(ms: number | null): SiteSettings["updatedAt"] {
   if (ms == null || !Number.isFinite(ms)) return null;
-  return Timestamp.fromMillis(ms);
+  return timestampFromMillis(ms);
 }
 
 function toWire(s: SiteSettings): WireSettings {

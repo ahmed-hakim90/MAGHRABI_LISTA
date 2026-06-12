@@ -1,3 +1,4 @@
+import { unstable_cache } from "next/cache";
 import { getAdminFirestore } from "@/lib/firebase/admin";
 import type { CatalogAudience } from "@/lib/constants/catalogChannels";
 import { normalizeAudienceFromDoc } from "@/lib/constants/catalogChannels";
@@ -40,7 +41,7 @@ function toPublicItem(
   };
 }
 
-export async function getActivePriceLists(
+async function loadActivePriceLists(
   audience?: CatalogAudience,
 ): Promise<PriceListPublic[]> {
   const db = getAdminFirestore();
@@ -52,7 +53,7 @@ export async function getActivePriceLists(
   return snap.docs.map((d) => toPublicList(d.id, d.data()));
 }
 
-export async function getActivePriceListBySlug(
+async function loadActivePriceListBySlug(
   slug: string,
   audience: CatalogAudience,
 ): Promise<PriceListPublic | null> {
@@ -70,7 +71,7 @@ export async function getActivePriceListBySlug(
 }
 
 /** Resolve slug across channels (legacy /price-lists/[slug] redirect). */
-export async function findActivePriceListBySlug(
+async function loadActivePriceListBySlugAcrossChannels(
   slug: string,
 ): Promise<PriceListPublic | null> {
   const db = getAdminFirestore();
@@ -85,7 +86,7 @@ export async function findActivePriceListBySlug(
   return toPublicList(d.id, d.data());
 }
 
-export async function getActiveItemsForList(
+async function loadActiveItemsForList(
   listId: string,
 ): Promise<PriceListItemPublic[]> {
   const db = getAdminFirestore();
@@ -99,3 +100,27 @@ export async function getActiveItemsForList(
     .map((d) => toPublicItem(d.id, d.data()))
     .sort((a, b) => a.sortOrder - b.sortOrder || a.sku.localeCompare(b.sku));
 }
+
+export const getActivePriceLists = unstable_cache(
+  loadActivePriceLists,
+  ["active-price-lists"],
+  { revalidate: 900, tags: ["public-price-lists"] },
+);
+
+export const getActivePriceListBySlug = unstable_cache(
+  loadActivePriceListBySlug,
+  ["active-price-list-by-slug"],
+  { revalidate: 900, tags: ["public-price-lists"] },
+);
+
+export const findActivePriceListBySlug = unstable_cache(
+  loadActivePriceListBySlugAcrossChannels,
+  ["active-price-list-by-slug-all-channels"],
+  { revalidate: 900, tags: ["public-price-lists"] },
+);
+
+export const getActiveItemsForList = unstable_cache(
+  loadActiveItemsForList,
+  ["active-price-list-items"],
+  { revalidate: 900, tags: ["public-price-lists"] },
+);

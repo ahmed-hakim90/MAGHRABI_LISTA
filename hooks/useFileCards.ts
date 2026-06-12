@@ -7,8 +7,6 @@ import {
   readCatalogSnapshot,
   writeCatalogSnapshot,
 } from "@/lib/offline/catalogSnapshot";
-import { listActiveFileCards } from "@/lib/services/fileCards";
-import { listActiveFileFolders } from "@/lib/services/fileFolders";
 
 function hasCatalogData(cards: FileCard[], folders: FileFolder[]) {
   return cards.length > 0 || folders.length > 0;
@@ -42,6 +40,11 @@ export function useFileCards(
     setLoading(!hasExisting);
     setError(null);
     try {
+      const [{ listActiveFileCards }, { listActiveFileFolders }] =
+        await Promise.all([
+          import("@/lib/services/fileCards"),
+          import("@/lib/services/fileFolders"),
+        ]);
       const [c, f] = await Promise.all([
         listActiveFileCards(audience),
         listActiveFileFolders(),
@@ -71,21 +74,26 @@ export function useFileCards(
     let cancelled = false;
     (async () => {
       await Promise.resolve();
-      if (!cancelled) await refetch();
+      if (cancelled) return;
+      if (initial) {
+        writeCatalogSnapshot(audience, initial.cards, initial.folders);
+        return;
+      }
+      await refetch();
     })();
     return () => {
       cancelled = true;
     };
-  }, [refetch]);
+  }, [audience, initial, refetch]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
     const onOnline = () => {
-      void refetch();
+      if (stale) void refetch();
     };
     window.addEventListener("online", onOnline);
     return () => window.removeEventListener("online", onOnline);
-  }, [refetch]);
+  }, [refetch, stale]);
 
   return { cards, folders, loading, error, stale, refetch };
 }
@@ -106,7 +114,8 @@ export function useActiveFileCardsWhen(
       if (cancelled) return;
       setLoading(true);
       setError(null);
-      void listActiveFileCards(audience)
+      void import("@/lib/services/fileCards")
+        .then(({ listActiveFileCards }) => listActiveFileCards(audience))
         .then((c) => {
           if (!cancelled) setCards(c);
         })

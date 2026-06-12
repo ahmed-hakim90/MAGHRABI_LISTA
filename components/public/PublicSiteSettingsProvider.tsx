@@ -1,10 +1,10 @@
 "use client";
 
-import { Timestamp } from "firebase/firestore";
 import { createContext, useContext, useMemo, type ReactNode } from "react";
 import { usePublicSiteSettings } from "@/hooks/usePublicSiteSettings";
 import type { SerializableSiteSettings } from "@/lib/server/publicCatalogData";
 import type { SiteSettings } from "@/lib/types/models";
+import { timestampFromMillis } from "@/lib/utils/clientTimestamp";
 import { resolveSiteHotlineNumber } from "@/lib/utils/hotlineNumber";
 
 const SiteSettingsContext = createContext<SiteSettings | null>(null);
@@ -16,7 +16,7 @@ export function reviveSiteSettings(
     ...settings,
     hotlineNumber: resolveSiteHotlineNumber(settings.hotlineNumber),
     updatedAt: settings.updatedAt
-      ? Timestamp.fromMillis(settings.updatedAt.ms)
+      ? timestampFromMillis(settings.updatedAt.ms)
       : null,
   };
 }

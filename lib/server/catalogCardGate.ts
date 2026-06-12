@@ -1,5 +1,6 @@
 import "server-only";
 
+import { unstable_cache } from "next/cache";
 import {
   type CatalogAudience,
   normalizeAudienceFromDoc,
@@ -15,7 +16,7 @@ export type CatalogCardGateOk = {
 
 export type CatalogCardGateResult = CatalogCardGateOk | { ok: false };
 
-export async function getActiveCardForCatalogAudience(
+async function loadActiveCardForCatalogAudience(
   cardId: string,
   routeAudience: CatalogAudience,
 ): Promise<CatalogCardGateResult> {
@@ -37,3 +38,12 @@ export async function getActiveCardForCatalogAudience(
       : null;
   return { ok: true, title, fileUrl, version };
 }
+
+export const getActiveCardForCatalogAudience = unstable_cache(
+  loadActiveCardForCatalogAudience,
+  ["active-catalog-card-gate"],
+  {
+    revalidate: 300,
+    tags: ["public-catalog"],
+  },
+);

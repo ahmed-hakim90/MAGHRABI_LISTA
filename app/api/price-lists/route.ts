@@ -11,7 +11,15 @@ export async function GET(request: Request) {
 
   try {
     const lists = await getActivePriceLists(audience);
-    return NextResponse.json({ lists });
+    return NextResponse.json(
+      { lists },
+      {
+        headers: {
+          "Cache-Control":
+            "public, max-age=60, s-maxage=900, stale-while-revalidate=86400",
+        },
+      },
+    );
   } catch {
     return NextResponse.json(
       { error: "تعذّر تحميل قوائم الأسعار." },

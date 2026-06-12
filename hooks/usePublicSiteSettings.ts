@@ -11,7 +11,6 @@ import {
   DEFAULT_SITE_HOTLINE_NUMBER,
   DEFAULT_SITE_PRIMARY_COLOR,
 } from "@/lib/constants/siteDefaults";
-import { getSiteSettings } from "@/lib/services/settings";
 import type { SiteSettings } from "@/lib/types/models";
 const defaults: SiteSettings = {
   appName: DEFAULT_SITE_APP_NAME,
@@ -34,10 +33,15 @@ export function usePublicSiteSettings(initial?: SiteSettings): SiteSettings {
   );
 
   useEffect(() => {
+    if (initial) {
+      writeSettingsSnapshot(initial);
+      return;
+    }
     let cancelled = false;
     window.queueMicrotask(() => {
       if (cancelled) return;
-      void getSiteSettings()
+      void import("@/lib/services/settings")
+        .then(({ getSiteSettings }) => getSiteSettings())
         .then((s) => {
           if (cancelled) return;
           setSettings(s);

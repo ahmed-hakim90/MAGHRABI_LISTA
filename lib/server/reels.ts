@@ -1,3 +1,4 @@
+import { unstable_cache } from "next/cache";
 import { getAdminFirestore } from "@/lib/firebase/admin";
 import type { CatalogAudience } from "@/lib/constants/catalogChannels";
 import { normalizeAudienceFromDoc } from "@/lib/constants/catalogChannels";
@@ -27,7 +28,7 @@ function toPublic(
   };
 }
 
-export async function getActiveReelsForAudience(
+async function loadActiveReelsForAudience(
   audience: CatalogAudience,
 ): Promise<CatalogReelPublic[]> {
   const db = getAdminFirestore();
@@ -42,7 +43,7 @@ export async function getActiveReelsForAudience(
     .sort((a, b) => a.sortOrder - b.sortOrder || a.title.localeCompare(b.title, "ar"));
 }
 
-export async function getAllActiveReels(): Promise<CatalogReelPublic[]> {
+async function loadAllActiveReels(): Promise<CatalogReelPublic[]> {
   const db = getAdminFirestore();
   const snap = await db.collection(COLLECTION).where("isActive", "==", true).get();
   return snap.docs
@@ -50,3 +51,15 @@ export async function getAllActiveReels(): Promise<CatalogReelPublic[]> {
     .filter((r) => r.embedUrl)
     .sort((a, b) => a.sortOrder - b.sortOrder || a.title.localeCompare(b.title, "ar"));
 }
+
+export const getActiveReelsForAudience = unstable_cache(
+  loadActiveReelsForAudience,
+  ["active-reels-by-audience"],
+  { revalidate: 900, tags: ["public-reels"] },
+);
+
+export const getAllActiveReels = unstable_cache(
+  loadAllActiveReels,
+  ["all-active-reels"],
+  { revalidate: 900, tags: ["public-reels"] },
+);

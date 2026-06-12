@@ -11,7 +11,15 @@ export async function GET(request: Request) {
 
   try {
     const reels = await getActiveReelsForAudience(raw as CatalogAudience);
-    return NextResponse.json({ reels });
+    return NextResponse.json(
+      { reels },
+      {
+        headers: {
+          "Cache-Control":
+            "public, max-age=60, s-maxage=900, stale-while-revalidate=86400",
+        },
+      },
+    );
   } catch {
     return NextResponse.json(
       { error: "تعذّر تحميل الفيديوهات." },

@@ -1,11 +1,12 @@
 "use client";
 
-import { Timestamp } from "firebase/firestore";
+import type { Timestamp } from "firebase/firestore";
 import {
   type CatalogAudience,
   normalizeAudienceFromDoc,
 } from "@/lib/constants/catalogChannels";
 import type { FileCard, FileFolder } from "@/lib/types/models";
+import { timestampFromMillis } from "@/lib/utils/clientTimestamp";
 
 export function catalogSnapshotStorageKey(audience: CatalogAudience): string {
   return `maghrabi-catalog-v3-${audience}`;
@@ -39,7 +40,7 @@ function tsToMs(t: FileCard["createdAt"]): number | null {
 
 function msToTs(ms: number | null): Timestamp | null {
   if (ms == null || !Number.isFinite(ms)) return null;
-  return Timestamp.fromMillis(ms);
+  return timestampFromMillis(ms);
 }
 
 function toWireCard(c: FileCard): WireCard {

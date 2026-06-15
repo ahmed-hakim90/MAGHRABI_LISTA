@@ -1,4 +1,5 @@
 import type { CartLine } from "@/lib/types/priceList";
+import { normalizePhoneToWaMeDigits } from "@/lib/utils/siteWhatsappContacts";
 
 export function buildPriceListOrderMessage(
   listName: string,
@@ -26,5 +27,6 @@ function formatPrice(n: number): string {
 }
 
 export function whatsAppUrl(phoneDigits: string, message: string): string {
-  return `https://wa.me/${phoneDigits}?text=${encodeURIComponent(message)}`;
+  const digits = normalizePhoneToWaMeDigits(phoneDigits);
+  return `https://wa.me/${digits}?text=${encodeURIComponent(message)}`;
 }

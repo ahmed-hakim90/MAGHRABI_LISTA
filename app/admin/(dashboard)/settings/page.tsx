@@ -217,8 +217,8 @@ export default function AdminSettingsPage() {
               أرقام واتساب
             </span>
             <p className="mt-1 text-xs text-muted">
-              اسم يظهر للزائر عند اختيار الجهة. الرقم بصيغة دولية بدون + (مثال مصر:
-              20 ثم الرقم كما في wa.me).
+              اكتب الرقم محلي (010xxxxxxxx) أو دولي (2010xxxxxxxx) — أرقام فقط بدون
+              + أو علامات. علامة ? في رابط واتساب يضيفها الموقع تلقائيًا.
             </p>
           </div>
           <ul className="space-y-3">
@@ -259,7 +259,7 @@ export default function AdminSettingsPage() {
                         ),
                       );
                     }}
-                    placeholder="2010xxxxxxxx"
+                    placeholder="010xxxxxxxx"
                   />
                 </label>
                 <button

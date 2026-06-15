@@ -8,6 +8,7 @@ import { publicCatalogFileViewPath } from "@/lib/constants/catalogChannels";
 import { PUBLIC_WHATSAPP_ORDER_PREFILL } from "@/lib/constants/publicWhatsApp";
 import type { FileCard } from "@/lib/types/models";
 import { matchesFileCardSearch } from "@/lib/utils/fileCardSearch";
+import { normalizePhoneToWaMeDigits } from "@/lib/utils/siteWhatsappContacts";
 
 type Props = {
   open: boolean;
@@ -121,7 +122,8 @@ export function WhatsAppOrderDialog({ open, onClose }: Props) {
   const openWhatsApp = () => {
     if (!selectedWhatsapp?.phoneDigits) return;
     const text = finalMessage.trim() || "—";
-    const url = `https://wa.me/${selectedWhatsapp.phoneDigits}?text=${encodeURIComponent(text)}`;
+    const digits = normalizePhoneToWaMeDigits(selectedWhatsapp.phoneDigits);
+    const url = `https://wa.me/${digits}?text=${encodeURIComponent(text)}`;
     window.open(url, "_blank", "noopener,noreferrer");
     onClose();
   };

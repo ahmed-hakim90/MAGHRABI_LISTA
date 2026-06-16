@@ -92,7 +92,7 @@ export function ServiceCentersSheet({ open, onClose }: Props) {
               مراكز الصيانة والفروع
             </h2>
             <p className="mt-0.5 text-xs text-[#6B6B6B]">
-              مواعيد الصيانة: {SOKANY_MAINTENANCE_HOURS}
+              مواعيد الصيانة: {SOKANY_MAINTENANCE_HOURS} ما عدا الجمعة
             </p>
           </div>
           <button

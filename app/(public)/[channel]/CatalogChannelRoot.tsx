@@ -6,6 +6,7 @@ import { CatalogChannelProvider } from "@/components/public/CatalogChannelContex
 import { PwaInstallModal } from "@/components/public/PwaInstallModal";
 import { PublicSiteSettingsProvider } from "@/components/public/PublicSiteSettingsProvider";
 import { FloatingContactButtons } from "@/components/public/FloatingContactButtons";
+import { FloatingServiceCentersButton } from "@/components/public/FloatingServiceCentersButton";
 import {
   CHANNEL_TO_AUDIENCE,
   type CatalogChannelSegment,
@@ -36,6 +37,7 @@ export function CatalogChannelRoot({
         <NotificationPromptModal />
         <PwaInstallModal />
         <FloatingContactButtons />
+        <FloatingServiceCentersButton />
         {isCatalogChatEnabled() &&
         (channel === "wholesale" || channel === "retail") ? (
           <FloatingAiChat audience={channel} />

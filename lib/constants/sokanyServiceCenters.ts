@@ -12,7 +12,7 @@ export type SokanyServiceCenter = {
 };
 
 export const SOKANY_MAINTENANCE_HOURS =
-  "يومياً من 10 صباحاً إلى 8 مساءً";
+  "يومياً من 10 صباحاً إلى 8 مساءً ما عدا الجمعة";
 
 export const SOKANY_SALES_HOURS =
   "يومياً من 10 صباحاً إلى 11 مساءً";

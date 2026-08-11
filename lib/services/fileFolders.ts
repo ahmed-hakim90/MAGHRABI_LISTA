@@ -41,10 +41,11 @@ export async function listActiveFileFolders(): Promise<FileFolder[]> {
   const q = query(
     collection(db, "fileFolders"),
     where("isActive", "==", true),
-    orderBy("order", "asc"),
   );
   const snap = await getDocsWithCacheFallback(q);
-  return snap.docs.map((d) => fromDoc(d.id, d.data() as Record<string, unknown>));
+  return snap.docs
+    .map((d) => fromDoc(d.id, d.data() as Record<string, unknown>))
+    .sort((a, b) => a.order - b.order);
 }
 
 export async function listAllFileFoldersAdmin(): Promise<FileFolder[]> {

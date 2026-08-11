@@ -139,33 +139,43 @@ export function settingsFromData(
   };
 }
 
+function compareCatalogOrder(
+  a: { order: number; updatedAt: SerializableTimestamp },
+  b: { order: number; updatedAt: SerializableTimestamp },
+): number {
+  if (a.order !== b.order) return a.order - b.order;
+  return (b.updatedAt?.ms ?? 0) - (a.updatedAt?.ms ?? 0);
+}
+
+/**
+ * Single-field `isActive` queries (auto-indexed). Composite orderBy indexes
+ * are not always deployed on sokany-production, so filter/sort in memory.
+ * Missing `folderIsActive` is treated as true (legacy cards).
+ */
 async function loadPublicCatalog(
   audience: CatalogAudience,
 ): Promise<PublicCatalogPayload> {
   const db = getAdminFirestore();
-  const cardsQuery = db
-    .collection("fileCards")
-    .where("isActive", "==", true)
-    .where("folderIsActive", "==", true)
-    .orderBy("order", "asc")
-    .orderBy("updatedAt", "desc");
-  const foldersQuery = db
-    .collection("fileFolders")
-    .where("isActive", "==", true)
-    .orderBy("order", "asc");
-
   const [cardsSnap, foldersSnap] = await Promise.all([
-    cardsQuery.get(),
-    foldersQuery.get(),
+    db.collection("fileCards").where("isActive", "==", true).get(),
+    db.collection("fileFolders").where("isActive", "==", true).get(),
   ]);
 
   const cards = cardsSnap.docs
     .map((d) => fileCardFromDoc(d.id, d.data()))
-    .filter((card) => card.audience === audience);
+    .filter(
+      (card) =>
+        card.audience === audience && card.folderIsActive !== false,
+    )
+    .sort(compareCatalogOrder);
+
+  const folders = foldersSnap.docs
+    .map((d) => folderFromDoc(d.id, d.data()))
+    .sort((a, b) => a.order - b.order);
 
   return {
     cards,
-    folders: foldersSnap.docs.map((d) => folderFromDoc(d.id, d.data())),
+    folders,
     error: null,
   };
 }

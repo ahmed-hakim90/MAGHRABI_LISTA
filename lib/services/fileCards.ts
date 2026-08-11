@@ -81,39 +81,35 @@ function fromDoc(
   };
 }
 
+function updatedAtMs(value: FileCard["updatedAt"]): number {
+  if (value && typeof value.toMillis === "function") return value.toMillis();
+  return 0;
+}
+
 export async function listActiveFileCards(
   audience: CatalogAudience,
 ): Promise<FileCard[]> {
   const db = getClientFirestore();
   /**
-   * Legacy cards often omit `audience`. Firestore equality does not match
-   * missing fields, but `fromDoc` + `normalizeAudienceFromDoc` treat that as
-   * wholesale. For /wholesale we query without audience and filter in memory
-   * so old data appears without requiring an admin backfill visit.
+   * Query only `isActive` (auto-indexed). Composite indexes for
+   * folderIsActive+order+updatedAt are not always present on production.
+   * Legacy cards often omit `audience` / `folderIsActive`; fromDoc treats
+   * those as wholesale + active folder.
    */
-  if (audience === "wholesale") {
-    const q = query(
-      collection(db, "fileCards"),
-      where("isActive", "==", true),
-      where("folderIsActive", "==", true),
-      orderBy("order", "asc"),
-      orderBy("updatedAt", "desc"),
-    );
-    const snap = await getDocsWithCacheFallback(q);
-    return snap.docs
-      .map((d) => fromDoc(d.id, d.data() as Record<string, unknown>))
-      .filter((c) => c.audience === "wholesale");
-  }
   const q = query(
     collection(db, "fileCards"),
     where("isActive", "==", true),
-    where("folderIsActive", "==", true),
-    where("audience", "==", audience),
-    orderBy("order", "asc"),
-    orderBy("updatedAt", "desc"),
   );
   const snap = await getDocsWithCacheFallback(q);
-  return snap.docs.map((d) => fromDoc(d.id, d.data() as Record<string, unknown>));
+  return snap.docs
+    .map((d) => fromDoc(d.id, d.data() as Record<string, unknown>))
+    .filter(
+      (c) => c.audience === audience && c.folderIsActive !== false,
+    )
+    .sort((a, b) => {
+      if (a.order !== b.order) return a.order - b.order;
+      return updatedAtMs(b.updatedAt) - updatedAtMs(a.updatedAt);
+    });
 }
 
 /**

@@ -104,7 +104,7 @@ export function CatalogChannelHomeClient({
       : CATALOG_VISIBLE_BATCH;
 
   const hasCatalogData = cards.length > 0 || folders.length > 0;
-  const error = clientError ?? initialError;
+  const error = clientError ?? (loading ? initialError : null);
   const showSkeleton = loading && !hasCatalogData;
 
   const categories = useMemo(() => {

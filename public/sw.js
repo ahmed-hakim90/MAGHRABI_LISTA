@@ -112,7 +112,7 @@ self.addEventListener('fetch', function (event) {
 importScripts('https://www.gstatic.com/firebasejs/12.13.0/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/12.13.0/firebase-messaging-compat.js');
 
-firebase.initializeApp({"apiKey":"AIzaSyDiZGI4-axzB8Bgkcnmtai-1LymKgUyugA","authDomain":"sokany-production.firebaseapp.com","projectId":"sokany-production","storageBucket":"sokany-production.firebasestorage.app","messagingSenderId":"641654336000","appId":"1:641654336000:web:699aa28d234d0a3629c6e5"});
+firebase.initializeApp({"apiKey":"","authDomain":"","projectId":"","storageBucket":"","messagingSenderId":"","appId":""});
 
 var messaging = firebase.messaging();
 

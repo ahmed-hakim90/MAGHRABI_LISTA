@@ -1,0 +1,22 @@
+{
+  "status": "succeeded",
+  "attempt": 1,
+  "fingerprint": "121f52cbac87",
+  "reportId": "maghrabi-lista-2026-08-11T12-00-17-695Z",
+  "branch": "main",
+  "root": "/Users/hakimo/Developer/MAGHRABI_LISTA",
+  "updatedAt": "2026-08-11T12:06:48.570Z",
+  "reportPath": "/Users/hakimo/Developer/MAGHRABI_LISTA/.cursor/ship-reports/maghrabi-lista-2026-08-11T12-00-17-695Z.txt",
+  "globalReportPath": "/Users/hakimo/.cursor/ship-reports/maghrabi-lista-2026-08-11T12-00-17-695Z.txt",
+  "commitSha": "3315ab09860b225dc1e65a1d3644dea4c648d7fb",
+  "pushed": true,
+  "vercel": {
+    "url": "https://maghrabi-lista-33z5j1yy2-hakim-dev-1.vercel.app",
+    "ready": false,
+    "errored": false,
+    "rawHead": "https://maghrabi-lista-33z5j1yy2-hakim-dev-1.vercel.app\nhttps://production-line-44lfew7ha-hakim-dev-1.vercel.app\nhttps://production-line-b3bbztyw4-hakim-dev-1.vercel.app\nhttps://production-line-qjlloqu53-hakim-dev-1.vercel.app\nhttps://production-line-iu9ros0yj-hakim-dev-1.vercel.app\nhttps://production-line-au2kc9ygn-hakim-dev-1.vercel.app\nhttps://production-line-eq69ud9yw-hakim-dev-1.vercel.app\nhttps://production-line-h7nxtiz7c-hakim-dev-1.vercel.app\nhttps://production-line-5f9vmdhtl-hakim-dev-1.vercel.app\nhttps://production-line-e22msbhk0-hakim-dev-1.vercel.app\nhttps://production-line-iks5x9y8w-hakim-dev-1.vercel.app\nhttps://production-line-6845lgbcn-hakim-dev-1.vercel.app",
+    "status": "timeout"
+  },
+  "emailed": false,
+  "errorMessage": null
+}

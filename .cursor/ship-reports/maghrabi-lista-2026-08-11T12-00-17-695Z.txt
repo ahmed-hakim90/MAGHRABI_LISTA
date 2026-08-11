@@ -1,0 +1,32 @@
+Ship report · maghrabi-lista
+Time: 2026-08-11T12:06:48.568Z
+Root: /Users/hakimo/Developer/MAGHRABI_LISTA
+Outcome: succeeded
+Branch: main
+Commit: 3315ab09860b225dc1e65a1d3644dea4c648d7fb
+Fingerprint: 121f52cbac87
+Attempt: 1
+Pushed: true
+Vercel: timeout https://maghrabi-lista-33z5j1yy2-hakim-dev-1.vercel.app
+
+--- log ---
+Global ship pipeline
+repo=maghrabi-lista
+root=/Users/hakimo/Developer/MAGHRABI_LISTA
+branch=main fingerprint=121f52cbac87 attempt=1
+email=ahmedabdulhakim90@gmail.com skipEmail=true dryRun=false
+global auto-ship: off
+ship email: off (~/.cursor/ship-email.disabled or SHIP_SKIP_EMAIL=1)
+
+→ tsc --noEmit
+
+→ build
+
+→ git add
+
+→ git commit
+committed 3315ab09860b225dc1e65a1d3644dea4c648d7fb
+
+→ git push
+Waiting for Vercel deployment (if linked)…
+Vercel status=timeout url=https://maghrabi-lista-33z5j1yy2-hakim-dev-1.vercel.app

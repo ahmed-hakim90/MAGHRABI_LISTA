@@ -12,11 +12,21 @@ function hasCatalogData(cards: FileCard[], folders: FileFolder[]) {
   return cards.length > 0 || folders.length > 0;
 }
 
+function resolveInitialSnapshot(
+  audience: CatalogAudience,
+  initial?: { cards: FileCard[]; folders: FileFolder[] },
+) {
+  if (initial && hasCatalogData(initial.cards, initial.folders)) {
+    return initial;
+  }
+  return readCatalogSnapshot(audience) ?? initial;
+}
+
 export function useFileCards(
   audience: CatalogAudience,
   initial?: { cards: FileCard[]; folders: FileFolder[] },
 ) {
-  const [snapshot] = useState(() => initial ?? readCatalogSnapshot(audience));
+  const [snapshot] = useState(() => resolveInitialSnapshot(audience, initial));
   const [cards, setCards] = useState<FileCard[]>(() => snapshot?.cards ?? []);
   const [folders, setFolders] = useState<FileFolder[]>(
     () => snapshot?.folders ?? [],
@@ -29,6 +39,9 @@ export function useFileCards(
 
   const cardsRef = useRef(cards);
   const foldersRef = useRef(folders);
+  const initialHasData = Boolean(
+    initial && hasCatalogData(initial.cards, initial.folders),
+  );
 
   useEffect(() => {
     cardsRef.current = cards;
@@ -75,8 +88,9 @@ export function useFileCards(
     (async () => {
       await Promise.resolve();
       if (cancelled) return;
-      if (initial) {
+      if (initialHasData && initial) {
         writeCatalogSnapshot(audience, initial.cards, initial.folders);
+        setLoading(false);
         return;
       }
       await refetch();
@@ -84,7 +98,7 @@ export function useFileCards(
     return () => {
       cancelled = true;
     };
-  }, [audience, initial, refetch]);
+  }, [audience, initial, initialHasData, refetch]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;

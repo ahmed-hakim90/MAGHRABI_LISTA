@@ -139,34 +139,52 @@ export function settingsFromData(
   };
 }
 
-async function loadPublicCatalog(audience: CatalogAudience): Promise<PublicCatalogPayload> {
+async function loadPublicCatalog(
+  audience: CatalogAudience,
+): Promise<PublicCatalogPayload> {
+  const db = getAdminFirestore();
+  const cardsQuery = db
+    .collection("fileCards")
+    .where("isActive", "==", true)
+    .where("folderIsActive", "==", true)
+    .orderBy("order", "asc")
+    .orderBy("updatedAt", "desc");
+  const foldersQuery = db
+    .collection("fileFolders")
+    .where("isActive", "==", true)
+    .orderBy("order", "asc");
+
+  const [cardsSnap, foldersSnap] = await Promise.all([
+    cardsQuery.get(),
+    foldersQuery.get(),
+  ]);
+
+  const cards = cardsSnap.docs
+    .map((d) => fileCardFromDoc(d.id, d.data()))
+    .filter((card) => card.audience === audience);
+
+  return {
+    cards,
+    folders: foldersSnap.docs.map((d) => folderFromDoc(d.id, d.data())),
+    error: null,
+  };
+}
+
+const cachedPublicCatalog = unstable_cache(
+  loadPublicCatalog,
+  ["public-catalog"],
+  {
+    revalidate: PUBLIC_CATALOG_REVALIDATE_SECONDS,
+    tags: ["public-catalog"],
+  },
+);
+
+/** Empty/error payloads are not cached so a failed build or ISR fill cannot stick. */
+export async function getCachedPublicCatalog(
+  audience: CatalogAudience,
+): Promise<PublicCatalogPayload> {
   try {
-    const db = getAdminFirestore();
-    const cardsQuery = db
-      .collection("fileCards")
-      .where("isActive", "==", true)
-      .where("folderIsActive", "==", true)
-      .orderBy("order", "asc")
-      .orderBy("updatedAt", "desc");
-    const foldersQuery = db
-      .collection("fileFolders")
-      .where("isActive", "==", true)
-      .orderBy("order", "asc");
-
-    const [cardsSnap, foldersSnap] = await Promise.all([
-      cardsQuery.get(),
-      foldersQuery.get(),
-    ]);
-
-    const cards = cardsSnap.docs
-      .map((d) => fileCardFromDoc(d.id, d.data()))
-      .filter((card) => card.audience === audience);
-
-    return {
-      cards,
-      folders: foldersSnap.docs.map((d) => folderFromDoc(d.id, d.data())),
-      error: null,
-    };
+    return await cachedPublicCatalog(audience);
   } catch (e) {
     console.warn("[publicCatalogData] failed to load catalog", e);
     return {
@@ -176,15 +194,6 @@ async function loadPublicCatalog(audience: CatalogAudience): Promise<PublicCatal
     };
   }
 }
-
-export const getCachedPublicCatalog = unstable_cache(
-  loadPublicCatalog,
-  ["public-catalog"],
-  {
-    revalidate: PUBLIC_CATALOG_REVALIDATE_SECONDS,
-    tags: ["public-catalog"],
-  },
-);
 
 async function loadPublicSiteSettings(): Promise<SerializableSiteSettings> {
   try {

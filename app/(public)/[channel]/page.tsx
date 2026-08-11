@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
 import { CatalogChannelHomeClient } from "./CatalogChannelHomeClient";
 import {
-  CATALOG_CHANNEL_SEGMENTS,
   CHANNEL_TO_AUDIENCE,
   isCatalogChannelSegment,
   type CatalogChannelSegment,
@@ -14,11 +13,8 @@ type Props = {
   params: Promise<{ channel: string }>;
 };
 
-export const revalidate = 300;
-
-export function generateStaticParams() {
-  return CATALOG_CHANNEL_SEGMENTS.map((channel) => ({ channel }));
-}
+/** Fetch catalog at request time so the first HTML includes cards, not an empty SSG shell. */
+export const dynamic = "force-dynamic";
 
 export default async function CatalogChannelHomePage({ params }: Props) {
   const { channel: raw } = await params;

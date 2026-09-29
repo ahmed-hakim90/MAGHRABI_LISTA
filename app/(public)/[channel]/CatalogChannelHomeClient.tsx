@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { CatalogHomeStickyHeader } from "@/components/public/CatalogHomeStickyHeader";
+import { BrandGradient, BrandPattern, BrandSurface, EmblemFrame } from "@/components/public/BrandSystem";
 import { useCatalogChannel } from "@/components/public/CatalogChannelContext";
 import { useCatalogView } from "@/components/public/CatalogViewToggle";
 import { FolderedFileGrid } from "@/components/public/FolderedFileGrid";
@@ -157,22 +158,24 @@ export function CatalogChannelHomeClient({
         showReelsTab={hydratedSettings.showReels}
       />
       {audience === "wholesale" ? (
-        <section className="relative isolate overflow-hidden bg-[linear-gradient(118deg,#ed1f26_0%,#b9141b_48%,#91050f_100%)] px-4 pb-8 pt-28 text-white sm:px-8 sm:pb-12 sm:pt-36" aria-labelledby="wholesale-hero-title">
-          <div className="pointer-events-none absolute -end-20 -top-24 -z-10 size-72 rounded-[42%] border-[28px] border-white/10 sm:size-[28rem]" aria-hidden />
-          <div className="pointer-events-none absolute -bottom-28 start-1/2 -z-10 h-48 w-[34rem] -translate-x-1/2 rounded-[50%] border-[22px] border-white/10 sm:h-64" aria-hidden />
-          <div className="mx-auto flex max-w-6xl flex-col gap-7 sm:flex-row sm:items-end sm:justify-between sm:gap-10">
+        <BrandGradient className="relative isolate overflow-hidden px-4 pb-8 pt-24 text-white sm:px-8 sm:pb-12 sm:pt-28" aria-labelledby="wholesale-hero-title">
+          <BrandPattern />
+          <div className="relative mx-auto grid max-w-6xl items-center gap-8 sm:grid-cols-[1fr_0.72fr] sm:gap-12">
             <div className="max-w-2xl" dir="rtl">
               <p className="mb-3 text-xs font-semibold uppercase tracking-[0.22em] text-white/70 sm:text-sm">EL MAGHRABY / WHOLESALE</p>
               <h2 id="wholesale-hero-title" className="max-w-xl text-4xl font-bold leading-[1.12] tracking-tight sm:text-6xl">شراكة أقوى.<br /><span className="text-[#fff2e3]">اختيار أوسع.</span></h2>
               <p className="mt-4 max-w-lg text-sm leading-7 text-white/85 sm:text-base">اكتشف محفظة الأجهزة والكتالوجات التجارية من المغربي، مصممة لتدعم نمو شركائك وتبسط قرارات الشراء.</p>
               <a href="#catalog" className="mt-6 inline-flex min-h-touch items-center justify-center bg-white px-5 py-3 text-sm font-semibold text-[#91050f] transition hover:bg-[#fff2e3]">استكشف الكتالوج <span className="ms-2" aria-hidden>←</span></a>
             </div>
-            <div className="hidden shrink-0 border-s border-white/25 ps-8 text-end sm:block" dir="rtl">
-              <p className="text-5xl font-semibold tracking-tight">B2B</p>
-              <p className="mt-2 text-sm text-white/70">توزيع موثوق<br />على نطاق واسع</p>
-            </div>
+            <EmblemFrame className="mx-auto aspect-[1.15] w-full max-w-sm border border-white/20 bg-[#fff2e3]/15 p-3 shadow-2xl sm:order-first">
+              <div className="flex h-full items-center justify-center bg-[#fff2e3] p-5">
+                <div className="flex h-full w-full items-center justify-center border border-[#ed1f26]/15 bg-white p-4">
+                  <p className="text-center text-5xl font-bold tracking-tight text-[#ed1f26] sm:text-7xl">B2B</p>
+                </div>
+              </div>
+            </EmblemFrame>
           </div>
-        </section>
+        </BrandGradient>
       ) : null}
       <main id="catalog" className="mt-1 flex min-h-0 flex-1 flex-col bg-[#fff2e3] sm:mt-2">
         {showSkeleton ? (

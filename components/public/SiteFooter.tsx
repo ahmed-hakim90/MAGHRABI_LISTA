@@ -8,6 +8,7 @@ const FILE_VIEW_PATH =
   /^\/(wholesale|retail|lists)\/file\/[^/]+\/view$/;
 
 import { shouldHideFloatingCatalogButtons } from "@/lib/utils/catalogChrome";
+import { BrandLogo, BrandPattern } from "@/components/public/BrandSystem";
 
 function HeartIcon({ className }: { className?: string }) {
   return (
@@ -25,15 +26,15 @@ function HeartIcon({ className }: { className?: string }) {
 export function SiteFooter() {
   return (
     <footer className="relative isolate overflow-hidden bg-[#91050f] py-10 text-white sm:py-14" role="contentinfo">
-      <div className="pointer-events-none absolute -end-20 -top-24 -z-10 size-64 rounded-[42%] border-[24px] border-white/10" aria-hidden />
-      <div className="mx-auto flex max-w-6xl flex-col gap-8 px-5 sm:flex-row sm:items-end sm:justify-between sm:px-8">
+      <BrandPattern />
+      <div className="relative mx-auto flex max-w-6xl flex-col gap-8 px-5 sm:flex-row sm:items-end sm:justify-between sm:px-8">
         <div dir="rtl">
-          <p className="text-lg font-semibold">المجراي</p>
-          <p className="mt-2 max-w-xs text-sm leading-7 text-white/65">شريكك الموثوق في عالم الأجهزة والتوزيع.</p>
+          <BrandLogo light className="h-16 w-44" />
+          <p className="mt-4 max-w-xs text-sm leading-7 text-white/70">شريكك الموثوق في عالم الأجهزة والتوزيع.</p>
         </div>
         <div className="text-start sm:text-end">
-          <p className="text-xs uppercase tracking-[0.2em] text-[#fff2e3]/60">EL MAGHRABY GROUP</p>
-          <a href={PORTFOLIO_URL} target="_blank" rel="noopener noreferrer" className="mt-3 inline-flex min-h-touch items-center gap-1 text-xs text-white/70 underline-offset-2 transition hover:text-white hover:underline">
+          <p className="text-xs uppercase tracking-[0.2em] text-[#fff2e3]/70">EL MAGHRABY GROUP</p>
+          <a href={PORTFOLIO_URL} target="_blank" rel="noopener noreferrer" className="mt-3 inline-flex min-h-touch items-center gap-1 text-xs text-white/75 underline-offset-2 transition hover:text-white hover:underline">
             <span>صُنع بـ</span><HeartIcon className="size-3 text-[#c4a642]" />
           </a>
         </div>

@@ -37,7 +37,7 @@ export function FloatingContactButtons() {
         {hasHotline ? (
           <a
             href={`tel:${hotline}`}
-            className={`${FAB_CLASS} bg-emerald-600`}
+            className={`${FAB_CLASS} border border-white/70 bg-[#91050f] text-white shadow-[0_10px_24px_rgb(145_5_15/0.24)]`}
             aria-label={`اتصل بالخط الساخن ${hotline}`}
             title={`الخط الساخن — ${hotline}`}
           >
@@ -48,7 +48,7 @@ export function FloatingContactButtons() {
           <button
             type="button"
             onClick={() => setWhatsappOpen(true)}
-            className={`${FAB_CLASS} bg-[#25D366]`}
+            className={`${FAB_CLASS} border border-white/70 bg-[#ed1f26] text-white shadow-[0_10px_24px_rgb(145_5_15/0.24)]`}
             aria-label="التواصل عبر واتساب لتقديم طلب من موقع المغربي"
             title="واتساب — اكتب رسالتك واختر الملف إن وجد"
           >

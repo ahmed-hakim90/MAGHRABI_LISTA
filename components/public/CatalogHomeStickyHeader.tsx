@@ -19,6 +19,7 @@ import { CategoryFilterChips } from "@/components/public/CategoryFilterChips";
 import { SearchBox } from "@/components/public/SearchBox";
 import { usePwaInstall } from "@/hooks/usePwaInstall";
 import { DEFAULT_SITE_HOME_TITLE } from "@/lib/constants/siteDefaults";
+import { BrandLogo } from "@/components/public/BrandSystem";
 
 type Props = {
   appName: string;
@@ -179,27 +180,16 @@ export function CatalogHomeStickyHeader({
         ref={shellRef}
         className="fixed inset-x-0 top-0 z-20 overflow-x-visible overflow-y-visible border-b border-[#eadfd2] bg-[#fff2e3] pt-[env(safe-area-inset-top,0px)] shadow-[0_4px_18px_-6px_rgb(145_5_15/0.18)]"
       >
-        <div className="mx-auto w-full max-w-6xl space-y-2 overflow-x-visible px-4 py-2 sm:space-y-2.5 sm:px-4 sm:py-3">
+        <div className="mx-auto w-full max-w-6xl space-y-1 overflow-x-visible px-3 py-1.5 sm:space-y-1.5 sm:px-4 sm:py-2">
           <div className="flex flex-row items-center gap-2 sm:gap-3" dir="rtl">
-            {logoUrl || "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-m2zjhi2N5XRxFM11q7AORo2Th9Je1j.png" ? (
-              <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-2xl border border-border bg-card shadow-[var(--shadow-card)] sm:h-10 sm:w-10">
-                <Image
-                  src={logoUrl || "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-m2zjhi2N5XRxFM11q7AORo2Th9Je1j.png"}
-                  alt={appName}
-                  fill
-                  className="object-cover object-center scale-[1.2]"
-                  sizes="40px"
-                  priority
-                />
+            {logoUrl ? (
+              <div className="relative h-11 w-28 shrink-0 overflow-hidden sm:h-14 sm:w-36">
+                <Image src={logoUrl} alt={appName} fill className="object-contain" sizes="144px" priority />
               </div>
             ) : (
-              <div
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl border border-border bg-card text-lg shadow-[var(--shadow-card)] sm:h-10 sm:w-10 sm:text-xl"
-                aria-hidden
-              >
-                📚
-              </div>
+              <BrandLogo className="h-11 w-28 shrink-0 sm:h-14 sm:w-36" />
             )}
+
 
             <div className="flex min-w-0 flex-1 items-center gap-1.5">
               <h1
@@ -215,7 +205,8 @@ export function CatalogHomeStickyHeader({
                       id="pwa-install-header-tip"
                       role="tooltip"
                       dir="rtl"
-                      className="absolute start-0 top-[calc(100%+0.35rem)] z-30 w-[min(18rem,calc(100dvw-2rem))] rounded-xl border border-border bg-white p-3 text-start shadow-lg"
+                      className="fixed inset-x-3 z-40 mx-auto w-[min(20rem,calc(100dvw-1.5rem))] rounded-xl border border-[#eadfd2] bg-white p-3 text-start shadow-lg sm:absolute sm:inset-x-auto sm:start-0 sm:mx-0"
+                      style={{ top: `${Math.max(shellHeight + 8, 72)}px` }}
                     >
                       <div className="flex items-start justify-between gap-2">
                         <p className="break-words text-xs leading-relaxed text-foreground sm:text-[13px]">

@@ -11,6 +11,8 @@
   --text-muted: #756f6a;
   --brand-burgundy: #91050f;
   --brand-ivory: #fff2e3;
+  --font-english: Poppins, ui-sans-serif, system-ui, sans-serif;
+  --font-arabic-brand: var(--font-arabic), "Bahij TheSansArabic", ui-sans-serif, sans-serif;
 
   --notion-bg: var(--bg-app);
   --notion-card: var(--card-white);
@@ -74,6 +76,14 @@ html {
   color-scheme: light;
   scrollbar-gutter: stable;
   -webkit-tap-highlight-color: rgb(29 78 216 / 0.12);
+}
+
+.brand-english {
+  font-family: var(--font-english);
+}
+
+.brand-arabic {
+  font-family: var(--font-arabic-brand);
 }
 
 body {

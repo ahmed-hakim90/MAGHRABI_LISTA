@@ -311,7 +311,10 @@ export function CatalogHomeStickyHeader({
                 </div>
               </>
             ) : (
-              <div className="flex w-full justify-end">
+              <div
+                className="flex w-full justify-end"
+                style={{ fontFamily: '"Space Grotesk", sans-serif' }}
+              >
                 <CatalogViewToggle
                   value={catalogView}
                   onChange={onCatalogViewChange}

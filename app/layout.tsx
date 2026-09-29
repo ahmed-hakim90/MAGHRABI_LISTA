@@ -1,5 +1,11 @@
 import type { Metadata, Viewport } from "next";
-import { IBM_Plex_Sans_Arabic } from "next/font/google";
+import {
+  IBM_Plex_Sans_Arabic,
+  Inter,
+  Karla,
+  Rubik,
+  Space_Grotesk,
+} from "next/font/google";
 import { ChunkLoadRecovery } from "@/components/ChunkLoadRecovery";
 import { PwaCacheReset } from "@/components/PwaCacheReset";
 import { PwaUpdatePull } from "@/components/PwaUpdatePull";
@@ -14,6 +20,11 @@ const ibmPlexSansArabic = IBM_Plex_Sans_Arabic({
   variable: "--font-arabic",
   display: "swap",
 });
+
+const rubik = Rubik({ subsets: ["arabic", "latin"], variable: "--font-rubik", display: "swap" });
+const karla = Karla({ subsets: ["latin"], variable: "--font-karla", display: "swap" });
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
+const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], variable: "--font-space-grotesk", display: "swap" });
 
 export const metadata: Metadata = {
   title: DEFAULT_SITE_HOME_TITLE,
@@ -41,7 +52,7 @@ export default function RootLayout({
   return (
     <html
       lang="ar"
-      className={`h-full splash-launch ${ibmPlexSansArabic.variable} font-sans`}
+      className={`h-full splash-launch ${ibmPlexSansArabic.variable} ${rubik.variable} ${karla.variable} ${inter.variable} ${spaceGrotesk.variable} font-sans`}
     >
       <head>
         <link

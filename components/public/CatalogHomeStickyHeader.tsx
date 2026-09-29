@@ -19,7 +19,6 @@ import { CategoryFilterChips } from "@/components/public/CategoryFilterChips";
 import { SearchBox } from "@/components/public/SearchBox";
 import { usePwaInstall } from "@/hooks/usePwaInstall";
 import { DEFAULT_SITE_HOME_TITLE } from "@/lib/constants/siteDefaults";
-import { BrandLogo } from "@/components/public/BrandSystem";
 
 type Props = {
   appName: string;
@@ -184,13 +183,16 @@ export function CatalogHomeStickyHeader({
       >
         <div className="mx-auto w-full max-w-6xl space-y-1 overflow-x-visible px-3 py-1.5 sm:space-y-1.5 sm:px-4 sm:py-2">
           <div className="flex flex-row items-center gap-2 sm:gap-3" dir="rtl">
-            {logoUrl ? (
-              <div className="relative h-11 w-28 shrink-0 overflow-hidden sm:h-14 sm:w-36">
-                <Image src={logoUrl} alt={appName} fill className="object-contain" sizes="144px" priority />
-              </div>
-            ) : (
-              <BrandLogo className="h-11 w-28 shrink-0 sm:h-14 sm:w-36" />
-            )}
+            <div className="relative h-11 w-28 shrink-0 overflow-hidden sm:h-14 sm:w-36">
+              <Image
+                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-PL7E0yUNnmv7viMySo5kBbUnCDZe2w.png"
+                alt="المغربي EL MAGHRABY"
+                fill
+                className="object-contain"
+                sizes="144px"
+                priority
+              />
+            </div>
 
 
             <div className="flex min-w-0 flex-1 items-center gap-1.5">

@@ -17,7 +17,7 @@ type Props = {
 };
 
 const gridShellDrive =
-  "group/folder flex min-w-0 touch-manipulation flex-col overflow-hidden rounded-xl border border-border/90 bg-card shadow-sm transition duration-200 ease-out motion-reduce:transition-none [@media(hover:hover)]:hover:border-border [@media(hover:hover)]:hover:shadow-md active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2";
+  "group/folder flex min-w-0 touch-manipulation flex-col overflow-hidden border border-[#eadfd2] bg-white shadow-[0_8px_24px_rgb(145_5_15/0.06)] transition duration-200 ease-out motion-reduce:transition-none [@media(hover:hover)]:hover:border-[#ed1f26] [@media(hover:hover)]:hover:shadow-[0_12px_28px_rgb(145_5_15/0.12)] active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2";
 
 export function FolderCard({ folder, fileCount, variant = "grid" }: Props) {
   const { basePath } = useCatalogChannel();
@@ -78,10 +78,10 @@ export function FolderCard({ folder, fileCount, variant = "grid" }: Props) {
     <Link href={href} className={gridShellDrive}>
       <div className="relative aspect-square w-full shrink-0 overflow-hidden bg-gradient-to-br from-primary/[0.08] to-surface">
         <div
-          className="flex h-full w-full items-center justify-center text-5xl transition duration-300 [@media(hover:hover)]:group-hover/folder:scale-[1.03] sm:text-6xl"
+          className="flex h-full w-full items-center justify-center transition duration-300 [@media(hover:hover)]:group-hover/folder:scale-[1.03]"
           aria-hidden
         >
-          <span className="opacity-90">📁</span>
+          <span className="relative block size-24 rounded-[38%_38%_18%_18%] bg-[#ed1f26] after:absolute after:inset-x-5 after:top-8 after:h-4 after:rounded-full after:bg-white/90 sm:size-32" />
         </div>
       </div>
       <div className="flex flex-col gap-0.5 border-t border-border/70 px-2 py-2 sm:px-2.5 sm:py-2.5">

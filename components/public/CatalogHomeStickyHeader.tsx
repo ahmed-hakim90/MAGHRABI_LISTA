@@ -177,14 +177,14 @@ export function CatalogHomeStickyHeader({
     <>
       <header
         ref={shellRef}
-        className="fixed inset-x-0 top-0 z-20 overflow-x-visible overflow-y-visible bg-white pt-[env(safe-area-inset-top,0px)] shadow-[0_4px_14px_-4px_rgb(15_23_42/0.12),0_2px_6px_-3px_rgb(15_23_42/0.08)]"
+        className="fixed inset-x-0 top-0 z-20 overflow-x-visible overflow-y-visible border-b border-[#eadfd2] bg-[#fff2e3] pt-[env(safe-area-inset-top,0px)] shadow-[0_4px_18px_-6px_rgb(145_5_15/0.18)]"
       >
         <div className="mx-auto w-full max-w-6xl space-y-2 overflow-x-visible px-4 py-2 sm:space-y-2.5 sm:px-4 sm:py-3">
           <div className="flex flex-row items-center gap-2 sm:gap-3" dir="rtl">
-            {logoUrl ? (
+            {logoUrl || "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-m2zjhi2N5XRxFM11q7AORo2Th9Je1j.png" ? (
               <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-2xl border border-border bg-card shadow-[var(--shadow-card)] sm:h-10 sm:w-10">
                 <Image
-                  src={logoUrl}
+                  src={logoUrl || "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-m2zjhi2N5XRxFM11q7AORo2Th9Je1j.png"}
                   alt={appName}
                   fill
                   className="object-cover object-center scale-[1.2]"

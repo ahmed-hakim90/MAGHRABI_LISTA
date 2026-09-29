@@ -156,13 +156,31 @@ export function CatalogChannelHomeClient({
         showPriceListsTab={hydratedSettings.showPriceLists}
         showReelsTab={hydratedSettings.showReels}
       />
-      <main className="mt-1 flex min-h-0 flex-1 flex-col sm:mt-2">
+      {audience === "wholesale" ? (
+        <section className="relative isolate overflow-hidden bg-[linear-gradient(118deg,#ed1f26_0%,#b9141b_48%,#91050f_100%)] px-4 pb-8 pt-28 text-white sm:px-8 sm:pb-12 sm:pt-36" aria-labelledby="wholesale-hero-title">
+          <div className="pointer-events-none absolute -end-20 -top-24 -z-10 size-72 rounded-[42%] border-[28px] border-white/10 sm:size-[28rem]" aria-hidden />
+          <div className="pointer-events-none absolute -bottom-28 start-1/2 -z-10 h-48 w-[34rem] -translate-x-1/2 rounded-[50%] border-[22px] border-white/10 sm:h-64" aria-hidden />
+          <div className="mx-auto flex max-w-6xl flex-col gap-7 sm:flex-row sm:items-end sm:justify-between sm:gap-10">
+            <div className="max-w-2xl" dir="rtl">
+              <p className="mb-3 text-xs font-semibold uppercase tracking-[0.22em] text-white/70 sm:text-sm">EL MAGHRABY / WHOLESALE</p>
+              <h2 id="wholesale-hero-title" className="max-w-xl text-4xl font-bold leading-[1.12] tracking-tight sm:text-6xl">شراكة أقوى.<br /><span className="text-[#fff2e3]">اختيار أوسع.</span></h2>
+              <p className="mt-4 max-w-lg text-sm leading-7 text-white/85 sm:text-base">اكتشف محفظة الأجهزة والكتالوجات التجارية من المغربي، مصممة لتدعم نمو شركائك وتبسط قرارات الشراء.</p>
+              <a href="#catalog" className="mt-6 inline-flex min-h-touch items-center justify-center bg-white px-5 py-3 text-sm font-semibold text-[#91050f] transition hover:bg-[#fff2e3]">استكشف الكتالوج <span className="ms-2" aria-hidden>←</span></a>
+            </div>
+            <div className="hidden shrink-0 border-s border-white/25 ps-8 text-end sm:block" dir="rtl">
+              <p className="text-5xl font-semibold tracking-tight">B2B</p>
+              <p className="mt-2 text-sm text-white/70">توزيع موثوق<br />على نطاق واسع</p>
+            </div>
+          </div>
+        </section>
+      ) : null}
+      <main id="catalog" className="mt-1 flex min-h-0 flex-1 flex-col bg-[#fff2e3] sm:mt-2">
         {showSkeleton ? (
           <CatalogSkeleton />
         ) : error && !hasCatalogData ? (
           <p className="flex-1 py-16 text-center text-red-800">{error}</p>
         ) : (
-          <div className="px-3 pb-6 sm:px-4">
+            <div className="px-3 pb-6 pt-6 sm:px-4 sm:pt-10">
             <FolderedFileGrid
               cards={visibleCards}
               folders={folders}

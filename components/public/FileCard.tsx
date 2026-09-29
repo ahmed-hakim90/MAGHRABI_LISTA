@@ -40,7 +40,7 @@ function withDownloadParam(href: string): string {
 }
 
 const gridShell =
-  "group/card flex min-w-0 touch-manipulation  flex-col overflow-hidden rounded-xl border border-border/90 bg-blue-500 shadow-sm transition duration-200 ease-out motion-reduce:transition-none [@media(hover:hover)]:hover:border-border [@media(hover:hover)]:hover:shadow-md active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2";
+  "group/card flex min-w-0 touch-manipulation flex-col overflow-hidden border border-[#eadfd2] bg-white shadow-[0_8px_24px_rgb(145_5_15/0.06)] transition duration-200 ease-out motion-reduce:transition-none [@media(hover:hover)]:hover:border-[#ed1f26] [@media(hover:hover)]:hover:shadow-[0_12px_28px_rgb(145_5_15/0.12)] active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2";
 
 const badgeNew =
   "rounded-full bg-accent px-1.5 py-px text-[9px] font-bold uppercase tracking-wide text-[#0f172a] shadow-sm sm:text-[10px]";
@@ -179,8 +179,8 @@ export function FileCard({
         </div>
       </div>
       {/* // دا كارت الفايل في وضع الشبكة، بيعرض صورة مصغرة لو متوفرة، اسم الملف، وتاريخ التحديث. كمان بيوري إذا كان الملف جديد أو محدث. */}
-      <div className="flex flex-col gap-0.5 border-t border-border/70 px-2 py-2 sm:px-2.5 sm:py-2.5 bg-blue-500">
-        <h2 className="line-clamp-2 text-center text-xs text-white font-semibold leading-snug text-foreground sm:text-[11px]">
+      <div className="flex flex-col gap-0.5 border-t border-[#eadfd2] bg-[#fff2e3] px-2 py-2 sm:px-2.5 sm:py-2.5">
+        <h2 className="line-clamp-2 text-center text-xs font-semibold leading-snug text-foreground sm:text-[11px]">
           {card.title}
         </h2>
         {(card.category?.trim() || card.updatedAt) && (

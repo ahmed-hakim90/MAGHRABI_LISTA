@@ -17,7 +17,7 @@ type Props = {
 };
 
 const gridShellDrive =
-  "group/folder flex min-w-0 touch-manipulation flex-col overflow-hidden border border-[#eadfd2] bg-white shadow-[0_8px_24px_rgb(145_5_15/0.06)] transition duration-200 ease-out motion-reduce:transition-none [@media(hover:hover)]:hover:border-[#ed1f26] [@media(hover:hover)]:hover:shadow-[0_12px_28px_rgb(145_5_15/0.12)] active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2";
+  "group/folder flex min-w-0 touch-manipulation flex-col overflow-hidden border border-[#eadfd2] bg-white transition duration-200 ease-out motion-reduce:transition-none [@media(hover:hover)]:hover:border-[#ed1f26] [@media(hover:hover)]:hover:shadow-[0_8px_22px_rgb(145_5_15/0.10)] active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2";
 
 export function FolderCard({ folder, fileCount, variant = "grid" }: Props) {
   const { basePath } = useCatalogChannel();
@@ -76,7 +76,7 @@ export function FolderCard({ folder, fileCount, variant = "grid" }: Props) {
 
   return (
     <Link href={href} className={gridShellDrive}>
-      <div className="relative aspect-square w-full shrink-0 overflow-hidden bg-gradient-to-br from-primary/[0.08] to-surface">
+      <div className="relative aspect-[4/3] w-full shrink-0 overflow-hidden bg-[#fff2e3] sm:aspect-[1.15/1]">
         <div
           className="flex h-full w-full items-center justify-center transition duration-300 [@media(hover:hover)]:group-hover/folder:scale-[1.03]"
           aria-hidden

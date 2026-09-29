@@ -40,6 +40,7 @@ type Props = {
   showCatalogViewToggle?: boolean;
   showPriceListsTab?: boolean;
   showReelsTab?: boolean;
+  alwaysShowSearch?: boolean;
 };
 
 /** First visit: show an inline hint next to the install control. */
@@ -90,6 +91,7 @@ export function CatalogHomeStickyHeader({
   showCatalogViewToggle = true,
   showPriceListsTab = true,
   showReelsTab = true,
+  alwaysShowSearch = false,
 }: Props) {
   const { hideAsInstalled, busy, runInstall } = usePwaInstall();
   const [searchOpen, setSearchOpen] = useState(false);
@@ -98,7 +100,7 @@ export function CatalogHomeStickyHeader({
   const shellRef = useRef<HTMLElement>(null);
   const [shellHeight, setShellHeight] = useState(0);
   const title = homeTitle.trim() || DEFAULT_SITE_HOME_TITLE;
-  const showSearchField = searchOpen || searchValue.length > 0;
+  const showSearchField = alwaysShowSearch || searchOpen || searchValue.length > 0;
   const spacerHeight =
     shellHeight > 0 ? `${shellHeight}px` : "min(7.5rem, 22dvh)";
 

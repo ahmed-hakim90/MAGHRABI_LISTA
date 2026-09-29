@@ -109,10 +109,10 @@ export function FolderedFileGrid({ cards, folders, view = "grid" }: Props) {
     );
 
   return (
-    <div className="w-full space-y-6 px-safe pb-safe-fab sm:space-y-10 sm:px-4">
-      <section className="space-y-2 sm:space-y-4">
-        <header className="flex flex-col gap-0.5 border-b border-primary/15 pb-2 sm:gap-1 sm:pb-3">
-          <h2 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
+    <div className="w-full space-y-8 px-safe pb-safe-fab sm:space-y-12">
+      <section className="space-y-4 sm:space-y-5">
+        <header className="flex flex-col gap-1 border-b border-[#eadfd2] pb-3 sm:gap-1.5 sm:pb-4">
+          <h2 className="text-lg font-bold tracking-tight text-[#414141] sm:text-xl">
             المجلدات
           </h2>
           <p className="text-sm text-muted">ملفات منظّمة حسب التصنيف</p>
@@ -120,9 +120,9 @@ export function FolderedFileGrid({ cards, folders, view = "grid" }: Props) {
         {folderLayout}
       </section>
       {ungrouped.length > 0 ? (
-        <section className="space-y-2 sm:space-y-4">
-          <header className="flex flex-col gap-0.5 border-b border-primary/15 pb-2 sm:gap-1 sm:pb-3">
-            <h2 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
+        <section className="space-y-4 sm:space-y-5">
+          <header className="flex flex-col gap-1 border-b border-[#eadfd2] pb-3 sm:gap-1.5 sm:pb-4">
+            <h2 className="text-lg font-bold tracking-tight text-[#414141] sm:text-xl">
               القوائم والكتالوجات
             </h2>
             <p className="text-sm text-muted">عرض مباشر لقوائم الأسعار</p>

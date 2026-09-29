@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { CatalogHomeStickyHeader } from "@/components/public/CatalogHomeStickyHeader";
-import { BrandGradient, BrandPattern, BrandSurface, EmblemFrame } from "@/components/public/BrandSystem";
+import { BrandGradient, BrandPattern, EmblemFrame } from "@/components/public/BrandSystem";
 import { useCatalogChannel } from "@/components/public/CatalogChannelContext";
 import { useCatalogView } from "@/components/public/CatalogViewToggle";
 import { FolderedFileGrid } from "@/components/public/FolderedFileGrid";
@@ -45,15 +45,15 @@ function reviveFolder(folder: SerializableFileFolder): FileFolder {
 function CatalogSkeleton() {
   return (
     <div
-      className="grid grid-cols-3 gap-2 px-safe pb-safe-fab sm:grid-cols-4 sm:gap-3 sm:px-4 lg:grid-cols-5"
+      className="mx-auto grid w-full max-w-[1360px] grid-cols-2 gap-3 px-4 pb-safe-fab sm:grid-cols-3 sm:gap-5 sm:px-8 lg:grid-cols-4 lg:gap-6 lg:px-12"
       aria-label="تحميل الكتالوج"
     >
       {Array.from({ length: 15 }, (_, i) => (
         <div
           key={i}
-          className="overflow-hidden rounded-xl border border-border/70 bg-card shadow-sm"
+          className="overflow-hidden border border-[#eadfd2] bg-white"
         >
-          <div className="aspect-square animate-pulse bg-gradient-to-br from-slate-100 via-white to-slate-200" />
+          <div className="aspect-[4/3] animate-pulse bg-gradient-to-br from-[#f4e9dc] via-white to-[#eadfd2] sm:aspect-[1.15/1]" />
           <div className="space-y-1.5 border-t border-border/70 p-2">
             <div className="mx-auto h-3 w-4/5 animate-pulse rounded bg-slate-200" />
             <div className="mx-auto h-2.5 w-1/2 animate-pulse rounded bg-slate-100" />
@@ -156,16 +156,16 @@ export function CatalogChannelHomeClient({
         showCategoryChips={!showSkeleton && (!error || hasCatalogData)}
         showPriceListsTab={hydratedSettings.showPriceLists}
         showReelsTab={hydratedSettings.showReels}
+        alwaysShowSearch={audience === "wholesale"}
       />
       {audience === "wholesale" ? (
-        <BrandGradient className="relative isolate overflow-hidden px-4 pb-8 pt-24 text-white sm:px-8 sm:pb-12 sm:pt-28" aria-labelledby="wholesale-hero-title">
+        <BrandGradient className="relative isolate flex min-h-[17rem] items-center overflow-hidden px-4 py-8 text-white sm:min-h-[20rem] sm:px-10 sm:py-10" aria-labelledby="wholesale-hero-title">
           <BrandPattern />
           <div className="relative mx-auto grid max-w-6xl items-center gap-8 sm:grid-cols-[1fr_0.72fr] sm:gap-12">
             <div className="max-w-2xl" dir="rtl">
-              <p className="mb-3 text-xs font-semibold uppercase tracking-[0.22em] text-white/70 sm:text-sm">EL MAGHRABY / WHOLESALE</p>
-              <h2 id="wholesale-hero-title" className="max-w-xl text-4xl font-bold leading-[1.12] tracking-tight sm:text-6xl">شراكة أقوى.<br /><span className="text-[#fff2e3]">اختيار أوسع.</span></h2>
-              <p className="mt-4 max-w-lg text-sm leading-7 text-white/85 sm:text-base">اكتشف محفظة الأجهزة والكتالوجات التجارية من المغربي، مصممة لتدعم نمو شركائك وتبسط قرارات الشراء.</p>
-              <a href="#catalog" className="mt-6 inline-flex min-h-touch items-center justify-center bg-white px-5 py-3 text-sm font-semibold text-[#91050f] transition hover:bg-[#fff2e3]">استكشف الكتالوج <span className="ms-2" aria-hidden>←</span></a>
+              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.22em] text-white/70 sm:text-sm">EL MAGHRABY / WHOLESALE CATALOG</p>
+              <h2 id="wholesale-hero-title" className="max-w-xl text-4xl font-bold leading-[1.05] tracking-tight sm:text-6xl">كتالوج <span className="text-[#fff2e3]">الجملة</span></h2>
+              <p className="mt-3 max-w-lg text-sm leading-7 text-white/85 sm:text-base">تصفح الأقسام والمنتجات المتاحة لشركاء المغربي.</p>
             </div>
             <EmblemFrame className="mx-auto aspect-[1.15] w-full max-w-sm border border-white/20 bg-[#fff2e3]/15 p-3 shadow-2xl sm:order-first">
               <div className="flex h-full items-center justify-center bg-[#fff2e3] p-5">
@@ -183,7 +183,7 @@ export function CatalogChannelHomeClient({
         ) : error && !hasCatalogData ? (
           <p className="flex-1 py-16 text-center text-red-800">{error}</p>
         ) : (
-            <div className="px-3 pb-6 pt-6 sm:px-4 sm:pt-10">
+            <div className="mx-auto w-full max-w-[1360px] px-4 pb-8 pt-6 sm:px-8 sm:pb-12 sm:pt-8 lg:px-12">
             <FolderedFileGrid
               cards={visibleCards}
               folders={folders}

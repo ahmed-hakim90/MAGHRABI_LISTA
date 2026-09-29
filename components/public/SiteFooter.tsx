@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 
-const PORTFOLIO_URL = "https://portfolio-flame-tau-19.vercel.app/";
+const PORTFOLIO_URL = "https://portfolio-hakim90.vercel.app/";
 
 const FILE_VIEW_PATH =
   /^\/(wholesale|retail|lists)\/file\/[^/]+\/view$/;

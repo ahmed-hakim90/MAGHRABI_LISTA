@@ -194,7 +194,7 @@ export function CatalogHomeStickyHeader({
             <div className="flex min-w-0 flex-1 items-center gap-1.5">
               <h1
                 className="truncate text-sm font-bold leading-tight tracking-tight sm:text-base"
-                style={{ color: primaryColor }}
+                style={{ color: "#d84b1d", borderColor: "rgba(254, 255, 255, 0)" }}
               >
                 {title}
               </h1>
@@ -223,36 +223,7 @@ export function CatalogHomeStickyHeader({
                       </div>
                     </div>
                   ) : null}
-                  <button
-                    type="button"
-                    disabled={busy}
-                    onClick={() => {
-                      dismissInstallTip();
-                      void runInstall();
-                    }}
-                    className="inline-flex min-h-touch min-w-touch items-center justify-center rounded-lg p-1.5 text-foreground/80 transition hover:bg-black/[0.06] hover:text-foreground active:scale-[0.98] disabled:cursor-wait disabled:opacity-50"
-                    aria-label="تحميل أو تثبيت التطبيق"
-                    title={PWA_INSTALL_NATIVE_TITLE}
-                    aria-describedby={
-                      installTipOpen ? "pwa-install-header-tip" : undefined
-                    }
-                  >
-                    <svg
-                      width="18"
-                      height="18"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      aria-hidden
-                    >
-                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                      <polyline points="7 10 12 15 17 10" />
-                      <line x1="12" y1="15" x2="12" y2="3" />
-                    </svg>
-                  </button>
+
                 </div>
               ) : null}
             </div>

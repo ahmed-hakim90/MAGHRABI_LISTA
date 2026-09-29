@@ -19,6 +19,11 @@ import type {
 import type { FileCard, FileFolder } from "@/lib/types/models";
 import { timestampFromMillis } from "@/lib/utils/clientTimestamp";
 import { matchesFileCardSearch } from "@/lib/utils/fileCardSearch";
+import {
+  previewWholesaleCards,
+  previewWholesaleFolders,
+  shouldUsePreviewWholesaleCatalog,
+} from "@/lib/dev/previewWholesaleCatalog";
 
 const CATALOG_VISIBLE_BATCH = 40;
 
@@ -74,12 +79,19 @@ export function CatalogChannelHomeClient({
   initialError: string | null;
 }) {
   const { audience, basePath } = useCatalogChannel();
+  const previewCatalog =
+    audience === "wholesale" &&
+    shouldUsePreviewWholesaleCatalog() &&
+    initialCards.length === 0 &&
+    initialFolders.length === 0
+      ? { cards: previewWholesaleCards, folders: previewWholesaleFolders }
+      : null;
   const initialData = useMemo(
     () => ({
-      cards: initialCards.map(reviveCard),
-      folders: initialFolders.map(reviveFolder),
+      cards: (previewCatalog?.cards ?? initialCards).map(reviveCard),
+      folders: (previewCatalog?.folders ?? initialFolders).map(reviveFolder),
     }),
-    [initialCards, initialFolders],
+    [initialCards, initialFolders, previewCatalog],
   );
   const {
     cards,

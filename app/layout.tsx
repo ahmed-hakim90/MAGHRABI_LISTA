@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { IBM_Plex_Sans_Arabic } from "next/font/google";
+import { IBM_Plex_Sans_Arabic, Poppins } from "next/font/google";
 import { ChunkLoadRecovery } from "@/components/ChunkLoadRecovery";
 import { PwaCacheReset } from "@/components/PwaCacheReset";
 import { PwaUpdatePull } from "@/components/PwaUpdatePull";
@@ -12,6 +12,14 @@ const ibmPlexSansArabic = IBM_Plex_Sans_Arabic({
   subsets: ["arabic", "latin"],
   weight: ["400", "500", "600", "700"],
   variable: "--font-arabic",
+  display: "swap",
+});
+
+/* Official EL MAGHRABY English face; used via --font-latin (wholesale scope). */
+const poppins = Poppins({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-latin",
   display: "swap",
 });
 
@@ -41,7 +49,7 @@ export default function RootLayout({
   return (
     <html
       lang="ar"
-      className={`h-full splash-launch ${ibmPlexSansArabic.variable} font-sans`}
+      className={`h-full splash-launch ${ibmPlexSansArabic.variable} ${poppins.variable} font-sans`}
     >
       <head>
         <link

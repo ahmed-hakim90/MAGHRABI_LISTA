@@ -24,6 +24,7 @@ import {
 import {
   getClientFirestore,
   getClientStorage,
+  syncAdminAuthTokenForStorage,
   syncAuthTokenForFirestore,
 } from "@/lib/firebase/client";
 import { getDocsWithCacheFallback } from "@/lib/firestore/queryWithCacheFallback";
@@ -457,6 +458,7 @@ export async function replaceFileCardPdf(
   uid: string,
   opts?: { onProgress?: UploadProgressHandler },
 ): Promise<void> {
+  await syncAdminAuthTokenForStorage();
   const on = opts?.onProgress;
   const db = getClientFirestore();
   const st = getClientStorage();
@@ -536,6 +538,7 @@ export async function replaceFileCardThumbnail(
   uid: string,
   opts?: { onProgress?: UploadProgressHandler },
 ): Promise<void> {
+  await syncAdminAuthTokenForStorage();
   const on = opts?.onProgress;
   const db = getClientFirestore();
   const st = getClientStorage();

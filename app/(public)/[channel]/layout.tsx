@@ -7,7 +7,10 @@ import {
   pwaAppleWebAppTitleForChannelSegment,
   type CatalogChannelSegment,
 } from "@/lib/constants/catalogChannels";
-import { getCachedPublicSiteSettings } from "@/lib/server/publicCatalogData";
+import {
+  getCachedPublicSiteSettings,
+  getCachedPublicAnnouncements,
+} from "@/lib/server/publicCatalogData";
 
 type Props = {
   children: React.ReactNode;
@@ -35,9 +38,16 @@ export default async function CatalogChannelLayout({
   const { channel: raw } = await params;
   if (!isCatalogChannelSegment(raw)) notFound();
   const channel = raw as CatalogChannelSegment;
-  const initialSettings = await getCachedPublicSiteSettings();
+  const [initialSettings, announcements] = await Promise.all([
+    getCachedPublicSiteSettings(),
+    getCachedPublicAnnouncements(),
+  ]);
   return (
-    <CatalogChannelRoot channel={channel} initialSettings={initialSettings}>
+    <CatalogChannelRoot
+      channel={channel}
+      initialSettings={initialSettings}
+      announcements={announcements}
+    >
       {children}
     </CatalogChannelRoot>
   );

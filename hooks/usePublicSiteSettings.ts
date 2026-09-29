@@ -24,6 +24,8 @@ const defaults: SiteSettings = {
   priceListOrderIncludePrices: false,
   showPriceLists: true,
   showReels: true,
+  adTitle: "",
+  adSlogan: "",
   updatedAt: null,
 };
 

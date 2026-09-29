@@ -33,15 +33,15 @@ export function FloatingContactButtons() {
           onClose={() => setWhatsappOpen(false)}
         />
       ) : null}
-      <div className="fixed bottom-[max(1.25rem,env(safe-area-inset-bottom))] end-[max(1.25rem,env(safe-area-inset-right))] z-[100] flex flex-col-reverse items-center gap-2">
+      <div className="fab-group fixed bottom-[max(1.25rem,env(safe-area-inset-bottom))] end-[max(1.25rem,env(safe-area-inset-right))] z-[100] flex flex-col-reverse items-center gap-2">
         {hasHotline ? (
           <a
             href={`tel:${hotline}`}
-            className={`${FAB_CLASS} bg-emerald-600`}
+            className={`${FAB_CLASS} fab-hotline bg-emerald-600`}
             aria-label={`اتصل بالخط الساخن ${hotline}`}
             title={`الخط الساخن — ${hotline}`}
           >
-            <PhoneGlyph className="h-7 w-7" aria-hidden />
+            <PhoneGlyph className="h-6 w-6" aria-hidden />
           </a>
         ) : null}
         {hasWhatsapp ? (
@@ -52,7 +52,7 @@ export function FloatingContactButtons() {
             aria-label="التواصل عبر واتساب لتقديم طلب من موقع المغربي"
             title="واتساب — اكتب رسالتك واختر الملف إن وجد"
           >
-            <WhatsAppGlyph className="h-8 w-8" aria-hidden />
+            <WhatsAppGlyph className="h-7 w-7" aria-hidden />
           </button>
         ) : null}
       </div>

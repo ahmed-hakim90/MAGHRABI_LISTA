@@ -20,6 +20,21 @@ import { publicCatalogFilePdfPath } from "@/lib/constants/catalogChannels";
 import { formatDisplayDate } from "@/lib/utils/dates";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 
+function uploadErrorMessage(error: unknown): string {
+  if (error instanceof Error && error.message.trim()) {
+    const code = "code" in error ? String(error.code) : "";
+    if (
+      code.includes("storage/unauthorized") ||
+      error.message.includes("storage/unauthorized") ||
+      error.message.includes("403")
+    ) {
+      return "رفض Firebase Storage العملية. تأكد من نشر storage.rules على مشروع SOKANY-PRODUCTION، ثم سجّل الخروج والدخول لتحديث صلاحية المسؤول.";
+    }
+    return error.message;
+  }
+  return "تعذّر استبدال الملف. حاول مرة أخرى.";
+}
+
 type FileTableProps = {
   audience?: "wholesale" | "retail" | "no_prices" | null;
 };
@@ -33,6 +48,7 @@ export function FileTable({ audience }: FileTableProps) {
     progress: number;
   } | null>(null);
   const [saving, setSaving] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const dragIndex = useRef<number | null>(null);
   const dragOverIndex = useRef<number | null>(null);
 
@@ -59,6 +75,7 @@ export function FileTable({ audience }: FileTableProps) {
 
   async function onReplacePdf(card: FileCard, file: File | null) {
     if (!file || !user) return;
+    setUploadError(null);
     setUploadJob({ label: "جاري رفع PDF…", progress: 0 });
     try {
       await replaceFileCardPdf(card.id, file, user.uid, {
@@ -72,8 +89,8 @@ export function FileTable({ audience }: FileTableProps) {
         /* best-effort */
       }
       await load();
-    } catch {
-      /* surface via browser or future toast */
+    } catch (error) {
+      setUploadError(uploadErrorMessage(error));
     } finally {
       setUploadJob(null);
     }
@@ -81,6 +98,7 @@ export function FileTable({ audience }: FileTableProps) {
 
   async function onReplaceThumb(card: FileCard, file: File | null) {
     if (!file || !user) return;
+    setUploadError(null);
     setUploadJob({ label: "جاري رفع الصورة المصغّرة…", progress: 0 });
     try {
       await replaceFileCardThumbnail(card.id, file, user.uid, {
@@ -88,8 +106,8 @@ export function FileTable({ audience }: FileTableProps) {
           setUploadJob((j) => (j ? { ...j, progress: p } : null)),
       });
       await load();
-    } catch {
-      /* surface via browser or future toast */
+    } catch (error) {
+      setUploadError(uploadErrorMessage(error));
     } finally {
       setUploadJob(null);
     }
@@ -153,6 +171,14 @@ export function FileTable({ audience }: FileTableProps) {
       {uploadJob ? (
         <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
           <ProgressBar label={uploadJob.label} value={uploadJob.progress} />
+        </div>
+      ) : null}
+      {uploadError ? (
+        <div
+          role="alert"
+          className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800"
+        >
+          {uploadError}
         </div>
       ) : null}
       {saving ? (

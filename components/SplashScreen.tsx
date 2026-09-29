@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 
 type Phase = "in" | "hold" | "out" | "done";
 
-const SPLASH_LOGO_SRC = "/icons/icon-512.png";
+const SPLASH_LOGO_SRC = "/brand/elmaghraby-logo-white.png";
 
 /** Min hold so a fast page doesn't snap before the user perceives the splash.
  *  900ms hold + 380ms fade = ~1.28s total minimum — comfortably inside the
@@ -139,6 +139,26 @@ export function SplashScreen() {
       role="presentation"
       aria-hidden="true"
     >
+      <svg
+        className="splash-watermark"
+        viewBox="0 0 900 900"
+        fill="none"
+        preserveAspectRatio="xMidYMid slice"
+        aria-hidden
+      >
+        <path
+          d="M120 900V500a300 300 0 0 1 600 0v400"
+          stroke="white"
+          strokeOpacity="0.09"
+          strokeWidth="40"
+        />
+        <path
+          d="M420 900V500a300 300 0 0 1 600 0v400"
+          stroke="white"
+          strokeOpacity="0.09"
+          strokeWidth="40"
+        />
+      </svg>
       <div className="splash-glow" aria-hidden="true" />
       <div className="splash-stack">
         <div className="splash-mark">
@@ -146,13 +166,14 @@ export function SplashScreen() {
           <img
             src={SPLASH_LOGO_SRC}
             alt=""
-            width={512}
-            height={512}
+            width={720}
+            height={172}
             decoding="async"
             fetchPriority="high"
             draggable={false}
           />
         </div>
+        <p className="splash-slogan">ثقة تكمل معاك</p>
         <div className="splash-progress" aria-hidden="true">
           <div className="splash-progress-track">
             <div ref={progressFillRef} className="splash-progress-fill" />

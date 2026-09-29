@@ -43,6 +43,8 @@ function fromData(data: Record<string, unknown>): SiteSettings {
     priceListOrderIncludePrices: Boolean(data.priceListOrderIncludePrices ?? false),
     showPriceLists: Boolean(data.showPriceLists ?? true),
     showReels: Boolean(data.showReels ?? true),
+    adTitle: String(data.adTitle ?? ""),
+    adSlogan: String(data.adSlogan ?? ""),
     updatedAt: (data.updatedAt as SiteSettings["updatedAt"]) ?? null,
   };
 }
@@ -67,6 +69,8 @@ export async function updateSiteSettings(
     priceListOrderIncludePrices: boolean;
     showPriceLists: boolean;
     showReels: boolean;
+    adTitle: string;
+    adSlogan: string;
     logoFile?: File | null;
   },
   previous: SiteSettings,
@@ -95,6 +99,8 @@ export async function updateSiteSettings(
       priceListOrderIncludePrices: Boolean(input.priceListOrderIncludePrices),
       showPriceLists: Boolean(input.showPriceLists),
       showReels: Boolean(input.showReels),
+      adTitle: input.adTitle.trim(),
+      adSlogan: input.adSlogan.trim(),
       logoUrl,
       logoPath,
       updatedAt: serverTimestamp(),

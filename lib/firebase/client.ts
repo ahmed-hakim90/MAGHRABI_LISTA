@@ -47,6 +47,27 @@ export async function syncAuthTokenForFirestore(): Promise<void> {
   if (u) await u.getIdToken(true);
 }
 
+/**
+ * Storage writes are restricted to administrators by storage.rules. Refresh
+ * the token immediately before an upload/delete so a recently-added custom
+ * claim is attached to the request, and fail with an actionable message when
+ * the session is no longer an admin session.
+ */
+export async function syncAdminAuthTokenForStorage(): Promise<void> {
+  const a = getClientAuth();
+  await a.authStateReady();
+  const u = a.currentUser;
+  if (!u) {
+    throw new Error("انتهت جلسة الدخول. سجّل الدخول كمسؤول ثم حاول مرة أخرى.");
+  }
+  const tokenResult = await u.getIdTokenResult(true);
+  if (tokenResult.claims.admin !== true) {
+    throw new Error(
+      "الحساب الحالي لا يحمل صلاحية رفع الملفات. سجّل الخروج ثم ادخل مرة أخرى كمسؤول.",
+    );
+  }
+}
+
 export function getClientFirestore(): Firestore {
   if (!db) {
     const firebaseApp = getBrowserFirebaseApp();

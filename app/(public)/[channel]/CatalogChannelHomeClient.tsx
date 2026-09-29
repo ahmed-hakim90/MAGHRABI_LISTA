@@ -13,33 +13,14 @@ import { useNavigatorOnline } from "@/hooks/useNavigatorOnline";
 import type {
   SerializableFileCard,
   SerializableFileFolder,
-  SerializableTimestamp,
 } from "@/lib/server/publicCatalogData";
-import type { FileCard, FileFolder } from "@/lib/types/models";
-import { timestampFromMillis } from "@/lib/utils/clientTimestamp";
+import {
+  reviveCatalogCard,
+  reviveCatalogFolder,
+} from "@/lib/utils/catalogRevive";
 import { matchesFileCardSearch } from "@/lib/utils/fileCardSearch";
 
 const CATALOG_VISIBLE_BATCH = 40;
-
-function reviveTimestamp(value: SerializableTimestamp) {
-  return value ? timestampFromMillis(value.ms) : null;
-}
-
-function reviveCard(card: SerializableFileCard): FileCard {
-  return {
-    ...card,
-    createdAt: reviveTimestamp(card.createdAt),
-    updatedAt: reviveTimestamp(card.updatedAt),
-  };
-}
-
-function reviveFolder(folder: SerializableFileFolder): FileFolder {
-  return {
-    ...folder,
-    createdAt: reviveTimestamp(folder.createdAt),
-    updatedAt: reviveTimestamp(folder.updatedAt),
-  };
-}
 
 function CatalogSkeleton() {
   return (
@@ -75,8 +56,8 @@ export function CatalogChannelHomeClient({
   const { audience, basePath } = useCatalogChannel();
   const initialData = useMemo(
     () => ({
-      cards: initialCards.map(reviveCard),
-      folders: initialFolders.map(reviveFolder),
+      cards: initialCards.map(reviveCatalogCard),
+      folders: initialFolders.map(reviveCatalogFolder),
     }),
     [initialCards, initialFolders],
   );

@@ -9,8 +9,17 @@ import {
   DEFAULT_SITE_HOME_TITLE,
   DEFAULT_SITE_PRIMARY_COLOR,
 } from "@/lib/constants/siteDefaults";
-import type { FileCard, FileFolder, SiteSettings } from "@/lib/types/models";
+import type {
+  AnnouncementItem,
+  FileCard,
+  FileFolder,
+  SiteSettings,
+} from "@/lib/types/models";
 import { STORAGE_FOLDER } from "@/lib/utils/storagePaths";
+import {
+  ANNOUNCEMENTS_SETTINGS_DOC,
+  parseAnnouncementItems,
+} from "@/lib/utils/announcements";
 import { parseWhatsappContactsRaw } from "@/lib/utils/siteWhatsappContacts";
 import { hotlineFromFirestore } from "@/lib/utils/hotlineNumber";
 
@@ -135,6 +144,8 @@ export function settingsFromData(
     ),
     showPriceLists: Boolean(data.showPriceLists ?? true),
     showReels: Boolean(data.showReels ?? true),
+    adTitle: String(data.adTitle ?? ""),
+    adSlogan: String(data.adSlogan ?? ""),
     updatedAt: timestampToSerializable(data.updatedAt),
   };
 }
@@ -222,5 +233,31 @@ export const getCachedPublicSiteSettings = unstable_cache(
   {
     revalidate: PUBLIC_CATALOG_REVALIDATE_SECONDS,
     tags: ["public-site-settings"],
+  },
+);
+
+async function loadPublicAnnouncements(): Promise<AnnouncementItem[]> {
+  try {
+    const db = getAdminFirestore();
+    const snap = await db
+      .collection("file_settings")
+      .doc(ANNOUNCEMENTS_SETTINGS_DOC)
+      .get();
+    return parseAnnouncementItems(
+      (snap.data() ?? {}).items,
+    );
+  } catch (e) {
+    console.warn("[publicCatalogData] failed to load announcements", e);
+    return [];
+  }
+}
+
+/** Raw list — schedule filtering happens client-side so windows open/close without revalidation. */
+export const getCachedPublicAnnouncements = unstable_cache(
+  loadPublicAnnouncements,
+  ["public-announcements"],
+  {
+    revalidate: PUBLIC_CATALOG_REVALIDATE_SECONDS,
+    tags: ["public-announcements"],
   },
 );

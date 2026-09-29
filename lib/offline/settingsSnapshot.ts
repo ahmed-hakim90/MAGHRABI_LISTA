@@ -33,9 +33,18 @@ function toWire(s: SiteSettings): WireSettings {
 }
 
 function fromWire(w: WireSettings): SiteSettings {
-  const { updatedAtMs, whatsappContacts, hotlineNumber, ...rest } = w;
+  const {
+    updatedAtMs,
+    whatsappContacts,
+    hotlineNumber,
+    adTitle,
+    adSlogan,
+    ...rest
+  } = w;
   return {
     ...rest,
+    adTitle: String(adTitle ?? ""),
+    adSlogan: String(adSlogan ?? ""),
     whatsappContacts: parseWhatsappContactsRaw(whatsappContacts),
     hotlineNumber: resolveSiteHotlineNumber(hotlineNumber),
     updatedAt: msToTs(updatedAtMs),

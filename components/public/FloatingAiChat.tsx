@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ChatMessageContent } from "@/components/public/ChatMessageContent";
+import { FAB_CLASS } from "@/lib/constants/fabStyles";
 import {
   getChatQuickRepliesForContext,
   presetCanonicalMessage,
@@ -291,7 +292,7 @@ export function FloatingAiChat({ audience }: { audience: FloatingAiChatAudience 
     <>
       <div
         dir="ltr"
-        className={`fixed ${fabCornerClass} z-[100] flex flex-col items-end gap-2`}
+        className={`fab-group fixed ${fabCornerClass} z-[100] flex flex-col items-end gap-2`}
       >
         {!open && !greetingDismissed ? (
           <div
@@ -330,12 +331,12 @@ export function FloatingAiChat({ audience }: { audience: FloatingAiChatAudience 
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
-          className="flex h-14 w-14 transform-gpu items-center justify-center rounded-full bg-primary text-white shadow-lg ring-1 ring-black/10 transition-transform duration-200 hover:scale-105 hover:shadow-xl active:scale-95 [backface-visibility:hidden]"
+          className={`${FAB_CLASS} bg-primary`}
           title={FAB_ASSISTANT_HINT_AR}
           aria-label={`مساعد المغربي — ${FAB_ASSISTANT_HINT_AR}`}
           aria-expanded={open}
         >
-          <ChatGlyph className="h-7 w-7" aria-hidden />
+          <ChatGlyph className="h-6 w-6" aria-hidden />
         </button>
       </div>
 

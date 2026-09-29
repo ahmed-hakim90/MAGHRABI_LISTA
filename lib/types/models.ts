@@ -71,6 +71,9 @@ export type SiteSettings = {
   showPriceLists: boolean;
   /** Controls whether the reels/videos tab/page is visible publicly. */
   showReels: boolean;
+  /** Ad announcement shown in the wholesale rollup-style ad rail (empty = brand default). */
+  adTitle: string;
+  adSlogan: string;
   updatedAt: Timestamp | null;
 };
 
@@ -81,4 +84,23 @@ export type NotificationDoc = {
   createdAt: Timestamp | null;
   createdBy: string;
   status: "draft" | "sent" | "failed";
+};
+
+/** One entry of the dynamic announcement ticker bar (file_settings/announcements). */
+export type AnnouncementItem = {
+  id: string;
+  textAr: string;
+  textEn: string;
+  link: string;
+  linkLabelAr: string;
+  linkLabelEn: string;
+  openInNewTab: boolean;
+  isActive: boolean;
+  sortOrder: number;
+  /** Epoch ms; null = no lower bound. */
+  startAt: number | null;
+  /** Epoch ms; null = no upper bound. */
+  endAt: number | null;
+  createdAt: number | null;
+  updatedAt: number | null;
 };

@@ -10,6 +10,10 @@ import { useCatalogChannel } from "@/components/public/CatalogChannelContext";
 import { useNarrowViewportForNewTab } from "@/hooks/useNarrowViewportForNewTab";
 import { publicCatalogFilePdfPath } from "@/lib/constants/catalogChannels";
 import {
+  pingCatalogView,
+  withDownloadParam,
+} from "@/lib/utils/catalogActions";
+import {
   CatalogListKebab,
   catalogListRowClass,
 } from "./CatalogFileListHeader";
@@ -25,18 +29,6 @@ type Props = {
 
 function hasThumbnail(card: FileCardType): boolean {
   return Boolean(card.thumbnailUrl?.trim());
-}
-
-function pingCatalogView(cardId: string) {
-  void fetch("/api/catalog/view", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ cardId }),
-  }).catch(() => {});
-}
-
-function withDownloadParam(href: string): string {
-  return `${href}${href.includes("?") ? "&" : "?"}download`;
 }
 
 const gridShell =

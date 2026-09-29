@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { CatalogChannelHomeClient } from "./CatalogChannelHomeClient";
+import { WholesaleCatalogHomeClient } from "@/components/wholesale/WholesaleCatalogHomeClient";
 import {
   CHANNEL_TO_AUDIENCE,
   isCatalogChannelSegment,
@@ -21,6 +22,16 @@ export default async function CatalogChannelHomePage({ params }: Props) {
   if (!isCatalogChannelSegment(raw)) notFound();
   const channel = raw as CatalogChannelSegment;
   const data = await getCachedPublicCatalog(CHANNEL_TO_AUDIENCE[channel]);
+
+  if (channel === "wholesale") {
+    return (
+      <WholesaleCatalogHomeClient
+        initialCards={data.cards}
+        initialFolders={data.folders}
+        initialError={data.error}
+      />
+    );
+  }
 
   return (
     <CatalogChannelHomeClient

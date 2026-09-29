@@ -7,6 +7,7 @@ import {
   updateSiteSettings,
 } from "@/lib/services/settings";
 import { ProgressBar } from "@/components/ui/ProgressBar";
+import { AnnouncementBarManager } from "@/components/admin/AnnouncementBarManager";
 import type { SiteSettings, WhatsAppContact } from "@/lib/types/models";
 import { DEFAULT_SITE_PRIMARY_COLOR } from "@/lib/constants/siteDefaults";
 
@@ -23,6 +24,8 @@ export default function AdminSettingsPage() {
     useState(false);
   const [showPriceLists, setShowPriceLists] = useState(true);
   const [showReels, setShowReels] = useState(true);
+  const [adTitle, setAdTitle] = useState("");
+  const [adSlogan, setAdSlogan] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
@@ -39,6 +42,8 @@ export default function AdminSettingsPage() {
       setPriceListOrderIncludePrices(s.priceListOrderIncludePrices);
       setShowPriceLists(s.showPriceLists);
       setShowReels(s.showReels);
+      setAdTitle(s.adTitle);
+      setAdSlogan(s.adSlogan);
     });
   }, []);
 
@@ -60,6 +65,8 @@ export default function AdminSettingsPage() {
           priceListOrderIncludePrices,
           showPriceLists,
           showReels,
+          adTitle,
+          adSlogan,
           logoFile,
         },
         initial,
@@ -78,6 +85,8 @@ export default function AdminSettingsPage() {
       setPriceListOrderIncludePrices(next.priceListOrderIncludePrices);
       setShowPriceLists(next.showPriceLists);
       setShowReels(next.showReels);
+      setAdTitle(next.adTitle);
+      setAdSlogan(next.adSlogan);
       setLogoFile(null);
       setMsg("تم الحفظ.");
     } catch (err) {
@@ -195,6 +204,38 @@ export default function AdminSettingsPage() {
             </span>
           </span>
         </label>
+
+        <div className="space-y-3 rounded-xl border border-border bg-muted/30 p-4">
+          <div>
+            <span className="text-sm font-medium text-foreground">
+              مساحة الإعلان (رول أب)
+            </span>
+            <p className="mt-1 text-xs text-muted">
+              عنوان وشعار الإعلان الظاهر في مساحة الإعلانات الجانبية بكتالوج
+              الجملة. اتركهما فارغين لعرض الشعار الرسمي الافتراضي.
+            </p>
+          </div>
+          <label className="block">
+            <span className="text-xs font-medium text-muted">عنوان الإعلان</span>
+            <input
+              className="mt-1 w-full rounded-lg border border-border px-3 py-2 text-sm"
+              dir="rtl"
+              value={adTitle}
+              onChange={(e) => setAdTitle(e.target.value)}
+              placeholder="مثال: عرض موسم الشتاء"
+            />
+          </label>
+          <label className="block">
+            <span className="text-xs font-medium text-muted">شعار الإعلان</span>
+            <input
+              className="mt-1 w-full rounded-lg border border-border px-3 py-2 text-sm"
+              dir="rtl"
+              value={adSlogan}
+              onChange={(e) => setAdSlogan(e.target.value)}
+              placeholder="اختيارات لبيتك.. وليك"
+            />
+          </label>
+        </div>
 
         <label className="block">
           <span className="text-sm font-medium text-foreground">الخط الساخن</span>
@@ -323,6 +364,8 @@ export default function AdminSettingsPage() {
           {busy ? "جاري الحفظ…" : "حفظ"}
         </button>
       </form>
+
+      <AnnouncementBarManager />
     </div>
   );
 }

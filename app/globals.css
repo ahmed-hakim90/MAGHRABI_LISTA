@@ -10,6 +10,17 @@
   --border-subtle: #e2e8f0;
   --text-muted: #64748b;
 
+  /* EL MAGHRABY official identity (brand manual) */
+  --brand-red: #ed1f26;
+  --brand-burgundy: #91050f;
+  --brand-ivory: #fff2e3;
+  --brand-gray: #414141;
+  --brand-gold: #c4a642;
+
+  /* Official Arabic face is Bahij TheSansArabic; drop the asset in and point
+     this at its next/font variable — everything else keeps working. */
+  --font-brand-arabic: var(--font-arabic);
+
   --notion-bg: var(--bg-app);
   --notion-card: var(--card-white);
   --notion-text: var(--text-primary);
@@ -21,7 +32,7 @@
   --shadow-card-hover: 0 8px 16px -4px rgb(15 23 42 / 0.08),
     0 20px 40px -8px rgb(29 78 216 / 0.12);
 
-  --splash-bg: var(--notion-bg);
+  --splash-bg: #c1101c;
   --safe-fab-space: calc(3.5rem + 1.25rem);
 }
 
@@ -36,8 +47,54 @@
   --color-muted: var(--notion-muted);
   --color-primary: var(--brand-primary);
   --color-accent: var(--brand-accent);
+  --color-brand-red: var(--brand-red);
+  --color-brand-burgundy: var(--brand-burgundy);
+  --color-brand-ivory: var(--brand-ivory);
+  --color-brand-gray: var(--brand-gray);
+  --color-brand-gold: var(--brand-gold);
   --shadow-premium: var(--shadow-card);
   --shadow-premium-hover: var(--shadow-card-hover);
+}
+
+/* EL MAGHRABY wholesale channel identity: semantic tokens are remapped only
+   inside this scope so /retail, /lists and admin keep the existing theme. */
+.channel-wholesale {
+  --brand-primary: var(--brand-red);
+  --brand-accent: var(--brand-gold);
+  --bg-app: #fdf8f1;
+  --text-primary: var(--brand-gray);
+  --border-subtle: #eadfce;
+  --shadow-card-hover: 0 8px 16px -4px rgb(65 65 65 / 0.1),
+    0 20px 40px -8px rgb(145 5 15 / 0.16);
+  font-family: var(--font-latin), var(--font-brand-arabic), ui-sans-serif,
+    system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+.channel-wholesale .fab-hotline {
+  background-color: var(--brand-red);
+}
+
+/* Floating action buttons reveal only after the splash dismisses */
+.fab-group {
+  transition:
+    opacity 320ms cubic-bezier(0.22, 1, 0.36, 1) 120ms,
+    transform 320ms cubic-bezier(0.22, 1, 0.36, 1) 120ms;
+}
+
+html.splash-launch .fab-group {
+  opacity: 0;
+  transform: translateY(0.75rem) scale(0.92);
+  pointer-events: none;
+  transition: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fab-group {
+    transition: opacity 150ms linear;
+  }
+  html.splash-launch .fab-group {
+    transform: none;
+  }
 }
 
 /* Safe-area helpers: combine notch / home indicator with layout padding */
@@ -106,7 +163,7 @@ html.splash-launch body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--splash-bg);
+  background: linear-gradient(168deg, #91050f 0%, #c1101c 46%, #ed1f26 100%);
   padding: env(safe-area-inset-top) env(safe-area-inset-right)
     env(safe-area-inset-bottom) env(safe-area-inset-left);
   opacity: 1;
@@ -120,15 +177,23 @@ html.splash-launch body {
   pointer-events: none;
 }
 
+.splash-watermark {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  width: 100%;
+  pointer-events: none;
+}
+
 .splash-glow {
   position: absolute;
   inset: 0;
   pointer-events: none;
   background: radial-gradient(
-    circle at 50% 50%,
-    rgb(29 78 216 / 0.08) 0%,
-    rgb(29 78 216 / 0.03) 32%,
-    rgb(29 78 216 / 0) 62%
+    circle at 50% 42%,
+    rgb(255 255 255 / 0.1) 0%,
+    rgb(255 255 255 / 0.04) 32%,
+    rgb(255 255 255 / 0) 62%
   );
   opacity: 0;
   transition: opacity 600ms cubic-bezier(0.22, 1, 0.36, 1);
@@ -152,7 +217,7 @@ html.splash-launch body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.875rem;
+  gap: 1.125rem;
   transform: scale(0.96);
   transition:
     transform 420ms cubic-bezier(0.22, 1, 0.36, 1),
@@ -176,20 +241,22 @@ html.splash-launch body {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: clamp(52px, 13vmin, 76px);
-  height: clamp(52px, 13vmin, 76px);
+  width: clamp(200px, 42vmin, 320px);
   flex-shrink: 0;
-  border-radius: 50%;
-  overflow: hidden;
-  box-shadow: 0 0 0 1px rgb(29 78 216 / 0.12);
 }
 
 .splash-mark img {
   width: 100%;
-  height: 100%;
-  object-fit: contain;
+  height: auto;
   user-select: none;
   -webkit-user-drag: none;
+}
+
+.splash-slogan {
+  font-size: clamp(15px, 2.6vmin, 19px);
+  font-weight: 600;
+  color: var(--brand-ivory);
+  letter-spacing: 0.01em;
 }
 
 .splash-progress {
@@ -202,7 +269,7 @@ html.splash-launch body {
   width: min(140px, 42vw);
   height: 3px;
   border-radius: 9999px;
-  background: rgb(29 78 216 / 0.12);
+  background: rgb(255 242 227 / 0.25);
   overflow: hidden;
 }
 
@@ -212,7 +279,7 @@ html.splash-launch body {
   transform-origin: left center;
   transform: scaleX(0);
   border-radius: inherit;
-  background: rgb(29 78 216 / 0.45);
+  background: var(--brand-ivory);
   will-change: transform;
 }
 
@@ -288,5 +355,123 @@ html.splash-launch body {
   .splash-overlay[data-phase="hold"] .splash-glow,
   .splash-overlay[data-phase="out"] .splash-glow {
     animation: none;
+  }
+}
+
+/* ── Announcement ticker bar (slim, above the wholesale header) ── */
+.announcement-bar {
+  overflow: hidden;
+  background: linear-gradient(
+    90deg,
+    #91050f 0%,
+    var(--brand-red) 50%,
+    #91050f 100%
+  );
+  color: var(--brand-ivory);
+  padding-top: env(safe-area-inset-top, 0px);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+@media (min-width: 640px) {
+  .announcement-bar {
+    font-size: 14px;
+  }
+}
+
+/* The header keeps its own safe-area padding only when it is the top-most element */
+body:has(.announcement-bar) .wholesale-header {
+  padding-top: 0;
+}
+
+.announcement-marquee {
+  display: flex;
+  width: max-content;
+  animation: announcement-ticker
+    var(--announcement-ticker-duration, 40s) linear infinite;
+  will-change: transform;
+}
+
+.announcement-bar:hover .announcement-marquee,
+.announcement-bar:focus-within .announcement-marquee {
+  animation-play-state: paused;
+}
+
+.announcement-seq {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: space-evenly;
+  min-width: 100vw;
+  height: 34px;
+}
+
+@media (min-width: 640px) {
+  .announcement-seq {
+    height: 36px;
+  }
+}
+
+.announcement-unit {
+  display: inline-flex;
+  align-items: center;
+  padding-inline: clamp(1.25rem, 5vw, 3.5rem);
+  white-space: nowrap;
+}
+
+.announcement-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 600;
+}
+
+.announcement-item--link {
+  border-radius: 0.25rem;
+  transition: color 120ms ease;
+}
+
+.announcement-item--link:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.announcement-item--link:focus-visible {
+  outline: 2px solid var(--brand-ivory);
+  outline-offset: 2px;
+}
+
+.announcement-link-label {
+  color: var(--brand-gold);
+  font-weight: 700;
+}
+
+.announcement-sep {
+  margin-inline-start: clamp(1.25rem, 5vw, 3.5rem);
+  color: var(--brand-gold);
+  opacity: 0.9;
+}
+
+@keyframes announcement-ticker {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .announcement-marquee {
+    width: auto;
+    min-width: 100%;
+    overflow-x: auto;
+    animation: none;
+  }
+  .announcement-seq:last-child {
+    display: none;
+  }
+  .announcement-seq {
+    justify-content: flex-start;
   }
 }

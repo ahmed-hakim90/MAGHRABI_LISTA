@@ -7,6 +7,9 @@ const PORTFOLIO_URL = "https://portfolio-flame-tau-19.vercel.app/";
 const FILE_VIEW_PATH =
   /^\/(wholesale|retail|lists)\/file\/[^/]+\/view$/;
 
+/** Redesigned wholesale home renders its own branded footer. */
+const WHOLESALE_HOME_PATH = /^\/wholesale\/?$/;
+
 import { shouldHideFloatingCatalogButtons } from "@/lib/utils/catalogChrome";
 
 function HeartIcon({ className }: { className?: string }) {
@@ -45,7 +48,11 @@ export function SiteFooter() {
 
 export function PublicSiteFooterGate() {
   const pathname = usePathname();
-  if (FILE_VIEW_PATH.test(pathname) || shouldHideFloatingCatalogButtons(pathname)) {
+  if (
+    FILE_VIEW_PATH.test(pathname) ||
+    WHOLESALE_HOME_PATH.test(pathname) ||
+    shouldHideFloatingCatalogButtons(pathname)
+  ) {
     return null;
   }
   return <SiteFooter />;

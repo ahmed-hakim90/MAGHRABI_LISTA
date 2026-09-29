@@ -17,7 +17,7 @@ export function FloatingServiceCentersButton() {
   return (
     <>
       <ServiceCentersSheet open={open} onClose={() => setOpen(false)} />
-      <div className="fixed bottom-[calc(8.75rem+max(1.25rem,env(safe-area-inset-bottom)))] end-[max(1.25rem,env(safe-area-inset-right))] z-[100]">
+      <div className="fab-group fixed bottom-[calc(8rem+max(1.25rem,env(safe-area-inset-bottom)))] end-[max(1.25rem,env(safe-area-inset-right))] z-[100]">
         <button
           type="button"
           onClick={() => setOpen(true)}
@@ -25,7 +25,7 @@ export function FloatingServiceCentersButton() {
           aria-label="مراكز الصيانة والفروع"
           title="مراكز الصيانة والفروع — سوكاني"
         >
-          <MapPinGlyph className="h-7 w-7" aria-hidden />
+          <MapPinGlyph className="h-6 w-6" aria-hidden />
         </button>
       </div>
     </>

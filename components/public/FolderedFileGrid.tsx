@@ -18,6 +18,7 @@ type Props = {
   cards: FileCardType[];
   folders: FileFolder[];
   view?: CatalogViewMode;
+  isWholesale?: boolean;
 };
 
 function CardGrid({
@@ -55,11 +56,11 @@ function CardGrid({
   );
 }
 
-export function FolderedFileGrid({ cards, folders, view = "grid" }: Props) {
+export function FolderedFileGrid({ cards, folders, view = "grid", isWholesale = false }: Props) {
   if (cards.length === 0) {
     return (
       <p className="py-16 text-center text-[15px] text-muted">
-        لا توجد ملفات مطابقة لبحثك.
+        {isWholesale ? "لا توجد قوائم مطابقة لبحثك" : "لا توجد ملفات مطابقة لبحثك."}
       </p>
     );
   }
@@ -76,7 +77,17 @@ export function FolderedFileGrid({ cards, folders, view = "grid" }: Props) {
   const orderedFolders = folders.filter((f) => grouped.has(f.id));
 
   if (orderedFolders.length === 0) {
-    return <FileGrid cards={cards} view={view} />;
+    return (
+      <section className="space-y-4 sm:space-y-5">
+        {isWholesale ? (
+          <header className="flex flex-col gap-1 border-b border-[#eadfd2] pb-3 sm:gap-1.5 sm:pb-4">
+            <h2 className="text-lg font-bold tracking-tight text-[#414141] sm:text-xl">القوائم المتاحة</h2>
+            <p className="text-sm text-muted">قوائم الأسعار والكتالوجات بصيغة PDF</p>
+          </header>
+        ) : null}
+        <FileGrid cards={cards} view={view} />
+      </section>
+    );
   }
 
   const folderLayout =

@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from "react";
 import { CatalogHomeStickyHeader } from "@/components/public/CatalogHomeStickyHeader";
-import { BrandGradient, BrandPattern, EmblemFrame } from "@/components/public/BrandSystem";
 import { useCatalogChannel } from "@/components/public/CatalogChannelContext";
 import { useCatalogView } from "@/components/public/CatalogViewToggle";
 import { FolderedFileGrid } from "@/components/public/FolderedFileGrid";
@@ -165,29 +164,20 @@ export function CatalogChannelHomeClient({
         categories={categories}
         selectedCategory={category}
         onSelectCategory={setCategory}
-        showCategoryChips={!showSkeleton && (!error || hasCatalogData)}
+        showCategoryChips={audience !== "wholesale" && !showSkeleton && (!error || hasCatalogData)}
         showPriceListsTab={hydratedSettings.showPriceLists}
         showReelsTab={hydratedSettings.showReels}
         alwaysShowSearch={audience === "wholesale"}
       />
       {audience === "wholesale" ? (
-        <BrandGradient className="relative isolate flex min-h-[17rem] items-center overflow-hidden px-4 py-8 text-white sm:min-h-[20rem] sm:px-10 sm:py-10" aria-labelledby="wholesale-hero-title">
-          <BrandPattern />
-          <div className="relative mx-auto grid max-w-6xl items-center gap-8 sm:grid-cols-[1fr_0.72fr] sm:gap-12">
-            <div className="max-w-2xl" dir="rtl">
-              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.22em] text-white/70 sm:text-sm">EL MAGHRABY / WHOLESALE CATALOG</p>
-              <h2 id="wholesale-hero-title" className="max-w-xl text-4xl font-bold leading-[1.05] tracking-tight sm:text-6xl">كتالوج <span className="text-[#fff2e3]">الجملة</span></h2>
-              <p className="mt-3 max-w-lg text-sm leading-7 text-white/85 sm:text-base">تصفح الأقسام والمنتجات المتاحة لشركاء المغربي.</p>
-            </div>
-            <EmblemFrame className="mx-auto aspect-[1.15] w-full max-w-sm border border-white/20 bg-[#fff2e3]/15 p-3 shadow-2xl sm:order-first">
-              <div className="flex h-full items-center justify-center bg-[#fff2e3] p-5">
-                <div className="flex h-full w-full items-center justify-center border border-[#ed1f26]/15 bg-white p-4">
-                  <p className="text-center text-5xl font-bold tracking-tight text-[#ed1f26] sm:text-7xl">B2B</p>
-                </div>
-              </div>
-            </EmblemFrame>
+        <section className="relative isolate overflow-hidden bg-[linear-gradient(118deg,#ed1f26_0%,#b9141b_48%,#91050f_100%)] px-4 py-7 text-white sm:px-10 sm:py-9" aria-labelledby="wholesale-hero-title">
+          <div className="pointer-events-none absolute -end-16 -top-24 size-64 rounded-full border-[20px] border-white/10" aria-hidden />
+          <div className="relative mx-auto max-w-[1360px]" dir="rtl">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/70 sm:text-xs">EL MAGHRABY / WHOLESALE</p>
+            <h2 id="wholesale-hero-title" className="mt-2 text-3xl font-bold leading-tight tracking-tight sm:text-4xl">كتالوج الجملة</h2>
+            <p className="mt-2 text-sm leading-6 text-white/85 sm:text-base">تصفح قوائم وكتالوجات المغربي المتاحة لشركائنا.</p>
           </div>
-        </BrandGradient>
+        </section>
       ) : null}
       <main id="catalog" className="mt-1 flex min-h-0 flex-1 flex-col bg-[#fff2e3] sm:mt-2">
         {showSkeleton ? (
@@ -198,8 +188,9 @@ export function CatalogChannelHomeClient({
             <div className="mx-auto w-full max-w-[1360px] px-4 pb-8 pt-6 sm:px-8 sm:pb-12 sm:pt-8 lg:px-12">
             <FolderedFileGrid
               cards={visibleCards}
-              folders={folders}
+              folders={audience === "wholesale" ? [] : folders}
               view={catalogView}
+              isWholesale={audience === "wholesale"}
             />
             {hasMore ? (
               <div className="mt-6 flex justify-center pb-safe-fab">

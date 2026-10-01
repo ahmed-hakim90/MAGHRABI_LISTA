@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { IBM_Plex_Sans_Arabic, Poppins } from "next/font/google";
+import { Cairo, IBM_Plex_Sans_Arabic } from "next/font/google";
 import { ChunkLoadRecovery } from "@/components/ChunkLoadRecovery";
 import { PwaCacheReset } from "@/components/PwaCacheReset";
 import { PwaUpdatePull } from "@/components/PwaUpdatePull";
@@ -15,11 +15,11 @@ const ibmPlexSansArabic = IBM_Plex_Sans_Arabic({
   display: "swap",
 });
 
-/* Official EL MAGHRABY English face; used via --font-latin (wholesale scope). */
-const poppins = Poppins({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-latin",
+/* Cairo is the wholesale channel face (covers Arabic + Latin); used via
+   --font-cairo, scoped to .channel-wholesale only. */
+const cairo = Cairo({
+  subsets: ["arabic", "latin"],
+  variable: "--font-cairo",
   display: "swap",
 });
 
@@ -49,7 +49,7 @@ export default function RootLayout({
   return (
     <html
       lang="ar"
-      className={`h-full splash-launch ${ibmPlexSansArabic.variable} ${poppins.variable} font-sans`}
+      className={`h-full splash-launch ${ibmPlexSansArabic.variable} ${cairo.variable} font-sans`}
     >
       <head>
         <link

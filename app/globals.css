@@ -66,12 +66,42 @@
   --border-subtle: #eadfce;
   --shadow-card-hover: 0 8px 16px -4px rgb(65 65 65 / 0.1),
     0 20px 40px -8px rgb(145 5 15 / 0.16);
-  font-family: var(--font-latin), var(--font-brand-arabic), ui-sans-serif,
-    system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-family: var(--font-cairo), ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, sans-serif;
 }
 
 .channel-wholesale .fab-hotline {
   background-color: var(--brand-red);
+}
+
+/* Wholesale-only chrome: compact FAB cluster (WhatsApp keeps its official
+   green; hotline and service centers stay in the El Maghraby red identity),
+   calmer category chips, and the tiled emblem on the deep burgundy footer. */
+.channel-wholesale .fab-group {
+  bottom: max(0.75rem, env(safe-area-inset-bottom, 0px));
+  gap: 0.375rem;
+}
+
+.channel-wholesale .fab-group :is(a, button) {
+  height: 2.75rem;
+  width: 2.75rem;
+}
+
+.channel-wholesale .fab-group :is(a, button) svg {
+  height: 1.375rem;
+  width: 1.375rem;
+}
+
+.channel-wholesale .fab-group[data-fab="service-centers"] {
+  bottom: calc(7rem + max(0.75rem, env(safe-area-inset-bottom, 0px)));
+}
+
+.wholesale-footer-pattern {
+  background-image: url("/brand/elmaghraby-emblem.png");
+  background-repeat: repeat;
+  background-size: 76px auto;
+  filter: brightness(0) invert(1);
+  opacity: 0.05;
 }
 
 /* Floating action buttons reveal only after the splash dismisses */

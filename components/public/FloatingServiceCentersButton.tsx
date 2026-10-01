@@ -17,7 +17,10 @@ export function FloatingServiceCentersButton() {
   return (
     <>
       <ServiceCentersSheet open={open} onClose={() => setOpen(false)} />
-      <div className="fab-group fixed bottom-[calc(8rem+max(1.25rem,env(safe-area-inset-bottom)))] end-[max(1.25rem,env(safe-area-inset-right))] z-[100]">
+      <div
+        className="fab-group fixed bottom-[calc(8rem+max(1.25rem,env(safe-area-inset-bottom)))] end-[max(1.25rem,env(safe-area-inset-right))] z-[100]"
+        data-fab="service-centers"
+      >
         <button
           type="button"
           onClick={() => setOpen(true)}

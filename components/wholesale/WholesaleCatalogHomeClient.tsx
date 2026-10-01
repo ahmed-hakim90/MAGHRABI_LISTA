@@ -1,13 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useCatalogChannel } from "@/components/public/CatalogChannelContext";
-import {
-  CatalogViewToggle,
-  useCatalogView,
-} from "@/components/public/CatalogViewToggle";
-import { CategoryFilterChips } from "@/components/public/CategoryFilterChips";
-import { FolderCard } from "@/components/public/FolderCard";
+import { useCatalogView } from "@/components/public/CatalogViewToggle";
 import { OfflineCatalogBanner } from "@/components/public/OfflineCatalogBanner";
 import { useSiteSettings } from "@/components/public/PublicSiteSettingsProvider";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
@@ -22,8 +17,8 @@ import {
   reviveCatalogFolder,
 } from "@/lib/utils/catalogRevive";
 import { matchesFileCardSearch } from "@/lib/utils/fileCardSearch";
-import { WholesaleAdBanner, WholesaleAdRail } from "./WholesaleAdRail";
 import { WholesaleCatalogSkeleton } from "./WholesaleCatalogSkeleton";
+import { WholesaleCatalogToolbar } from "./WholesaleCatalogToolbar";
 import { WholesaleFooter } from "./WholesaleFooter";
 import { WholesaleHeader } from "./WholesaleHeader";
 import { WholesaleMasthead } from "./WholesaleMasthead";
@@ -70,25 +65,6 @@ function WholesaleBrandBackdrop() {
   );
 }
 
-function SearchIcon() {
-  return (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <circle cx="11" cy="11" r="8" />
-      <path d="m21 21-4.3-4.3" />
-    </svg>
-  );
-}
-
 function StateMessage({
   title,
   description,
@@ -107,6 +83,15 @@ function StateMessage({
       {action ? <div className="mt-2">{action}</div> : null}
     </div>
   );
+}
+
+/** Arabic plural-aware list count: قائمة واحدة / قائمتان / N قوائم. */
+function formatListsCount(count: number): string {
+  if (count === 0) return "لا قوائم";
+  if (count === 1) return "قائمة واحدة";
+  if (count === 2) return "قائمتان";
+  if (count <= 10) return `${count.toLocaleString("ar")} قوائم`;
+  return `${count.toLocaleString("ar")} قائمة`;
 }
 
 export function WholesaleCatalogHomeClient({
@@ -128,7 +113,6 @@ export function WholesaleCatalogHomeClient({
   );
   const {
     cards,
-    folders,
     loading,
     error: clientError,
     stale,
@@ -138,9 +122,13 @@ export function WholesaleCatalogHomeClient({
   const site = useSiteSettings();
   const [searchInput, setSearchInput] = useState("");
   const debouncedQ = useDebouncedValue(searchInput, 300);
-  const [category, setCategory] = useState<string | null>(null);
   const [catalogView, setCatalogView] = useCatalogView();
-  const filterKey = `${debouncedQ}\n${category ?? ""}`;
+  const searchRef = useRef<HTMLInputElement>(null);
+
+  // Clearing the input resets filtering instantly; the debounce only delays
+  // typing, never the clear action.
+  const effectiveQ = searchInput.trim() === "" ? "" : debouncedQ;
+  const filterKey = effectiveQ;
   const [visibleState, setVisibleState] = useState({
     filterKey,
     count: CATALOG_VISIBLE_BATCH,
@@ -150,28 +138,13 @@ export function WholesaleCatalogHomeClient({
       ? visibleState.count
       : CATALOG_VISIBLE_BATCH;
 
-  const hasCatalogData = cards.length > 0 || folders.length > 0;
+  const hasCards = cards.length > 0;
   const error = clientError ?? (loading ? initialError : null);
-  const showSkeleton = loading && !hasCatalogData;
-  const searchActive =
-    debouncedQ.trim().length > 0 || category !== null;
-
-  const categories = useMemo(() => {
-    const set = new Set<string>();
-    for (const c of cards) {
-      set.add(c.category?.trim() || "عام");
-    }
-    return Array.from(set).sort((a, b) => a.localeCompare(b, "ar"));
-  }, [cards]);
+  const showSkeleton = loading && !hasCards;
 
   const filtered = useMemo(
-    () =>
-      cards.filter(
-        (c) =>
-          matchesFileCardSearch(c, debouncedQ) &&
-          (category === null || (c.category?.trim() || "عام") === category),
-      ),
-    [cards, debouncedQ, category],
+    () => cards.filter((c) => matchesFileCardSearch(c, effectiveQ)),
+    [cards, effectiveQ],
   );
 
   const visibleCards = useMemo(
@@ -180,95 +153,39 @@ export function WholesaleCatalogHomeClient({
   );
 
   const hasMore = visibleCount < filtered.length;
+  const searchActive = debouncedQ.trim() !== "";
 
-  const groupedByFolder = useMemo(() => {
-    const map = new Map<string, typeof visibleCards>();
-    for (const c of visibleCards) {
-      if (!c.folderId) continue;
-      const arr = map.get(c.folderId) ?? [];
-      arr.push(c);
-      map.set(c.folderId, arr);
-    }
-    return map;
-  }, [visibleCards]);
-  const orderedFolders = useMemo(
-    () => folders.filter((f) => groupedByFolder.has(f.id)),
-    [folders, groupedByFolder],
-  );
-  const ungrouped = useMemo(
-    () => visibleCards.filter((c) => !c.folderId),
-    [visibleCards],
-  );
-
-  const clearFilters = () => {
+  const clearSearch = () => {
     setSearchInput("");
-    setCategory(null);
+    searchRef.current?.focus();
   };
 
   return (
     <div className="flex min-h-dvh flex-col touch-manipulation">
       <WholesaleBrandBackdrop />
       <OfflineCatalogBanner
-        offline={!online && hasCatalogData}
-        stale={stale && online && hasCatalogData}
+        offline={!online && hasCards}
+        stale={stale && online && hasCards}
       />
-      <WholesaleHeader
-        basePath={basePath}
-        showPriceLists={site.showPriceLists}
-        showReels={site.showReels}
-      />
+      <WholesaleHeader basePath={basePath} />
       <WholesaleMasthead />
 
       <main className="relative flex min-h-0 flex-1 flex-col bg-surface">
-        <div className="mx-auto flex w-full max-w-[1320px] items-start gap-8 px-4 sm:px-6 lg:px-10">
-          <div className="min-w-0 flex-1">
-            {/* Catalog toolbar */}
-          <div className="-mt-0 pt-6 sm:pt-7">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-              <div className="relative min-w-0 flex-1" dir="rtl">
-                <label htmlFor="wholesale-search" className="sr-only">
-                  بحث في القوائم والكتالوجات
-                </label>
-                <span
-                  className="pointer-events-none absolute inset-y-0 start-3.5 flex items-center text-muted"
-                  aria-hidden
-                >
-                  <SearchIcon />
-                </span>
-                <input
-                  id="wholesale-search"
-                  type="search"
-                  autoComplete="off"
-                  value={searchInput}
-                  onChange={(e) => setSearchInput(e.target.value)}
-                  placeholder="ابحث باسم القائمة أو الكتالوج…"
-                  className="h-[52px] w-full rounded-lg border border-border bg-white ps-11 pe-4 text-[14px] text-foreground shadow-sm outline-none transition placeholder:text-muted/80 focus:border-brand-red/50 focus:ring-[3px] focus:ring-brand-red/15 sm:text-[15px]"
-                />
-              </div>
-              <div className="flex shrink-0 items-center justify-end">
-                <CatalogViewToggle
-                  value={catalogView}
-                  onChange={setCatalogView}
-                />
-              </div>
-            </div>
+        <div className="mx-auto w-full max-w-[1320px] px-4 sm:px-6 lg:px-10">
+          <WholesaleCatalogToolbar
+            searchValue={searchInput}
+            onSearchChange={setSearchInput}
+            inputRef={searchRef}
+            view={catalogView}
+            onViewChange={setCatalogView}
+          />
 
-            {!showSkeleton && categories.length > 1 ? (
-              <div className="mt-3">
-                <CategoryFilterChips
-                  categories={categories}
-                  selected={category}
-                  onSelect={setCategory}
-                />
-              </div>
-            ) : null}
-          </div>
-
-          {/* Content states */}
-          <div className="pb-10 pt-5">
+          {/* Content states — pb clears the footer gap inside the sheet so the
+              fixed brand backdrop never leaks through a transparent margin. */}
+          <div className="pb-18 pt-3">
             {showSkeleton ? (
               <WholesaleCatalogSkeleton view={catalogView} />
-            ) : error && !hasCatalogData ? (
+            ) : error && !hasCards ? (
               <StateMessage
                 title="تعذر تحميل القوائم حالياً"
                 description="تحقق من الاتصال ثم أعد المحاولة."
@@ -282,10 +199,10 @@ export function WholesaleCatalogHomeClient({
                   </button>
                 }
               />
-            ) : !hasCatalogData ? (
+            ) : !hasCards ? (
               <StateMessage
                 title="لا توجد قوائم متاحة حالياً"
-                description="تُضاف القوائم والكتالوجات الجديدة هنا فور صدورها."
+                description="تُضاف القوائم الجديدة هنا فور صدورها."
               />
             ) : filtered.length === 0 && searchActive ? (
               <StateMessage
@@ -293,7 +210,7 @@ export function WholesaleCatalogHomeClient({
                 action={
                   <button
                     type="button"
-                    onClick={clearFilters}
+                    onClick={clearSearch}
                     className="rounded-lg border border-brand-red/40 px-5 py-2.5 text-sm font-semibold text-brand-red transition hover:bg-brand-red/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-red"
                   >
                     مسح البحث
@@ -301,78 +218,38 @@ export function WholesaleCatalogHomeClient({
                 }
               />
             ) : (
-              <>
-                {orderedFolders.length > 0 ? (
-                  <section className="mb-8" aria-label="المجلدات">
-                    <header className="mb-3 flex items-baseline gap-2 border-b border-border pb-2">
-                      <h2 className="text-lg font-bold tracking-tight text-foreground sm:text-xl">
-                        المجلدات
-                      </h2>
-                      <span className="text-[13px] text-muted">
-                        ملفات منظّمة حسب التصنيف
-                      </span>
-                    </header>
-                    {catalogView === "list" ? (
-                      <div className="overflow-hidden rounded-lg border border-border bg-white">
-                        {orderedFolders.map((f) => (
-                          <FolderCard
-                            key={f.id}
-                            folder={f}
-                            fileCount={groupedByFolder.get(f.id)?.length ?? 0}
-                            variant="list"
-                          />
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="grid grid-cols-2 gap-3 max-[359px]:grid-cols-1 md:grid-cols-3 md:gap-4 xl:grid-cols-4 [&>*]:min-w-0">
-                        {orderedFolders.map((f) => (
-                          <FolderCard
-                            key={f.id}
-                            folder={f}
-                            fileCount={groupedByFolder.get(f.id)?.length ?? 0}
-                            variant="grid"
-                          />
-                        ))}
-                      </div>
-                    )}
-                  </section>
-                ) : null}
-
-                {ungrouped.length > 0 || orderedFolders.length === 0 ? (
-                  <section aria-label="القوائم المتاحة">
-                    <header className="mb-3 flex items-baseline gap-2 border-b border-border pb-2">
-                      <h2 className="text-lg font-bold tracking-tight text-foreground sm:text-xl">
-                        القوائم المتاحة
-                      </h2>
-                      <span className="text-[13px] text-muted">
-                        {filtered.length.toLocaleString("ar")} قائمة
-                      </span>
-                    </header>
-                    {catalogView === "list" ? (
-                      <div className="overflow-hidden rounded-lg border border-border bg-white">
-                        {visibleCards.map((c, index) => (
-                          <WholesalePdfCard
-                            key={c.id}
-                            card={c}
-                            variant="list"
-                            imagePriority={index < GRID_PRIORITY_COUNT}
-                          />
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="grid grid-cols-2 gap-3 max-[359px]:grid-cols-1 md:grid-cols-3 md:gap-4 xl:grid-cols-4 [&>*]:min-w-0">
-                        {visibleCards.map((c, index) => (
-                          <WholesalePdfCard
-                            key={c.id}
-                            card={c}
-                            variant="grid"
-                            imagePriority={index < GRID_PRIORITY_COUNT}
-                          />
-                        ))}
-                      </div>
-                    )}
-                  </section>
-                ) : null}
+              <section aria-label="القوائم المتاحة">
+                <header className="mb-2.5 flex items-baseline gap-2 border-b border-border pb-1.5">
+                  <h2 className="text-lg font-bold tracking-tight text-foreground sm:text-xl">
+                    القوائم المتاحة
+                  </h2>
+                  <span className="text-[13px] text-muted">
+                    {formatListsCount(filtered.length)}
+                  </span>
+                </header>
+                {catalogView === "list" ? (
+                  <div className="rounded-lg border border-border bg-white">
+                    {visibleCards.map((c, index) => (
+                      <WholesalePdfCard
+                        key={c.id}
+                        card={c}
+                        variant="list"
+                        imagePriority={index < GRID_PRIORITY_COUNT}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 gap-3 max-[359px]:grid-cols-1 md:grid-cols-3 md:gap-4 xl:grid-cols-4 [&>*]:min-w-0">
+                    {visibleCards.map((c, index) => (
+                      <WholesalePdfCard
+                        key={c.id}
+                        card={c}
+                        variant="grid"
+                        imagePriority={index < GRID_PRIORITY_COUNT}
+                      />
+                    ))}
+                  </div>
+                )}
 
                 {hasMore ? (
                   <div className="mt-8 flex justify-center">
@@ -399,17 +276,8 @@ export function WholesaleCatalogHomeClient({
                     </button>
                   </div>
                 ) : null}
-              </>
+              </section>
             )}
-          </div>
-
-            <div className="pb-10">
-              <WholesaleAdBanner />
-            </div>
-          </div>
-
-          <div className="hidden lg:block">
-            <WholesaleAdRail />
           </div>
         </div>
       </main>

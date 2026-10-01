@@ -7,8 +7,7 @@ import { publicCatalogFilePdfPath } from "@/lib/constants/catalogChannels";
 import { useCatalogChannel } from "@/components/public/CatalogChannelContext";
 import { useNarrowViewportForNewTab } from "@/hooks/useNarrowViewportForNewTab";
 import { pingCatalogView, withDownloadParam } from "@/lib/utils/catalogActions";
-import { formatDisplayDate } from "@/lib/utils/dates";
-import { formatFileSize } from "@/lib/utils/formatFileSize";
+import { formatNumericDate } from "@/lib/utils/dates";
 import { getFileCardFreshnessBadge } from "@/lib/utils/fileCardBadges";
 import { CatalogListKebab } from "@/components/public/CatalogFileListHeader";
 import type { CatalogViewMode } from "@/components/public/CatalogViewToggle";
@@ -23,22 +22,80 @@ function hasThumbnail(card: FileCard): boolean {
   return Boolean(card.thumbnailUrl?.trim());
 }
 
-/** Branded cover for PDF lists without a thumbnail — official emblem on Primary Red. */
-export function WholesalePdfPlaceholder({ className = "" }: { className?: string }) {
+/**
+ * Branded document cover for PDF lists without a thumbnail: warm ivory page,
+ * official emblem, faint burgundy arch watermark, small PDF chip. Never fake
+ * product imagery.
+ */
+export function WholesalePdfPlaceholder({
+  density = "grid",
+}: {
+  density?: "grid" | "thumb";
+}) {
+  if (density === "thumb") {
+    return (
+      <div
+        aria-hidden
+        className="flex h-full w-full flex-col overflow-hidden bg-brand-ivory"
+      >
+        <span className="h-[5px] w-full shrink-0 bg-brand-red" />
+        <span className="flex min-h-0 flex-1 items-center justify-center">
+          <Image
+            src="/brand/elmaghraby-emblem.png"
+            alt=""
+            width={291}
+            height={267}
+            className="h-[58%] w-auto"
+            sizes="36px"
+          />
+        </span>
+        <span className="mx-auto mb-[4px] h-px w-[62%] shrink-0 bg-brand-gold/70" />
+      </div>
+    );
+  }
+
   return (
     <div
-      className={`flex h-full w-full items-center justify-center bg-[#ed1f26] ${className}`}
-      role="img"
-      aria-label="غلاف المغربي الرسمي"
+      aria-hidden
+      className="relative flex h-full w-full flex-col items-center justify-center overflow-hidden bg-brand-ivory px-5 py-6"
     >
+      <svg
+        className="pointer-events-none absolute inset-0 h-full w-full"
+        viewBox="0 0 240 320"
+        fill="none"
+        preserveAspectRatio="xMidYMax slice"
+      >
+        <path
+          d="M-60 320V240a110 110 0 0 1 220 0v80"
+          stroke="#91050F"
+          strokeOpacity="0.07"
+          strokeWidth="26"
+        />
+        <path
+          d="M80 320V240a110 110 0 0 1 220 0v80"
+          stroke="#91050F"
+          strokeOpacity="0.07"
+          strokeWidth="26"
+        />
+      </svg>
+      <span className="absolute start-3 top-3 rounded bg-brand-burgundy px-1.5 py-0.5 text-[10px] font-bold leading-4 text-white shadow-sm">
+        PDF
+      </span>
       <Image
         src="/brand/elmaghraby-emblem.png"
         alt=""
         width={291}
         height={267}
-        className="h-full w-full object-contain"
+        className="h-[27%] w-auto"
         sizes="(max-width: 767px) 46vw, (max-width: 1279px) 31vw, 23vw"
       />
+      <span className="mt-[7%] h-px w-[44%] bg-brand-gold/70" aria-hidden />
+      <span className="mt-2 text-[10px] font-semibold tracking-[0.24em] text-brand-gray/60">
+        EL MAGHRABY
+      </span>
+      <span className="mt-1 text-[12px] font-semibold text-brand-burgundy">
+        قائمة الجملة
+      </span>
     </div>
   );
 }
@@ -49,11 +106,21 @@ const badgePdf = `${badgeBase} bg-brand-burgundy text-white`;
 const badgeNew = `${badgeBase} bg-brand-red text-white`;
 const badgeUpdated = `${badgeBase} bg-brand-gold text-[#4a3a06]`;
 
-function PdfCardBadges({ card }: { card: FileCard }) {
+function PdfCardBadges({
+  card,
+  showPdf,
+}: {
+  card: FileCard;
+  showPdf: boolean;
+}) {
   const freshness = getFileCardFreshnessBadge(card);
   return (
     <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-start justify-between gap-1 p-2">
-      <span className={badgePdf}>PDF</span>
+      {showPdf ? (
+        <span className={badgePdf}>PDF</span>
+      ) : (
+        <span className="sr-only">ملف PDF</span>
+      )}
       {freshness === "new" ? (
         <span className={badgeNew}>جديد</span>
       ) : freshness === "updated" ? (
@@ -65,27 +132,32 @@ function PdfCardBadges({ card }: { card: FileCard }) {
   );
 }
 
-function CardActionLabel({ withIcon = true }: { withIcon?: boolean }) {
+function CardActionLabel({ short = false }: { short?: boolean }) {
   return (
     <span className="inline-flex items-center gap-1 text-[13px] font-semibold text-brand-red">
-      عرض القائمة
-      {withIcon ? (
-        <svg
-          width="14"
-          height="14"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          aria-hidden
-          className="rtl:rotate-180"
-        >
-          <path d="M5 12h14" />
-          <path d="m12 5 7 7-7 7" />
-        </svg>
-      ) : null}
+      {short ? (
+        <>
+          <span className="hidden sm:inline">عرض القائمة</span>
+          <span className="sm:hidden">عرض</span>
+        </>
+      ) : (
+        "عرض القائمة"
+      )}
+      <svg
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden
+        className={short ? "hidden rtl:rotate-180 sm:block" : "rtl:rotate-180"}
+      >
+        <path d="M5 12h14" />
+        <path d="m12 5 7 7-7 7" />
+      </svg>
     </span>
   );
 }
@@ -106,16 +178,14 @@ export function WholesalePdfCard({
   const primaryOpenHref = openFileInNewTab ? pdfHref : viewHref;
 
   const category = card.category?.trim();
-  const metaLine = [
-    category,
-    card.updatedAt ? formatDisplayDate(card.updatedAt) : null,
-    card.fileSize ? formatFileSize(card.fileSize) : null,
-  ].filter(Boolean);
+  const metaLine = [category, formatNumericDate(card.updatedAt)].filter(
+    Boolean,
+  );
 
   if (variant === "list") {
     return (
       <article
-        className="relative flex min-h-[64px] items-center gap-3 border-b border-border bg-white px-3 transition-colors last:border-b-0 [@media(hover:hover)]:hover:bg-brand-ivory/40 sm:gap-4 sm:px-4"
+        className="relative flex min-h-[68px] items-center gap-3 border-b border-border bg-white px-3 transition-colors last:border-b-0 first:rounded-t-[7px] last:rounded-b-[7px] [@media(hover:hover)]:hover:bg-brand-ivory/40 sm:gap-4 sm:px-4"
         dir="rtl"
       >
         {openFileInNewTab ? (
@@ -143,33 +213,33 @@ export function WholesalePdfCard({
               src={card.thumbnailUrl}
               alt=""
               fill
-              className="object-cover"
+              className="object-contain"
               sizes="36px"
               priority={imagePriority}
             />
           ) : (
-            <WholesalePdfPlaceholder />
+            <WholesalePdfPlaceholder density="thumb" />
           )}
         </div>
 
-        <div className="relative z-[1] min-w-0 flex-1 pointer-events-none">
+        <div className="pointer-events-none relative z-[1] min-w-0 flex-1">
           <h2 className="truncate text-[13px] font-semibold text-foreground sm:text-sm">
             {card.title}
           </h2>
           {metaLine.length > 0 ? (
             <p className="mt-0.5 truncate text-[11px] text-muted sm:text-xs">
-              {metaLine.join(" · ")}
+              {metaLine.join(" • ")}
             </p>
           ) : null}
         </div>
 
-        <span className="relative z-[1] hidden shrink-0 sm:block pointer-events-none">
+        <span className="pointer-events-none relative z-[1] shrink-0">
           <span className={badgePdf}>PDF</span>
         </span>
 
-        <div className="relative z-[2] flex shrink-0 items-center gap-1">
-          <span className="pointer-events-none sm:hidden">
-            <CardActionLabel withIcon={false} />
+        <div className="relative z-[2] flex shrink-0 items-center gap-2 sm:gap-3">
+          <span className="pointer-events-none">
+            <CardActionLabel short />
           </span>
           <CatalogListKebab
             href={primaryOpenHref}
@@ -204,16 +274,18 @@ export function WholesalePdfCard({
         ) : (
           <WholesalePdfPlaceholder />
         )}
-        <PdfCardBadges card={card} />
+        <PdfCardBadges card={card} showPdf={hasThumbnail(card)} />
       </div>
-      <div className="flex flex-1 flex-col gap-1 border-t border-border px-3 py-2.5">
-        <h2 className="line-clamp-2 text-[13px] font-semibold leading-snug text-foreground sm:text-sm">
+      <div className="flex flex-1 flex-col gap-1 border-t border-border px-3 pb-1.5 pt-1.5">
+        <h2 className="line-clamp-2 break-words text-[13px] font-semibold leading-snug text-foreground sm:text-sm">
           {card.title}
         </h2>
         {metaLine.length > 0 ? (
-          <p className="line-clamp-1 text-[11px] text-muted">{metaLine.join(" · ")}</p>
+          <p className="line-clamp-1 text-[11px] text-muted">
+            {metaLine.join(" • ")}
+          </p>
         ) : null}
-        <div className="mt-auto pt-1.5">
+        <div className="mt-auto pt-1">
           <CardActionLabel />
         </div>
       </div>

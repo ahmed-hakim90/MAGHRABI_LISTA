@@ -209,6 +209,7 @@ export async function createFileCard(
   opts?: { onProgress?: UploadProgressHandler },
 ): Promise<string> {
   const on = opts?.onProgress;
+  await syncAdminAuthTokenForStorage();
   const db = getClientFirestore();
   const st = getClientStorage();
   const cardId = doc(collection(db, "fileCards")).id;
@@ -303,6 +304,7 @@ export async function migrateFileCardStorageAudience(
   opts?: { onProgress?: UploadProgressHandler },
 ): Promise<void> {
   const on = opts?.onProgress;
+  await syncAdminAuthTokenForStorage();
   const db = getClientFirestore();
   const st = getClientStorage();
   const snap = await getDoc(doc(db, "fileCards", cardId));

@@ -3,36 +3,90 @@ rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
 
-    function isAdmin() {
-      return request.auth != null && request.auth.token.admin == true;
+    // Shared bucket (sokany-production). Keep the other app's company/* rules.
+    function isSignedIn() {
+      return request.auth != null;
     }
 
-    // Plain-text catalog extracts for server-side chat only (Admin SDK reads; clients cannot read).
+    function userDoc() {
+      return firestore.get(/databases/(default)/documents/users/$(request.auth.uid));
+    }
+
+    function isActiveTenantUser() {
+      return isSignedIn()
+        && userDoc().data.isActive == true
+        && userDoc().data.tenantId is string
+        && userDoc().data.tenantId.size() > 0;
+    }
+
+    function currentTenantId() {
+      return userDoc().data.tenantId;
+    }
+
+    function allowedModules() {
+      return ['employees', 'products', 'production_batches', 'qc_reports', 'documents', 'repair_jobs'];
+    }
+
+    function isAdmin() {
+      return request.auth != null &&
+        (request.auth.token.admin == true || request.auth.token.role == "admin");
+    }
+
+    // Lista catalog admins live in adminUsers; token claim can lag after production rule edits.
+    function isListaAdmin() {
+      return isAdmin()
+        || (
+          isSignedIn()
+          && firestore.exists(/databases/(default)/documents/adminUsers/$(request.auth.uid))
+          && firestore.get(/databases/(default)/documents/adminUsers/$(request.auth.uid)).data.isActive == true
+        );
+    }
+
+    // Preferred multi-tenant path:
+    // company/{tenantId}/{module}/{documentId}/{fileName}
+    match /company/{tenantId}/{module}/{documentId}/{fileName} {
+      allow read: if isActiveTenantUser()
+        && tenantId == currentTenantId()
+        && module in allowedModules();
+      allow write: if isActiveTenantUser()
+        && tenantId == currentTenantId()
+        && module in allowedModules()
+        && request.resource.size < 15 * 1024 * 1024;
+    }
+
+    // Legacy single-company path (compat). Authenticated only — migrate to tenant path.
+    // Deny after Storage migration completes for all tenants.
+    match /company/{module}/{documentId}/{fileName} {
+      allow read: if isActiveTenantUser() && module in allowedModules();
+      allow write: if false;
+    }
+
+    // Maghrabi Lista catalog. Chat extracts stay private (Admin SDK only).
+    // Do not add a public /** read here: any matching allow wins over a later deny.
     match /magrabi-lista/{seg}/chat-index/{fileName} {
       allow read: if false;
-      allow write: if isAdmin();
+      allow write: if isListaAdmin();
     }
 
-    // Explicit prefixes so chat-index above stays non-public (avoid a single ** rule).
     match /magrabi-lista/{seg}/files/{allPaths=**} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow write: if isListaAdmin();
     }
     match /magrabi-lista/{seg}/images/{allPaths=**} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow write: if isListaAdmin();
     }
     match /magrabi-lista/files/{allPaths=**} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow write: if isListaAdmin();
     }
     match /magrabi-lista/images/{allPaths=**} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow write: if isListaAdmin();
     }
     match /magrabi-lista/site/{allPaths=**} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow write: if isListaAdmin();
     }
   }
 }

@@ -2,7 +2,11 @@
 
 import { doc, getDoc, serverTimestamp, setDoc } from "firebase/firestore";
 import { deleteObject, getDownloadURL, ref } from "firebase/storage";
-import { getClientFirestore, getClientStorage } from "@/lib/firebase/client";
+import {
+  getClientFirestore,
+  getClientStorage,
+  syncAdminAuthTokenForStorage,
+} from "@/lib/firebase/client";
 import { runResumableUpload } from "@/lib/firebase/storageUpload";
 import {
   DEFAULT_SITE_APP_NAME,
@@ -109,6 +113,7 @@ export async function updateSiteSettings(
   );
 
   if (input.logoFile) {
+    await syncAdminAuthTokenForStorage();
     const path = `${STORAGE_FOLDER}/site/logo.webp`;
     const logoRef = ref(st, path);
     const blob = await fileToWebpBlob(input.logoFile);

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { defaultTickerAnnouncement } from "@/lib/constants/announcements";
 import type { AnnouncementItem } from "@/lib/types/models";
 import {
   announcementDisplayText,
@@ -101,10 +102,10 @@ export function AnnouncementBar({ items }: { items: AnnouncementItem[] }) {
     return () => window.clearInterval(id);
   }, []);
 
-  const active = useMemo(
-    () => getActiveAnnouncements(items, now),
-    [items, now],
-  );
+  const active = useMemo(() => {
+    const live = getActiveAnnouncements(items, now);
+    return live.length > 0 ? live : [defaultTickerAnnouncement(now)];
+  }, [items, now]);
 
   // Constant scroll speed regardless of how many announcements exist.
   useEffect(() => {

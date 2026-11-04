@@ -9,6 +9,11 @@ import {
   DEFAULT_SITE_HOME_TITLE,
   DEFAULT_SITE_PRIMARY_COLOR,
 } from "@/lib/constants/siteDefaults";
+import {
+  DEFAULT_TICKER_ANNOUNCEMENT_ID,
+  DEFAULT_TICKER_TEXT_AR,
+  defaultTickerAnnouncement,
+} from "@/lib/constants/announcements";
 import type {
   AnnouncementItem,
   FileCard,
@@ -236,6 +241,16 @@ export const getCachedPublicSiteSettings = unstable_cache(
   },
 );
 
+function withDefaultTicker(items: AnnouncementItem[]): AnnouncementItem[] {
+  const hasCampaign = items.some(
+    (item) =>
+      item.id === DEFAULT_TICKER_ANNOUNCEMENT_ID ||
+      item.textAr.trim() === DEFAULT_TICKER_TEXT_AR,
+  );
+  if (hasCampaign) return items;
+  return [defaultTickerAnnouncement(), ...items];
+}
+
 async function loadPublicAnnouncements(): Promise<AnnouncementItem[]> {
   try {
     const db = getAdminFirestore();
@@ -243,12 +258,12 @@ async function loadPublicAnnouncements(): Promise<AnnouncementItem[]> {
       .collection("file_settings")
       .doc(ANNOUNCEMENTS_SETTINGS_DOC)
       .get();
-    return parseAnnouncementItems(
-      (snap.data() ?? {}).items,
+    return withDefaultTicker(
+      parseAnnouncementItems((snap.data() ?? {}).items),
     );
   } catch (e) {
     console.warn("[publicCatalogData] failed to load announcements", e);
-    return [];
+    return [defaultTickerAnnouncement()];
   }
 }
 

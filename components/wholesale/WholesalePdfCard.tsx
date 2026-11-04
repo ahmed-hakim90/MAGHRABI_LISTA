@@ -223,11 +223,11 @@ export function WholesalePdfCard({
         </div>
 
         <div className="pointer-events-none relative z-[1] min-w-0 flex-1">
-          <h2 className="truncate text-[13px] font-semibold text-foreground sm:text-sm">
+          <h2 className="truncate text-sm font-bold text-foreground sm:text-base">
             {card.title}
           </h2>
           {metaLine.length > 0 ? (
-            <p className="mt-0.5 truncate text-[11px] text-muted sm:text-xs">
+            <p className="mt-0.5 truncate text-xs font-bold text-muted sm:text-sm">
               {metaLine.join(" • ")}
             </p>
           ) : null}
@@ -277,11 +277,11 @@ export function WholesalePdfCard({
         <PdfCardBadges card={card} showPdf={hasThumbnail(card)} />
       </div>
       <div className="flex flex-1 flex-col gap-1 border-t border-border px-3 pb-1.5 pt-1.5">
-        <h2 className="line-clamp-2 break-words text-[13px] font-semibold leading-snug text-foreground sm:text-sm">
+        <h2 className="line-clamp-2 break-words text-sm font-bold leading-snug text-foreground sm:text-base">
           {card.title}
         </h2>
         {metaLine.length > 0 ? (
-          <p className="line-clamp-1 text-[11px] text-muted">
+          <p className="line-clamp-1 text-xs font-bold text-muted sm:text-sm">
             {metaLine.join(" • ")}
           </p>
         ) : null}

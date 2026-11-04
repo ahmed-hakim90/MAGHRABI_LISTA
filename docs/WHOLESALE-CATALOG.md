@@ -1,9 +1,9 @@
 # Wholesale Catalog — decision record (2026-10-01)
 
 Final IA/presentation of `/wholesale` as a **PDF list library** (not a product
-catalog). The page order is final and closed: announcement bar → header →
-compact intro → catalog controls → "القوائم المتاحة" → PDF cards → load-more →
-compact branded footer. No promotional sections.
+catalog). The page order is: announcement bar → header → campaign banner
+(`/campaigns/sokany-white-friday.jpg`) → catalog controls → "القوائم المتاحة"
+→ PDF cards → load-more → compact branded footer.
 
 ## Decisions
 
@@ -25,11 +25,12 @@ filter dimension.
 - `WholesaleCatalogToolbar` no longer accepts category props.
 - The "لا توجد قوائم في هذا التصنيف" empty-state branch was removed.
 
-### Ad rail and mobile ad banner unwired from the wholesale home
-`WholesaleAdRail` / `WholesaleAdBanner` are no longer rendered on `/wholesale`
-(no promotional sections in the final order). `components/wholesale/WholesaleAdRail.tsx`
-stays on disk unreferenced so re-adding is a two-line change. Admin settings
-(`adTitle` / `adSlogan`, SiteSettings) and the data model are untouched.
+### Campaign banner on wholesale home
+The compact text masthead is replaced by the Sokany White Friday artwork
+(`public/campaigns/sokany-white-friday.jpg`) rendered in `WholesaleMasthead`.
+`WholesaleAdRail` / `WholesaleAdBanner` stay unwired. Admin settings
+(`adTitle` / `adSlogan`) remain for other surfaces and are not shown on this
+banner.
 
 ### Cairo font scoped to wholesale channel
 Cairo (Google Fonts, variable weight, arabic + latin subsets) is loaded via

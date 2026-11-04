@@ -1,31 +1,29 @@
 "use client";
 
+import Image from "next/image";
+
+const CAMPAIGN_SRC = "/campaigns/sokany-white-friday.jpg";
+const CAMPAIGN_ALT =
+  "سوكاني وايت فرايداي — رغم غلاء الدولار مكملين معاكم بنفس الأسعار";
+
 /**
- * Compact branded masthead for the wholesale PDF library. Sits transparently
- * on the page-level fixed brand backdrop so the field stays constant on scroll.
+ * Wholesale home campaign banner. Replaces the previous compact text intro
+ * on `/wholesale` with the current Sokany White Friday artwork.
  */
 export function WholesaleMasthead() {
   return (
-    <section
-      className="relative"
-      aria-label="كتالوج الجملة — EL MAGHRABY"
-    >
-      <div className="relative mx-auto w-full max-w-[1320px] px-4 py-6 sm:px-6 lg:px-10 lg:pb-3 lg:pt-4">
-        <p className="text-[11px] font-semibold uppercase leading-4 tracking-[0.22em] text-brand-ivory/90 sm:text-xs">
-          EL MAGHRABY
-          <span className="mx-2 text-brand-gold" aria-hidden>
-            /
-          </span>
-          WHOLESALE
-        </p>
-        <h1 className="mt-1 text-2xl font-bold leading-[1.15] text-white sm:text-[26px] lg:text-[28px]">
-          كتالوج الجملة
-        </h1>
-        <p className="mt-1 max-w-xl text-[14px] leading-5 text-brand-ivory/95 sm:text-[15px] sm:leading-6">
-          تصفح قوائم وكتالوجات المغربي المتاحة لشركائنا.
-        </p>
+    <section className="relative bg-black" aria-label={CAMPAIGN_ALT}>
+      <div className="relative mx-auto w-full max-w-[1320px]">
+        <Image
+          src={CAMPAIGN_SRC}
+          alt={CAMPAIGN_ALT}
+          width={1024}
+          height={341}
+          priority
+          className="h-auto w-full"
+          sizes="(min-width: 1320px) 1320px, 100vw"
+        />
       </div>
-      <div className="h-[3px] w-full bg-brand-gold/80" aria-hidden />
     </section>
   );
 }

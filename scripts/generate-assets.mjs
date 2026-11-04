@@ -35,14 +35,19 @@ const config = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "",
 };
 
-const SOURCE_ICON = path.join(root, "assets", "app-icon-source.png");
-const ICON_BG = "#000000";
+const SOURCE_ICON = path.join(
+  root,
+  "public",
+  "brand",
+  "elmaghraby-emblem.png",
+);
+const ICON_BG = "#FFFFFF";
 
-/** PWA maskable safe zone ≈ 80% — keep logo inside ~82% so squircle masks do not clip. */
-async function writeMaskablePng(sourcePath, outPath, canvasSize) {
-  const inner = Math.floor(canvasSize * 0.82);
+/** Place the official emblem on a square canvas without cropping. */
+async function writePaddedPng(sourcePath, outPath, canvasSize, innerRatio) {
+  const inner = Math.max(1, Math.floor(canvasSize * innerRatio));
   const innerBuf = await sharp(sourcePath)
-    .resize(inner, inner, { fit: "inside" })
+    .resize(inner, inner, { fit: "contain", background: ICON_BG })
     .png()
     .toBuffer();
   await sharp({
@@ -68,26 +73,29 @@ async function main() {
     await fs.access(SOURCE_ICON);
   } catch {
     throw new Error(
-      `[generate-assets] Missing ${path.relative(root, SOURCE_ICON)} — add the EL MAGHRABY logo PNG there.`,
+      `[generate-assets] Missing ${path.relative(root, SOURCE_ICON)} — add the official EL MAGHRABY emblem PNG there.`,
     );
   }
 
-  await sharp(SOURCE_ICON)
-    .resize(192, 192, { fit: "cover", position: "center" })
-    .png()
-    .toFile(path.join(iconsDir, "icon-192.png"));
-
-  await writeMaskablePng(SOURCE_ICON, path.join(iconsDir, "icon-512.png"), 512);
-
-  await sharp(SOURCE_ICON)
-    .resize(32, 32, { fit: "cover", position: "center" })
-    .png()
-    .toFile(path.join(appDir, "icon.png"));
-
-  await sharp(SOURCE_ICON)
-    .resize(180, 180, { fit: "cover", position: "center" })
-    .png()
-    .toFile(path.join(appDir, "apple-icon.png"));
+  await writePaddedPng(
+    SOURCE_ICON,
+    path.join(iconsDir, "icon-192.png"),
+    192,
+    0.9,
+  );
+  await writePaddedPng(
+    SOURCE_ICON,
+    path.join(iconsDir, "icon-512.png"),
+    512,
+    0.82,
+  );
+  await writePaddedPng(SOURCE_ICON, path.join(appDir, "icon.png"), 32, 0.9);
+  await writePaddedPng(
+    SOURCE_ICON,
+    path.join(appDir, "apple-icon.png"),
+    180,
+    0.88,
+  );
 
   const sw = `
 var SW_CACHE_VERSION = '${SW_CACHE_VERSION}';

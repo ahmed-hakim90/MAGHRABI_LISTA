@@ -26,8 +26,21 @@ filter dimension.
 - The "لا توجد قوائم في هذا التصنيف" empty-state branch was removed.
 
 ### Campaign banner on wholesale home
-The compact text masthead is replaced by the Sokany White Friday artwork
-(`public/campaigns/sokany-white-friday.jpg`) rendered in `WholesaleMasthead`.
+The compact text masthead is replaced by a campaign carousel in
+`WholesaleMasthead` (2026-11-10): Sokany White Friday
+(`public/campaigns/sokany-white-friday.jpg`, 3:1) then the Ramadan 2027
+exhibition (`public/campaigns/ramadan-2027-exhibition-banner.jpg`, 2:1). Slides
+are listed in `CAMPAIGN_SLIDES`.
+- One 3:1 frame at every width (440px on desktop, as before), so every slide
+  has the same height. Narrower artwork is shown whole at full height over a
+  blurred copy of itself; nothing is cropped.
+- Dots and the pause button sit in the bottom corner so they never cover
+  centered calls to action in the artwork.
+- Autoplay every 6s; pauses on hover/focus, in background tabs, and via a pause
+  button; disabled for `prefers-reduced-motion`. Swipe, dots, and (from `sm`)
+  arrows; inactive slides are `inert`.
+- The exhibition slide opens the registration dialog only while an invitation
+  is active (`lib/utils/exhibitionInviteChannel.ts`); otherwise it is a plain image.
 `WholesaleAdRail` / `WholesaleAdBanner` stay unwired. Admin settings
 (`adTitle` / `adSlogan`) remain for other surfaces and are not shown on this
 banner.

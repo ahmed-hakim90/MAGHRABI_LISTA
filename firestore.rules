@@ -73,6 +73,20 @@ service cloud.firestore {
       allow read, write: if true;
     }
 
+    // معرض رمضان: بيانات العملاء لا تُقرأ ولا تُكتب من المتصفح إطلاقًا.
+    // التسجيل ولوحة الإدارة يمرّان عبر مسارات API تستخدم Admin SDK.
+    match /exhibitions/{exhibitionId} {
+      allow read, write: if false;
+    }
+
+    match /exhibition_registrations/{registrationId} {
+      allow read, write: if false;
+    }
+
+    match /exhibition_message_logs/{logId} {
+      allow read, write: if false;
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }

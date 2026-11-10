@@ -97,6 +97,59 @@
         { "fieldPath": "listId", "order": "ASCENDING" },
         { "fieldPath": "sortOrder", "order": "ASCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "exhibition_registrations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "exhibitionId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "exhibition_registrations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "exhibitionId", "order": "ASCENDING" },
+        { "fieldPath": "attendanceStatus", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "exhibition_registrations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "exhibitionId", "order": "ASCENDING" },
+        { "fieldPath": "contacted", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "exhibition_registrations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "exhibitionId", "order": "ASCENDING" },
+        { "fieldPath": "attendanceStatus", "order": "ASCENDING" },
+        { "fieldPath": "contacted", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "exhibition_registrations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "exhibitionId", "order": "ASCENDING" },
+        { "fieldPath": "attendeeCount", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "exhibition_registrations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "exhibitionId", "order": "ASCENDING" },
+        { "fieldPath": "attendanceStatus", "order": "ASCENDING" },
+        { "fieldPath": "attendeeCount", "order": "ASCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []

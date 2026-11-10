@@ -1,5 +1,5 @@
 import type { Firestore } from "firebase-admin/firestore";
-import { getAdminAuth } from "@/lib/firebase/admin";
+import { getAdminAuth, getAdminFirestore } from "@/lib/firebase/admin";
 
 export async function verifyAdminUser(
   db: Firestore,
@@ -28,4 +28,27 @@ export async function getAdminUidFromRequest(
       error: Response.json({ error: "رمز غير صالح." }, { status: 401 }),
     };
   }
+}
+
+/** Bearer token + active `adminUsers` row, with the Admin Firestore handle. */
+export async function requireActiveAdmin(
+  request: Request,
+): Promise<{ uid: string; db: Firestore } | { error: Response }> {
+  const auth = await getAdminUidFromRequest(request);
+  if ("error" in auth) return auth;
+  let db: Firestore;
+  try {
+    db = getAdminFirestore();
+  } catch {
+    return {
+      error: Response.json(
+        { error: "إعدادات Firebase Admin غير مكتملة." },
+        { status: 503 },
+      ),
+    };
+  }
+  if (!(await verifyAdminUser(db, auth.uid))) {
+    return { error: Response.json({ error: "غير مسموح." }, { status: 403 }) };
+  }
+  return { uid: auth.uid, db };
 }

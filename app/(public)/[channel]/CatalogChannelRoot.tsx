@@ -8,6 +8,7 @@ import { PublicSiteSettingsProvider } from "@/components/public/PublicSiteSettin
 import { FloatingContactButtons } from "@/components/public/FloatingContactButtons";
 import { FloatingServiceCentersButton } from "@/components/public/FloatingServiceCentersButton";
 import { AnnouncementBar } from "@/components/public/AnnouncementBar";
+import { ExhibitionInvite } from "@/components/public/ExhibitionInvite";
 import {
   CHANNEL_TO_AUDIENCE,
   type CatalogChannelSegment,
@@ -54,6 +55,7 @@ export function CatalogChannelRoot({
           ) : null}
           {channel !== "wholesale" && <NotificationPromptModal />}
           <PwaInstallModal />
+          <ExhibitionInvite />
           <FloatingContactButtons />
           <FloatingServiceCentersButton />
           {isCatalogChatEnabled() &&

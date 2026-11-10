@@ -27,10 +27,10 @@ const CAMPAIGN_SLIDES: CampaignSlide[] = [
   },
   {
     id: "ramadan-2027-exhibition",
-    src: "/campaigns/ramadan-2027-exhibition-banner.jpg",
-    alt: "المغربي — شركاء النجاح: المعرض السنوي لتشكيلات وإضاءات رمضان 2027، سجّل حضورك الآن",
+    src: "/campaigns/ramadan-2027-exhibition-wide.jpg",
+    alt: "المغربي — شركاء النجاح: المعرض السنوي لتشكيلات وإضاءات رمضان 2027",
     width: 1024,
-    height: 512,
+    height: 341,
     opensExhibitionInvite: true,
   },
 ];

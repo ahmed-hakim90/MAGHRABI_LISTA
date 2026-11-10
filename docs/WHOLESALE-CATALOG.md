@@ -29,7 +29,7 @@ filter dimension.
 The compact text masthead is replaced by a campaign carousel in
 `WholesaleMasthead` (2026-11-10): Sokany White Friday
 (`public/campaigns/sokany-white-friday.jpg`, 3:1) then the Ramadan 2027
-exhibition (`public/campaigns/ramadan-2027-exhibition-banner.jpg`, 2:1). Slides
+exhibition (`public/campaigns/ramadan-2027-exhibition-wide.jpg`, 3:1). Slides
 are listed in `CAMPAIGN_SLIDES`.
 - One 3:1 frame at every width (440px on desktop, as before), so every slide
   has the same height. Narrower artwork is shown whole at full height over a

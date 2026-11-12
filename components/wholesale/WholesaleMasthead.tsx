@@ -19,16 +19,16 @@ type CampaignSlide = {
 
 const CAMPAIGN_SLIDES: CampaignSlide[] = [
   {
-    id: "sokany-white-friday",
-    src: "/campaigns/sokany-white-friday.jpg",
-    alt: "سوكاني وايت فرايداي — رغم غلاء الدولار مكملين معاكم بنفس الأسعار",
+    id: "sokany-home-appliances",
+    src: "/campaigns/sokany-home-appliances.jpg",
+    alt: "أجهزة منزلية سوكاني والمغربي — رغم غلاء الأسعار مكملين معاك بنفس الأسعار، أسعار الجملة متاحة الآن",
     width: 1024,
     height: 341,
   },
   {
     id: "ramadan-2027-exhibition",
-    src: "/campaigns/ramadan-2027-exhibition-wide.jpg",
-    alt: "المغربي — شركاء النجاح: المعرض السنوي لتشكيلات وإضاءات رمضان 2027",
+    src: "/campaigns/ramadan-2027-exhibition-annual.jpg",
+    alt: "المغربي شركاء النجاح — المعرض السنوي لتشكيلات وإضاءات رمضان 2027، دعوة خاصة لتجار الجملة",
     width: 1024,
     height: 341,
     opensExhibitionInvite: true,

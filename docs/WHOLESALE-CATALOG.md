@@ -2,7 +2,7 @@
 
 Final IA/presentation of `/wholesale` as a **PDF list library** (not a product
 catalog). The page order is: announcement bar → header → campaign banner
-(`/campaigns/sokany-white-friday.jpg`) → catalog controls → "القوائم المتاحة"
+(Sokany appliances then Ramadan exhibition, 3:1) → catalog controls → "القوائم المتاحة"
 → PDF cards → load-more → compact branded footer.
 
 ## Decisions
@@ -27,9 +27,9 @@ filter dimension.
 
 ### Campaign banner on wholesale home
 The compact text masthead is replaced by a campaign carousel in
-`WholesaleMasthead` (2026-11-10): Sokany White Friday
-(`public/campaigns/sokany-white-friday.jpg`, 3:1) then the Ramadan 2027
-exhibition (`public/campaigns/ramadan-2027-exhibition-wide.jpg`, 3:1). Slides
+`WholesaleMasthead` (2026-11-12): Sokany home appliances
+(`public/campaigns/sokany-home-appliances.jpg`, 3:1) then the Ramadan 2027
+exhibition (`public/campaigns/ramadan-2027-exhibition-annual.jpg`, 3:1). Slides
 are listed in `CAMPAIGN_SLIDES`.
 - One 3:1 frame at every width (440px on desktop, as before), so every slide
   has the same height. Narrower artwork is shown whole at full height over a

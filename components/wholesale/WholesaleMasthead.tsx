@@ -20,7 +20,7 @@ type CampaignSlide = {
 const CAMPAIGN_SLIDES: CampaignSlide[] = [
   {
     id: "sokany-home-appliances",
-    src: "/campaigns/sokany-home-appliances.jpg",
+    src: "/campaigns/sokany-home-appliances-2.jpg",
     alt: "أجهزة منزلية سوكاني والمغربي — رغم غلاء الأسعار مكملين معاك بنفس الأسعار، أسعار الجملة متاحة الآن",
     width: 1024,
     height: 341,

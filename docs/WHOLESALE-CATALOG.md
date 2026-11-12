@@ -28,7 +28,7 @@ filter dimension.
 ### Campaign banner on wholesale home
 The compact text masthead is replaced by a campaign carousel in
 `WholesaleMasthead` (2026-11-12): Sokany home appliances
-(`public/campaigns/sokany-home-appliances.jpg`, 3:1) then the Ramadan 2027
+(`public/campaigns/sokany-home-appliances-2.jpg`, 3:1) then the Ramadan 2027
 exhibition (`public/campaigns/ramadan-2027-exhibition-annual.jpg`, 3:1). Slides
 are listed in `CAMPAIGN_SLIDES`.
 - One 3:1 frame at every width (440px on desktop, as before), so every slide

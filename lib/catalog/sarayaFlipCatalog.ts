@@ -7,7 +7,8 @@
  * search engines are told not to index it (see `next.config.ts`).
  */
 export const SARAYA_FLIP_HREF = "/flipbooks/saraya-2027-369026c6086f.html";
-export const SARAYA_FLIP_COVER = "/flipbooks/saraya-2027-cover.jpg";
+export const SARAYA_FLIP_COVER =
+  "/flipbooks/saraya-2027-369026c6086f-pages/page-00.jpg";
 export const SARAYA_FLIP_TITLE = "سريا رمضان 2027";
 
 const SEARCH_TEXT =

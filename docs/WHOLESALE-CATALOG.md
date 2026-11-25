@@ -98,7 +98,7 @@ on burgundy. Retail/lists channels are unaffected: shared components
 The card «سريا رمضان 2027» opens the flip file as a full document (plain
 `<a>`, not the PDF viewer). The HTML file is the source of truth: pages,
 hotspots, sound, and controls are not reimplemented. The cover is the first
-page, `page-00.jpg` in the flip folder. Search matches the
+page, saved as `public/flipbooks/saraya-2027-cover.jpg`. Search matches the
 title and «كتالوج تفاعلي». Retail and lists channels do not show this card.
 
 **Visibility (2026-11-25).** The card is hidden by default. Admin → الإعدادات

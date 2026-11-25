@@ -3,7 +3,7 @@
 Wholesale/retail catalog site for El Maghraby: PDF catalogs, interactive price
 lists with WhatsApp ordering, videos, and the annual exhibition invitation.
 
-Last updated: 2026-11-10
+Last updated: 2026-11-25
 
 ## Core / runtime
 
@@ -60,6 +60,7 @@ calendar → admin follows up on WhatsApp manually and marks attendance.
 
 ## Key routes and entry points
 
+- Saraya 2027 flip catalog (wholesale card → static HTML): `/flipbooks/saraya-2027.html`
 - Channel shell: `app/(public)/[channel]/CatalogChannelRoot.tsx`
 - Price lists: `app/(public)/[channel]/price-lists/[slug]`, `components/price-lists/`
 - Exhibition (public): `components/public/ExhibitionInvite.tsx`,

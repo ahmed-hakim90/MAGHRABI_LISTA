@@ -22,6 +22,8 @@ import { WholesaleCatalogToolbar } from "./WholesaleCatalogToolbar";
 import { WholesaleFooter } from "./WholesaleFooter";
 import { WholesaleHeader } from "./WholesaleHeader";
 import { WholesaleMasthead } from "./WholesaleMasthead";
+import { matchesSarayaFlipSearch } from "@/lib/catalog/sarayaFlipCatalog";
+import { SarayaFlipCard } from "./SarayaFlipCard";
 import { WholesalePdfCard } from "./WholesalePdfCard";
 
 const CATALOG_VISIBLE_BATCH = 40;
@@ -154,6 +156,8 @@ export function WholesaleCatalogHomeClient({
 
   const hasMore = visibleCount < filtered.length;
   const searchActive = debouncedQ.trim() !== "";
+  const showSarayaFlip = matchesSarayaFlipSearch(effectiveQ);
+  const visibleListCount = filtered.length + (showSarayaFlip ? 1 : 0);
 
   const clearSearch = () => {
     setSearchInput("");
@@ -185,7 +189,7 @@ export function WholesaleCatalogHomeClient({
           <div className="pb-18 pt-3">
             {showSkeleton ? (
               <WholesaleCatalogSkeleton view={catalogView} />
-            ) : error && !hasCards ? (
+            ) : error && !hasCards && !showSarayaFlip ? (
               <StateMessage
                 title="تعذر تحميل القوائم حالياً"
                 description="تحقق من الاتصال ثم أعد المحاولة."
@@ -199,12 +203,12 @@ export function WholesaleCatalogHomeClient({
                   </button>
                 }
               />
-            ) : !hasCards ? (
+            ) : !hasCards && !showSarayaFlip ? (
               <StateMessage
                 title="لا توجد قوائم متاحة حالياً"
                 description="تُضاف القوائم الجديدة هنا فور صدورها."
               />
-            ) : filtered.length === 0 && searchActive ? (
+            ) : filtered.length === 0 && searchActive && !showSarayaFlip ? (
               <StateMessage
                 title="لا توجد قوائم مطابقة لبحثك"
                 action={
@@ -224,11 +228,12 @@ export function WholesaleCatalogHomeClient({
                     القوائم المتاحة
                   </h2>
                   <span className="text-[13px] text-muted">
-                    {formatListsCount(filtered.length)}
+                    {formatListsCount(visibleListCount)}
                   </span>
                 </header>
                 {catalogView === "list" ? (
                   <div className="rounded-lg border border-border bg-white">
+                    {showSarayaFlip ? <SarayaFlipCard variant="list" imagePriority /> : null}
                     {visibleCards.map((c, index) => (
                       <WholesalePdfCard
                         key={c.id}
@@ -240,6 +245,9 @@ export function WholesaleCatalogHomeClient({
                   </div>
                 ) : (
                   <div className="grid grid-cols-2 gap-3 max-[359px]:grid-cols-1 md:grid-cols-3 md:gap-4 xl:grid-cols-4 [&>*]:min-w-0">
+                    {showSarayaFlip ? (
+                      <SarayaFlipCard variant="grid" imagePriority />
+                    ) : null}
                     {visibleCards.map((c, index) => (
                       <WholesalePdfCard
                         key={c.id}

@@ -13,6 +13,7 @@ export function CatalogListKebab({
   downloadHref,
   openViewInNewTab = false,
   onPrimaryClick,
+  nativeNavigation = false,
 }: {
   href: string;
   title: string;
@@ -23,6 +24,8 @@ export function CatalogListKebab({
   openViewInNewTab?: boolean;
   /** Fires before navigating to `href` (e.g. view counter when opening raw PDF). */
   onPrimaryClick?: () => void;
+  /** Full document load. Required for static HTML catalogs outside the app router. */
+  nativeNavigation?: boolean;
 }) {
   return (
     <details
@@ -49,7 +52,7 @@ export function CatalogListKebab({
         dir="rtl"
         role="menu"
       >
-        {isCatalogPdfStreamHref(href) ? (
+        {isCatalogPdfStreamHref(href) || nativeNavigation ? (
           <a
             href={href}
             role="menuitem"

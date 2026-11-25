@@ -94,6 +94,14 @@ size/offset, footer pattern). The footer uses the official white logo directly
 on burgundy. Retail/lists channels are unaffected: shared components
 (`CatalogViewToggle`, global header/footer of other channels) were not modified.
 
+### Saraya 2027 interactive catalog
+The first wholesale card, «سريا رمضان 2027», opens
+`public/flipbooks/saraya-2027.html` as a full document (plain `<a>`, not the
+PDF viewer). The HTML file is the source of truth: pages, hotspots, sound, and
+controls are not reimplemented. The cover is the first page, saved as
+`public/flipbooks/saraya-2027-cover.jpg`. Search matches the title and
+«كتالوج تفاعلي». Retail and lists channels do not show this card.
+
 ## Search copy
 
 Placeholder is exactly `ابحث باسم القائمة…` — the page lists PDFs, not products.

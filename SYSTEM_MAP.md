@@ -60,7 +60,8 @@ calendar → admin follows up on WhatsApp manually and marks attendance.
 
 ## Key routes and entry points
 
-- Saraya 2027 flip catalog (wholesale card → static HTML): `/flipbooks/saraya-2027.html`
+- Saraya 2027 flip catalog (static HTML, private link; wholesale card is opt-in via
+  admin settings `showSarayaCatalog`): `lib/catalog/sarayaFlipCatalog.ts`, `public/flipbooks/`
 - Channel shell: `app/(public)/[channel]/CatalogChannelRoot.tsx`
 - Price lists: `app/(public)/[channel]/price-lists/[slug]`, `components/price-lists/`
 - Exhibition (public): `components/public/ExhibitionInvite.tsx`,

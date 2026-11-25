@@ -10,6 +10,7 @@ import { ProgressBar } from "@/components/ui/ProgressBar";
 import { AnnouncementBarManager } from "@/components/admin/AnnouncementBarManager";
 import type { SiteSettings, WhatsAppContact } from "@/lib/types/models";
 import { DEFAULT_SITE_PRIMARY_COLOR } from "@/lib/constants/siteDefaults";
+import { SarayaCatalogSetting } from "@/components/admin/SarayaCatalogSetting";
 
 export default function AdminSettingsPage() {
   const [initial, setInitial] = useState<SiteSettings | null>(null);
@@ -24,6 +25,7 @@ export default function AdminSettingsPage() {
     useState(false);
   const [showPriceLists, setShowPriceLists] = useState(true);
   const [showReels, setShowReels] = useState(true);
+  const [showSarayaCatalog, setShowSarayaCatalog] = useState(false);
   const [adTitle, setAdTitle] = useState("");
   const [adSlogan, setAdSlogan] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
@@ -42,6 +44,7 @@ export default function AdminSettingsPage() {
       setPriceListOrderIncludePrices(s.priceListOrderIncludePrices);
       setShowPriceLists(s.showPriceLists);
       setShowReels(s.showReels);
+      setShowSarayaCatalog(s.showSarayaCatalog);
       setAdTitle(s.adTitle);
       setAdSlogan(s.adSlogan);
     });
@@ -65,6 +68,7 @@ export default function AdminSettingsPage() {
           priceListOrderIncludePrices,
           showPriceLists,
           showReels,
+          showSarayaCatalog,
           adTitle,
           adSlogan,
           logoFile,
@@ -85,6 +89,7 @@ export default function AdminSettingsPage() {
       setPriceListOrderIncludePrices(next.priceListOrderIncludePrices);
       setShowPriceLists(next.showPriceLists);
       setShowReels(next.showReels);
+      setShowSarayaCatalog(next.showSarayaCatalog);
       setAdTitle(next.adTitle);
       setAdSlogan(next.adSlogan);
       setLogoFile(null);
@@ -204,6 +209,10 @@ export default function AdminSettingsPage() {
             </span>
           </span>
         </label>
+        <SarayaCatalogSetting
+          checked={showSarayaCatalog}
+          onChange={setShowSarayaCatalog}
+        />
 
         <div className="space-y-3 rounded-xl border border-border bg-muted/30 p-4">
           <div>

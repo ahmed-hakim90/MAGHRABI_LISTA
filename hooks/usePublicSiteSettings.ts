@@ -24,6 +24,7 @@ const defaults: SiteSettings = {
   priceListOrderIncludePrices: false,
   showPriceLists: true,
   showReels: true,
+  showSarayaCatalog: false,
   adTitle: "",
   adSlogan: "",
   updatedAt: null,

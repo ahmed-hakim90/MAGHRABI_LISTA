@@ -156,7 +156,8 @@ export function WholesaleCatalogHomeClient({
 
   const hasMore = visibleCount < filtered.length;
   const searchActive = debouncedQ.trim() !== "";
-  const showSarayaFlip = matchesSarayaFlipSearch(effectiveQ);
+  const showSarayaFlip =
+    site.showSarayaCatalog && matchesSarayaFlipSearch(effectiveQ);
   const visibleListCount = filtered.length + (showSarayaFlip ? 1 : 0);
 
   const clearSearch = () => {

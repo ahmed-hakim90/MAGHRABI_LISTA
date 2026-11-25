@@ -14,6 +14,11 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
+        // Private flip catalogs are shared by link only; keep them out of search results.
+        source: "/flipbooks/:path*",
+        headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }],
+      },
+      {
         source: "/sw.js",
         headers: [
           {

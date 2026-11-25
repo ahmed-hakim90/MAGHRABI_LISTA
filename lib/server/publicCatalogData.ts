@@ -149,6 +149,7 @@ export function settingsFromData(
     ),
     showPriceLists: Boolean(data.showPriceLists ?? true),
     showReels: Boolean(data.showReels ?? true),
+    showSarayaCatalog: data.showSarayaCatalog === true,
     adTitle: String(data.adTitle ?? ""),
     adSlogan: String(data.adSlogan ?? ""),
     updatedAt: timestampToSerializable(data.updatedAt),

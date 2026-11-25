@@ -71,6 +71,11 @@ export type SiteSettings = {
   showPriceLists: boolean;
   /** Controls whether the reels/videos tab/page is visible publicly. */
   showReels: boolean;
+  /**
+   * Lists the Saraya 2027 flip catalog as a card in the wholesale catalog.
+   * Default false: the catalog stays reachable only through its private link.
+   */
+  showSarayaCatalog: boolean;
   /** Ad announcement shown in the wholesale rollup-style ad rail (empty = brand default). */
   adTitle: string;
   adSlogan: string;

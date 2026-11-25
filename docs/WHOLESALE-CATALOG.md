@@ -95,12 +95,28 @@ on burgundy. Retail/lists channels are unaffected: shared components
 (`CatalogViewToggle`, global header/footer of other channels) were not modified.
 
 ### Saraya 2027 interactive catalog
-The first wholesale card, «سريا رمضان 2027», opens
-`public/flipbooks/saraya-2027.html` as a full document (plain `<a>`, not the
-PDF viewer). The HTML file is the source of truth: pages, hotspots, sound, and
-controls are not reimplemented. The cover is the first page, saved as
-`public/flipbooks/saraya-2027-cover.jpg`. Search matches the title and
-«كتالوج تفاعلي». Retail and lists channels do not show this card.
+The card «سريا رمضان 2027» opens the flip file as a full document (plain
+`<a>`, not the PDF viewer). The HTML file is the source of truth: pages,
+hotspots, sound, and controls are not reimplemented. The cover is the first
+page, saved as `public/flipbooks/saraya-2027-cover.jpg`. Search matches the
+title and «كتالوج تفاعلي». Retail and lists channels do not show this card.
+
+**Visibility (2026-11-25).** The card is hidden by default. Admin → الإعدادات
+has a switch (`showSarayaCatalog` on `file_settings/site`, default `false`;
+missing or old offline snapshots also read as hidden). The switch only controls
+the card.
+
+**Private link.** The file name carries a random suffix
+(`SARAYA_FLIP_HREF` in `lib/catalog/sarayaFlipCatalog.ts`), so the link stays
+unguessable and works whether the card is shown or not. Admin → الإعدادات shows
+the full link with a copy button. It is an unlisted link, not a login: anyone
+who has it can open the catalog. `/flipbooks/*` is served with
+`X-Robots-Tag: noindex, nofollow`. To revoke a shared link, rename the file and
+update `SARAYA_FLIP_HREF`.
+
+**Open decision.** The file is ~22 MB because every page is embedded as base64.
+A loading state covers the wait; splitting pages into lazy-loaded images is the
+real fix and is pending.
 
 ## Search copy
 

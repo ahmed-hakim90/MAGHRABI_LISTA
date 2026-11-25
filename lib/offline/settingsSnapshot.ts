@@ -39,10 +39,13 @@ function fromWire(w: WireSettings): SiteSettings {
     hotlineNumber,
     adTitle,
     adSlogan,
+    showSarayaCatalog,
     ...rest
   } = w;
   return {
     ...rest,
+    // Snapshots saved before this setting existed must read as hidden.
+    showSarayaCatalog: showSarayaCatalog === true,
     adTitle: String(adTitle ?? ""),
     adSlogan: String(adSlogan ?? ""),
     whatsappContacts: parseWhatsappContactsRaw(whatsappContacts),
